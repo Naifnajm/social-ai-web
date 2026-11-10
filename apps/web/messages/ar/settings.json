@@ -4,7 +4,8 @@
  "tabs": {
   "general": "الشركة",
   "members": "الفريق",
-  "profile": "ملفي الشخصي"
+  "profile": "ملفي الشخصي",
+  "templates": "قوالب العلامة"
  },
  "companyName": "اسم الشركة",
  "language": "اللغة",

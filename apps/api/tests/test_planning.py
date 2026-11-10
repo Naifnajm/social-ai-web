@@ -216,7 +216,7 @@ def test_best_times_fall_back_to_benchmarks(client, auth, db, monkeypatch):
     from app.modules.social import service as social
 
     def broken(*args, **kwargs):
-        raise RuntimeError("down")
+        raise NotImplementedError
 
     monkeypatch.setattr(social, "next_best_slots", broken)
     data = client.get("/api/planner/best-times", params={"platforms": ["instagram"]}, headers=auth.headers).json()

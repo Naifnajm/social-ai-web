@@ -1,0 +1,223 @@
+<!doctype html>
+{% set start = 'right' if r.direction == 'rtl' else 'left' %}
+{% set end = 'left' if r.direction == 'rtl' else 'right' %}
+<html lang="{{ r.lang }}" dir="{{ r.direction }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ r.title }} · {{ r.period }}</title>
+<style>
+  @page { size: A4; margin: 12mm 10mm; }
+  * { box-sizing: border-box; }
+  html { background: #e9e9ec; }
+  body { margin: 0; padding: 24px 12px; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Arabic", "Segoe UI", Tahoma,
+         "Noto Sans Arabic", "Noto Sans", "DejaVu Sans", Arial, sans-serif; color: #18181b; font-size: 12px; line-height: 1.55;
+         -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .sheet { max-width: 900px; margin: 0 auto; background: linear-gradient(180deg, #ffffff 0%, #f6f6f7 100%);
+           border-radius: 26px; padding: 26px; border: 1px solid #e4e4e7;
+           box-shadow: 0 1px 0 rgba(255,255,255,.8) inset, 0 24px 60px -24px rgba(0,0,0,.25); }
+  table { border-collapse: separate; border-spacing: 0; width: 100%; }
+  .num { unicode-bidi: plaintext; white-space: nowrap; }
+  .bidi { unicode-bidi: plaintext; }
+  .head { background: linear-gradient(135deg, #0a0a0a 0%, #27272a 100%); color: #fafafa; border-radius: 20px; padding: 22px 24px; }
+  .head h1 { margin: 0 0 4px 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; color: #fff; }
+  .head .sub { color: #a1a1aa; font-size: 12px; }
+  .pill { display: inline-block; margin-top: 10px; padding: 3px 11px; border-radius: 999px; font-size: 11px;
+          background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.16); color: #e4e4e7; }
+  .logo { max-height: 44px; max-width: 150px; background: #fff; border-radius: 12px; padding: 5px 9px; }
+  h2 { font-size: 14px; margin: 24px 0 10px 0; font-weight: 700; color: #0a0a0a; letter-spacing: -0.005em; }
+  h2 .note { font-weight: 400; color: #71717a; font-size: 11px; }
+  .kpis { border-spacing: 8px; margin: 0 -8px; table-layout: fixed; }
+  .kpi { background: rgba(255,255,255,.75); border: 1px solid #e4e4e7; border-radius: 16px; padding: 12px 14px; vertical-align: top;
+         box-shadow: 0 1px 0 #fff inset, 0 6px 18px -10px rgba(0,0,0,.18); }
+  .kpi .value { font-size: 20px; font-weight: 700; color: #0a0a0a; unicode-bidi: plaintext; }
+  .kpi .label { color: #52525b; font-size: 11px; }
+  .delta { display: inline-block; margin-top: 5px; padding: 1px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 600; unicode-bidi: plaintext; }
+  .up { background: #18181b; color: #fafafa; }
+  .down { background: #e4e4e7; color: #3f3f46; }
+  .flat { background: #f4f4f5; color: #a1a1aa; }
+  .card { background: rgba(255,255,255,.8); border: 1px solid #e4e4e7; border-radius: 16px; overflow: hidden; }
+  .table th { background: #f4f4f5; color: #52525b; font-weight: 600; font-size: 11px; padding: 8px 12px; border-bottom: 1px solid #e4e4e7; }
+  .table td { padding: 9px 12px; border-bottom: 1px solid #f1f1f3; vertical-align: middle; }
+  .table tr:last-child td { border-bottom: 0; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #18181b; vertical-align: middle; }
+  .dot.facebook { background: #1877f2; } .dot.instagram { background: #e1306c; } .dot.linkedin { background: #0a66c2; }
+  .dot.telegram { background: #229ed9; } .dot.tiktok { background: #fe2c55; } .dot.x, .dot.threads { background: #0a0a0a; }
+  .thumb { width: 46px; height: 46px; border-radius: 12px; display: block; object-fit: cover; background: #f4f4f5; }
+  .thumb-empty { width: 46px; height: 46px; border-radius: 12px; background: linear-gradient(135deg, #f4f4f5, #e4e4e7); }
+  .rank { display: inline-block; width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%;
+          background: #0a0a0a; color: #fff; font-size: 11px; font-weight: 700; }
+  .post-name { font-weight: 600; color: #0a0a0a; unicode-bidi: plaintext; }
+  .muted { color: #71717a; font-size: 11px; }
+  .slots { border-spacing: 8px; margin: 0 -8px; table-layout: fixed; }
+  .slot { background: linear-gradient(135deg, #18181b, #3f3f46); color: #fafafa; border-radius: 14px; padding: 12px 14px; vertical-align: top; }
+  .slot b { display: block; font-size: 14px; color: #fff; }
+  .slot .muted { color: #a1a1aa; }
+  .tip { border-radius: 14px; padding: 10px 14px; margin-bottom: 8px; background: rgba(255,255,255,.8); border: 1px solid #e4e4e7; page-break-inside: avoid; }
+  .tip b { display: block; color: #0a0a0a; }
+  .tip.warning { border-color: #a1a1aa; background: #f4f4f5; }
+  .tip.success { border-color: #18181b; }
+  .ai { background: linear-gradient(135deg, #0a0a0a 0%, #27272a 100%); color: #f4f4f5; border-radius: 18px; padding: 16px 20px;
+        white-space: pre-line; unicode-bidi: plaintext; page-break-inside: avoid; }
+  .ai .t { color: #fff; font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .empty { color: #71717a; padding: 14px; }
+  .section { page-break-inside: avoid; }
+  .foot { color: #a1a1aa; font-size: 10.5px; margin-top: 24px; border-top: 1px solid #e4e4e7; padding-top: 10px; }
+  @media print { html { background: #fff; } body { padding: 0; } .sheet { border: 0; box-shadow: none; padding: 0; border-radius: 0; background: #fff; } .kpi { box-shadow: none; } }
+  @media (max-width: 640px) { .sheet { padding: 14px; border-radius: 18px; } .kpis td { display: block; margin-bottom: 8px; } }
+</style>
+</head>
+<body>
+<div class="sheet" style="text-align: {{ start }};">
+  <div class="head">
+    <table>
+      <tr>
+        <td>
+          <h1 class="bidi">{{ r.title }}</h1>
+          <div class="sub"><span class="bidi">{{ r.company }}</span> · <span class="num">{{ r.period }}</span></div>
+          <span class="pill bidi">{{ r.networks_label }}</span>
+        </td>
+        {% if r.logo %}<td style="text-align: {{ end }}; width: 160px;"><img class="logo" src="{{ r.logo }}" alt=""></td>{% endif %}
+      </tr>
+    </table>
+  </div>
+
+  <h2>{{ _("Key numbers") }} <span class="note">— {{ _("change compared with the previous period") }}</span></h2>
+  <table class="kpis">
+    {% for row in r.kpis | batch(4) %}
+    <tr>
+      {% for k in row %}
+      <td class="kpi">
+        <div class="value" dir="ltr">{{ k.value }}</div>
+        <div class="label">{{ k.label }}</div>
+        {% if k.delta %}<span class="delta {{ 'up' if k.up else 'down' }}">{{ '▲' if k.up else '▼' }} {{ k.delta }}</span>
+        {% else %}<span class="delta flat">—</span>{% endif %}
+      </td>
+      {% endfor %}
+      {% for _pad in range(4 - row | length) %}<td></td>{% endfor %}
+    </tr>
+    {% endfor %}
+  </table>
+
+  {% if r.networks %}
+  <div class="section">
+    <h2>{{ _("By network") }}</h2>
+    <div class="card">
+      <table class="table">
+        <thead><tr>
+          <th style="text-align: {{ start }}">{{ _("Network") }}</th>
+          <th style="text-align: {{ end }}">{{ _("Posts") }}</th>
+          <th style="text-align: {{ end }}">{{ _("Impressions") }}</th>
+          <th style="text-align: {{ end }}">{{ _("Engagements") }}</th>
+          <th style="text-align: {{ end }}">{{ _("Eng. rate") }}</th>
+          <th style="text-align: {{ end }}">{{ _("Link clicks") }}</th>
+          {% if r.show_revenue %}<th style="text-align: {{ end }}">{{ _("Revenue") }}</th>{% endif %}
+          <th style="text-align: {{ end }}">{{ _("Followers") }}</th>
+        </tr></thead>
+        <tbody>
+        {% for n in r.networks %}
+          <tr>
+            <td><span class="dot {{ n.platform }}"></span> {{ n.label }}</td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ n.posts }}</td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ n.impressions }}</td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ n.engagements }}</td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ n.engagement_rate }}</td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ n.clicks }}</td>
+            {% if r.show_revenue %}<td class="num" dir="ltr" style="text-align: {{ end }}">{{ n.revenue }}</td>{% endif %}
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ n.followers }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="section">
+    <h2>{{ _("Top posts") }} <span class="note">— {{ _("by engagement") }}</span></h2>
+    <div class="card">
+      {% if not r.top_posts %}
+      <div class="empty">{{ _("No published posts in this period.") }}</div>
+      {% else %}
+      <table class="table">
+        {% for p in r.top_posts %}
+        <tr>
+          <td style="width: 34px;"><span class="rank">{{ loop.index }}</span></td>
+          <td style="width: 58px;">{% if p.image %}<img class="thumb" src="{{ p.image }}" alt="">{% else %}<div class="thumb-empty"></div>{% endif %}</td>
+          <td>
+            <div class="post-name">{{ p.name or "—" }}</div>
+            <div class="muted"><span class="dot {{ p.platform }}"></span> <span class="bidi">{{ p.account }}</span> · <span class="num">{{ p.date }}</span></div>
+          </td>
+          <td class="num" dir="ltr" style="text-align: {{ end }}">
+            <b>{{ p.engagements }}</b> <span class="muted">{{ _("engagements") }}</span><br>
+            <span class="muted">{{ p.impressions }} {{ _("impressions") }} · <span class="num">{{ p.rate }}</span></span>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if r.top_results %}
+  <div class="section">
+    <h2>{{ _("Clicks and sales") }} <span class="note">— {{ _("from the tracked links in your posts") }}</span></h2>
+    <div class="card">
+      <table class="table">
+        <thead><tr>
+          <th style="text-align: {{ start }}">{{ _("Post") }}</th>
+          <th style="text-align: {{ end }}">{{ _("Link clicks") }}</th>
+          <th style="text-align: {{ end }}">{{ _("Conversions") }}</th>
+          <th style="text-align: {{ end }}">{{ _("Revenue") }}</th>
+        </tr></thead>
+        <tbody>
+        {% for p in r.top_results %}
+          <tr>
+            <td><span class="post-name">{{ p.name }}</span></td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ p.clicks }}</td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ p.conversions }}</td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}"><b>{{ p.revenue }}</b></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if r.best %}
+  <div class="section">
+    <h2>{{ _("Best times to post") }}</h2>
+    <table class="slots">
+      <tr>
+        {% for s in r.best %}
+        <td class="slot"><span class="muted">#{{ loop.index }}</span><b>{{ s.day }}</b><span class="muted num">{{ s.hour }}</span></td>
+        {% endfor %}
+      </tr>
+    </table>
+  </div>
+  {% endif %}
+
+  {% if r.tips %}
+  <div class="section">
+    <h2>{{ _("Tips") }}</h2>
+    {% for tip in r.tips %}
+    <div class="tip {{ tip.level }}"><b>{{ tip.title }}</b><span>{{ tip.text }}</span></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if r.ai_text %}
+  <div class="section">
+    <h2>{{ _("AI strategy summary") }}</h2>
+    <div class="ai"><div class="t">✦ {{ _("Plan for the coming weeks") }}</div>{{ r.ai_text }}</div>
+  </div>
+  {% endif %}
+
+  <div class="foot">
+    {{ _("Generated on {date} by {app}", date=r.generated, app=r.app_name) }}
+    {% if not r.has_metrics %} · {{ _("Statistics are still being collected for this period.") }}{% endif %}
+  </div>
+</div>
+</body>
+</html>

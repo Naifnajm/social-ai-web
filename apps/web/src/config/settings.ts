@@ -17,4 +17,5 @@ export const SETTINGS_TABS: SettingsTab[] = [
   { href: "/settings/inbox", label: "inbox", icon: "forum", order: 40, minRole: "admin" },
   { href: "/settings/ai", label: "ai", icon: "smart_toy", order: 30, minRole: "admin" },
   { href: "/settings/brand", label: "brand", icon: "branding", order: 40 },
+  { href: "/settings/pillars", label: "pillars", icon: "flag", order: 43, minRole: "admin" },
 ];

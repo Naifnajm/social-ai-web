@@ -25,6 +25,11 @@ export const NAV: NavItem[] = [
   { href: "/performance", label: "performance", icon: "bar_chart", order: 500, group: "results" },
   { href: "/ai-costs", label: "aiCosts", icon: "payments", order: 760, group: "results", minRole: "admin" },
   { href: "/production", label: "production", icon: "account_tree", order: 40, group: "main", mobile: false },
+  { href: "/library", label: "library", icon: "photo_library", order: 17, group: "main" },
+  { href: "/planner", label: "planner", icon: "calendar_today", order: 30, group: "plan", mobile: true },
+  { href: "/campaigns", label: "campaigns", icon: "campaign", order: 33, group: "plan" },
+  { href: "/links", label: "links", icon: "link", order: 72, group: "results" },
+  { href: "/reports", label: "reports", icon: "description", order: 76, group: "results", minRole: "admin" },
   { href: "/settings/general", label: "settings", icon: "settings", order: 900, group: "settings", minRole: "admin" },
   { href: "/admin", label: "admin", icon: "verified_user", order: 990, group: "settings", superadmin: true },
 ];

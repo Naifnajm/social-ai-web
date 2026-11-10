@@ -1,0 +1,17 @@
+{
+ "states": {
+  "draft": "Draft",
+  "to_approve": "To approve",
+  "scheduled": "Scheduled",
+  "publishing": "Publishing",
+  "posted": "Published",
+  "partial": "Partly published",
+  "failed": "Failed",
+  "planned": "Planned",
+  "running": "Running",
+  "finished": "Finished"
+ },
+ "copy": "Copy",
+ "copied": "Copied",
+ "copyFailed": "Could not copy. Select the text and copy it by hand."
+}

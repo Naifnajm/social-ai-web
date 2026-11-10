@@ -9,5 +9,10 @@
  "approvals": "To approve",
  "performance": "Performance",
  "aiCosts": "AI costs",
- "production": "Production"
+ "production": "Production",
+ "library": "Media library",
+ "planner": "Planner",
+ "campaigns": "Campaigns",
+ "links": "Links & sales",
+ "reports": "Reports"
 }

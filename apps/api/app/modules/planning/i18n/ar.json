@@ -1,0 +1,22 @@
+{
+ "A repost of this post is already waiting to go out.": "توجد إعادة نشر لهذا المنشور بانتظار النشر بالفعل.",
+ "Account not found.": "الحساب غير موجود.",
+ "Campaign not found.": "الحملة غير موجودة.",
+ "Choose a period of at most 120 days.": "اختر فترة لا تتجاوز 120 يومًا.",
+ "Choose a valid time (HH:MM).": "اختر وقتًا صحيحًا (HH:MM).",
+ "Content pillar not found.": "محور المحتوى غير موجود.",
+ "Evergreen repost planned: {name}": "تمت جدولة إعادة نشر دائمة: {name}",
+ "File not found.": "الملف غير موجود.",
+ "Only drafts can be taken off the calendar.": "يمكن إزالة المسودات فقط من التقويم.",
+ "Only published posts can be reposted.": "يمكن إعادة نشر المنشورات المنشورة فقط.",
+ "Product not found.": "المنتج غير موجود.",
+ "Published posts cannot be moved.": "لا يمكن نقل المنشورات المنشورة.",
+ "The end date must be after the start date.": "يجب أن يكون تاريخ الانتهاء بعد تاريخ البدء.",
+ "The rewrite failed, the original text is used: {reason}": "تعذّرت إعادة الصياغة، وسيُستخدم النص الأصلي: {reason}",
+ "This person is not a member of the workspace.": "هذا الشخص ليس عضوًا في مساحة العمل.",
+ "This post is already a repost: make the original post evergreen.": "هذا المنشور إعادة نشر بالفعل: اجعل المنشور الأصلي دائمًا.",
+ "This post no longer exists.": "هذا المنشور لم يعد موجودًا.",
+ "This time has already passed. Choose a later time.": "هذا الوقت قد مضى. اختر وقتًا لاحقًا.",
+ "Untitled": "بدون عنوان",
+ "You cannot plan a post in the past.": "لا يمكنك تخطيط منشور في الماضي."
+}

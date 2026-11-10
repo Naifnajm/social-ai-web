@@ -1,0 +1,15 @@
+# One domain: the web app, with the API and public endpoints routed to the API service.
+# HTTPS certificates are automatic (set SAI_DOMAIN to your domain in .env).
+{$SAI_DOMAIN:localhost} {
+	encode zstd gzip
+	@api path /api/* /m/* /r/* /oauth/* /webhooks/* /billing/webhooks/*
+	handle @api {
+		reverse_proxy api:8000
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+	request_body {
+		max_size 250MB
+	}
+}

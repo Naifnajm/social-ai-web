@@ -211,12 +211,23 @@ def test_planner_past_time_today_and_isolation(client, auth, db, fake):
     assert r.status_code == 400
 
 
-def test_best_times_fall_back_to_benchmarks(client, auth, db):
-    # the publishing contract is still a stub here: hints come from the benchmarks
+def test_best_times_fall_back_to_benchmarks(client, auth, db, monkeypatch):
+    # when the publishing service cannot answer, hints come from the benchmarks
+    from app.modules.social import service as social
+
+    def broken(*args, **kwargs):
+        raise RuntimeError("down")
+
+    monkeypatch.setattr(social, "next_best_slots", broken)
     data = client.get("/api/planner/best-times", params={"platforms": ["instagram"]}, headers=auth.headers).json()
     assert len(data["by_weekday"]) == 7
     assert {s["source"] for s in data["slots"]} == {"benchmark"}
     assert all(s["at"] > datetime.now(UTC).isoformat()[:16] for s in data["slots"])
+
+
+def test_best_times_from_publishing(client, auth, db):
+    data = client.get("/api/planner/best-times", params={"platforms": ["instagram"]}, headers=auth.headers).json()
+    assert data["slots"] and {s["source"] for s in data["slots"]} == {"service"}
 
 
 def test_viewer_cannot_move(client, auth, db, fake):

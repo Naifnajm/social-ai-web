@@ -112,7 +112,7 @@ ONBOARDING_HREFS = {
     "ai_provider": "/settings/ai",
     "brand_kit": "/settings/brand",
     "invite_teammate": "/settings/members",
-    "first_post": "/compose",
+    "first_post": "/studio",
 }
 
 

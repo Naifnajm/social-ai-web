@@ -1,0 +1,63 @@
+# Production stack: docker compose up -d   (copy .env.example to .env first)
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: stravica
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: stravica
+    volumes: [db:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stravica"]
+      interval: 5s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes: [redis:/data]
+    restart: unless-stopped
+
+  api: &api
+    build: ./apps/api
+    env_file: .env
+    environment:
+      SAI_ENV: prod
+      SAI_DATABASE_URL: postgresql+psycopg://stravica:${POSTGRES_PASSWORD}@db:5432/stravica
+      SAI_REDIS_URL: redis://redis:6379/0
+      SAI_PUBLIC_API_URL: https://${SAI_DOMAIN}
+      SAI_WEB_URL: https://${SAI_DOMAIN}
+      SAI_COOKIE_SECURE: "true"
+    volumes: [storage:/data/storage]
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_started}
+    restart: unless-stopped
+
+  worker:
+    <<: *api
+    command: ["python", "-m", "app.worker"]
+    deploy: {replicas: 2}
+
+  scheduler:
+    <<: *api
+    command: ["python", "-m", "app.scheduler"]
+
+  web:
+    build: ./apps/web
+    environment:
+      SAI_API_URL: http://api:8000
+    depends_on: [api]
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2-alpine
+    ports: ["80:80", "443:443"]
+    environment:
+      SAI_DOMAIN: ${SAI_DOMAIN}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy:/data
+    depends_on: [web, api]
+    restart: unless-stopped
+
+volumes: {db: {}, redis: {}, storage: {}, caddy: {}}

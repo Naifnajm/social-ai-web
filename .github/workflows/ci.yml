@@ -1,0 +1,44 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: {POSTGRES_USER: root, POSTGRES_PASSWORD: odoo, POSTGRES_DB: stravica_test}
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s
+    defaults: {run: {working-directory: apps/api}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-dejavu-core
+      - run: uv sync --frozen
+      - name: migrations apply and match the models
+        env: {SAI_DATABASE_URL: "postgresql+psycopg://root:odoo@localhost:5432/stravica_test"}
+        run: uv run alembic upgrade head && uv run alembic check
+      - run: uv run pytest -q
+
+  web:
+    runs-on: ubuntu-latest
+    defaults: {run: {working-directory: apps/web}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: npm, cache-dependency-path: apps/web/package-lock.json}
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npx eslint src
+      - run: npm run build
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults: {run: {working-directory: apps/mobile}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: npm, cache-dependency-path: apps/mobile/package-lock.json}
+      - run: npm ci
+      - run: npx tsc --noEmit

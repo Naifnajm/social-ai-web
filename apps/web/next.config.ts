@@ -4,6 +4,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 const API_URL = process.env.SAI_API_URL || "http://localhost:8000";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   turbopack: {
     rules: {
       "*.css": {

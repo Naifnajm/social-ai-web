@@ -215,7 +215,7 @@ def _list(db: Session, workspace_id: int) -> str:
 
 
 def _post_link(workspace: Workspace, post_id: int) -> str:
-    return f"{app_settings.web_url.rstrip('/')}/{get_locale()}/posts/{post_id}"
+    return f"{app_settings.web_url.rstrip('/')}/{get_locale()}/posts?post={post_id}"
 
 
 def _format_when(workspace: Workspace, when) -> str:

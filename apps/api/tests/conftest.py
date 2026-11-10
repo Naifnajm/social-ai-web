@@ -17,6 +17,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 from sqlalchemy.orm import Session  # noqa: E402
 
 from app.core import db as core_db  # noqa: E402
+from app.core import jobs as core_jobs  # noqa: E402
 from app.core import registry  # noqa: E402
 from app.main import app  # noqa: E402
 
@@ -41,12 +42,12 @@ def db():
         session.flush()
 
     app.dependency_overrides[core_db.get_db] = override
-    original = core_db.SessionLocal
-    core_db.SessionLocal = lambda: _NoCloseSession(session)  # jobs / logs use the same transaction
+    original, original_jobs = core_db.SessionLocal, core_jobs.SessionLocal
+    core_db.SessionLocal = core_jobs.SessionLocal = lambda: _NoCloseSession(session)  # jobs / logs share the test transaction
     try:
         yield session
     finally:
-        core_db.SessionLocal = original
+        core_db.SessionLocal, core_jobs.SessionLocal = original, original_jobs
         app.dependency_overrides.pop(core_db.get_db, None)
         session.close()
         outer.rollback()

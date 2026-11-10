@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# licensed fonts: not redistributable, never commit them (see public/fonts/licensed/README.md)
+/public/fonts/licensed/*
+!/public/fonts/licensed/README.md

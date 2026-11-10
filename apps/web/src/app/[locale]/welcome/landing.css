@@ -3,6 +3,24 @@
    one neon accent, heavy display type against a light serif voice. Everything is scoped to .lx.
    ============================================================================================= */
 
+/* Arabic: Forma DJR Arabic Text, one family, two cuts chosen by weight (licensed files, not in git;
+   see public/fonts/licensed/README.md). Light carries text (≤ 500), Bold carries headlines, buttons and labels (≥ 600).
+   Missing files fall back to Alexandria / the system Arabic font. */
+@font-face {
+  font-family: "Forma DJR Arabic";
+  src: url("/fonts/licensed/FormaDJRArabicText-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Forma DJR Arabic";
+  src: url("/fonts/licensed/FormaDJRArabicText-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* In the components layer so Tailwind utilities on the same element (hidden, sizes, spacing) win. */
 @layer components {
 .lx {
@@ -14,7 +32,7 @@
   --accent: #ff3d8b;
   --accent-soft: rgba(255, 61, 139, 0.16);
   --on-accent: #121016;
-  --display: "Archivo Variable", "Alexandria", system-ui, sans-serif;
+  --display: "Archivo Variable", "Forma DJR Arabic", "Alexandria", system-ui, sans-serif;
   --serif: "Instrument Serif", "Amiri", Georgia, serif;
   --ease: cubic-bezier(0.77, 0, 0.18, 1);
 
@@ -26,6 +44,7 @@
   font-family: var(--font);
   -webkit-font-smoothing: antialiased;
 }
+.lx:lang(ar) { font-family: "Forma DJR Arabic", var(--font); }
 .lx ::selection { background: var(--accent); color: var(--on-accent); }
 
 /* ---- type ----------------------------------------------------------------------------------- */
@@ -37,7 +56,7 @@
   letter-spacing: -0.025em;
 }
 .lx-display:lang(en) { text-transform: uppercase; }
-.lx-display:lang(ar) { letter-spacing: 0; line-height: 1.16; font-weight: 800; }
+.lx-display:lang(ar) { letter-spacing: 0; line-height: 1.18; font-weight: 800; }
 .lx-serif {
   font-family: var(--serif);
   font-weight: 400;
@@ -138,7 +157,7 @@ a:hover > .lx-arrow { transform: translate(2px, -2px); }
 .lx-star-glow { position: absolute; left: 50%; top: 44%; width: min(70vw, 760px); aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 61, 139, 0.28), rgba(143, 123, 255, 0.1) 55%, transparent); filter: blur(30px); }
 .lx-star-fallback { position: absolute; left: 50%; top: 44%; width: min(52vh, 70vw); transform: translate(-50%, -50%); }
 .lx-hero-title { font-size: clamp(40px, 6.6vw, 116px); }
-.lx-hero-title:lang(ar) { font-size: clamp(36px, 5.2vw, 92px); }
+.lx-hero-title:lang(ar) { font-size: clamp(38px, 5.8vw, 104px); }
 .lx-scribble { position: absolute; pointer-events: none; overflow: visible; }
 .lx-scribble path { stroke: var(--accent); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 0; filter: drop-shadow(0 0 10px rgba(255, 61, 139, 0.55)); }
 .lx-js .lx-scribble path { stroke-dashoffset: 1; }

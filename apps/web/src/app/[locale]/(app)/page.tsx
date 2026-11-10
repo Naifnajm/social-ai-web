@@ -1,5 +1,6 @@
 "use client";
 import { useTranslations } from "next-intl";
+import { OnboardingCard } from "@/components/billing/onboarding-card";
 import { Icon } from "@/components/icon";
 import { Card, PageHeader } from "@/components/ui";
 import { sortedNav } from "@/config/nav";
@@ -15,6 +16,7 @@ export default function HomePage() {
   return (
     <div className="pt-2">
       <PageHeader icon="auto_awesome" title={t("hello", { name: me?.user.name.split(" ")[0] ?? "" })} subtitle={t("subtitle", { workspace: workspace?.name ?? "" })} />
+      <OnboardingCard />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {items.map((item) => (
           <Link key={item.href} href={item.href}>

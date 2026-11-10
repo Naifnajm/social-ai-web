@@ -7,6 +7,7 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import { sortedNav } from "@/config/nav";
+import { BillingOverlay } from "./billing/billing-overlay";
 import { Icon } from "./icon";
 import { Avatar, Spinner, cx } from "./ui";
 
@@ -19,7 +20,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!me) {
       load().then((result) => {
-        if (!result) router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+        // signed-out visitors of the home page see the marketing page
+        if (!result) router.replace(pathname === "/" ? "/welcome" : `/login?next=${encodeURIComponent(pathname)}`);
       });
     }
   }, [me, load, router, pathname]);
@@ -71,7 +73,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 pb-28 lg:px-6 lg:pb-10">{children}</main>
+        <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 pb-28 lg:px-6 lg:pb-10">
+          <BillingOverlay />
+          {children}
+        </main>
       </div>
 
       <nav className="glass-strong fixed inset-x-3 bottom-3 z-40 flex justify-around rounded-[22px] px-2 py-1.5 lg:hidden">

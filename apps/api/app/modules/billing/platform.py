@@ -24,7 +24,6 @@ SETTINGS_SCHEMA: dict[str, str] = {
     "billing.grace_days": "int",
     "billing.stripe_prices": "dict",       # {"pro_month": "price_..."} — overrides the environment
     "platform.announcement": "str",        # optional banner text shown to every workspace
-    "platform.signups_open": "bool",
 }
 
 

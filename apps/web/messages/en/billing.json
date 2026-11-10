@@ -1,0 +1,157 @@
+{
+ "plans": {
+  "trial": "Free trial",
+  "starter": "Starter",
+  "pro": "Pro",
+  "business": "Business",
+  "enterprise": "Enterprise"
+ },
+ "planTagline": {
+  "starter": "For a single brand getting organised.",
+  "pro": "For growing brands and small agencies.",
+  "business": "For teams with many brands and video production.",
+  "enterprise": "Custom limits, contracts and support."
+ },
+ "status": {
+  "trialing": "Trial",
+  "active": "Active",
+  "past_due": "Payment due",
+  "canceled": "Canceled"
+ },
+ "blocked": {
+  "trial_ended": "Trial ended — read-only",
+  "payment_overdue": "Payment overdue — read-only",
+  "canceled": "Canceled — read-only",
+  "suspended": "Suspended"
+ },
+ "resources": {
+  "social_accounts": "Social accounts",
+  "members": "Team members",
+  "posts_month": "Posts this month",
+  "ai_credits": "AI credits",
+  "storage_gb": "Storage"
+ },
+ "limitLine": {
+  "social_accounts": "{n} social accounts",
+  "members": "{n} team members",
+  "posts_month": "{n} posts / month",
+  "ai_credits": "{n} AI credits / month",
+  "storage_gb": "{n} GB storage"
+ },
+ "unlimitedLine": {
+  "social_accounts": "Unlimited social accounts",
+  "members": "Unlimited team members",
+  "posts_month": "Unlimited posts",
+  "ai_credits": "AI credits on request",
+  "storage_gb": "Unlimited storage"
+ },
+ "features": {
+  "ai_studio": "AI studio",
+  "templates": "Templates",
+  "quick_publish": "Quick publish",
+  "planning": "Planning & calendar",
+  "inbox": "Unified inbox",
+  "analytics": "Analytics",
+  "approvals": "Approvals",
+  "inbox_assistant": "Inbox assistant",
+  "reports": "Scheduled reports",
+  "link_tracking": "Link tracking & sales",
+  "evergreen": "Evergreen reposting",
+  "production": "Production canvas",
+  "priority_support": "Priority support",
+  "custom_branding": "Custom branding"
+ },
+ "monthly": "Monthly",
+ "yearly": "Yearly",
+ "save": "2 months free",
+ "perMonth": "/ month",
+ "billedYearly": "billed {amount} yearly",
+ "billedMonthly": "billed monthly",
+ "custom": "Custom",
+ "popular": "Most popular",
+ "contactSales": "Contact sales",
+ "choose": "Choose {plan}",
+ "startTrial": "Start free trial",
+ "currentPlan": "Current plan",
+ "upgrade": "Upgrade",
+ "downgrade": "Switch",
+ "everythingIn": "Everything in {plan}, plus:",
+ "title": "Plan & billing",
+ "subtitle": "Your plan, usage and invoices.",
+ "ownerOnly": "Only the workspace owner can manage the subscription.",
+ "trialEnds": "Your trial ends on {date} ({days} days left).",
+ "renews": "Renews on {date}.",
+ "endsOn": "Ends on {date} — it will not renew.",
+ "pastDue": "The last payment failed. Update your card before {date} to avoid interruption.",
+ "blockedText": "Your workspace is read-only. Choose a plan to unlock creating and publishing.",
+ "manage": "Manage payment",
+ "usage": "Usage this month",
+ "unlimited": "Unlimited",
+ "of": "of",
+ "changePlan": "Change plan",
+ "invoices": "Invoices",
+ "noInvoices": "Your invoices will appear here after the first payment.",
+ "invoice": "Invoice",
+ "date": "Date",
+ "amount": "Amount",
+ "invoiceStatus": {
+  "paid": "Paid",
+  "open": "Open",
+  "void": "Void",
+  "uncollectible": "Unpaid",
+  "draft": "Draft"
+ },
+ "download": "Download",
+ "checkoutSuccess": "Thank you! Your subscription is being activated.",
+ "checkoutCancel": "Checkout was canceled — nothing was charged.",
+ "planUpdated": "Your plan was updated.",
+ "paymentsOff": "Online payment is not available yet — contact us to subscribe.",
+ "contactEmail": "sales@stravica.com",
+ "vatNote": "Prices in Saudi riyals are shown for convenience; payment is processed in USD.",
+ "banner": {
+  "trial": "{days, plural, =0 {Your free trial ends today.} one {# day left in your free trial.} other {# days left in your free trial.}}",
+  "pastDue": "Payment failed — update your card before {date} to keep everything running.",
+  "trial_ended": "Your free trial has ended. Your workspace is read-only until you choose a plan.",
+  "payment_overdue": "Your payment is overdue. Your workspace is read-only until it is paid.",
+  "canceled": "Your subscription has ended. Your workspace is read-only.",
+  "suspended": "This workspace is suspended. Please contact support.",
+  "cta": "See plans",
+  "fix": "Update payment",
+  "dismiss": "Hide"
+ },
+ "modal": {
+  "title": {
+   "limit": "You've reached your plan limit",
+   "feature": "Available on a higher plan",
+   "trial_ended": "Your free trial has ended",
+   "payment_overdue": "Payment needed",
+   "canceled": "Your subscription has ended",
+   "suspended": "Workspace suspended"
+  },
+  "suggest": "Recommended: {plan}",
+  "from": "from {price} / month",
+  "seePlans": "See plans",
+  "askOwner": "Ask the workspace owner to upgrade the plan.",
+  "later": "Not now"
+ },
+ "onboarding": {
+  "title": "Get started",
+  "subtitle": "{done} of {total} done — five small steps to your first results.",
+  "allDone": "All set! Your workspace is ready.",
+  "dismiss": "Hide",
+  "steps": {
+   "connect_account": "Connect a social account",
+   "ai_provider": "Add an AI provider",
+   "brand_kit": "Create your brand kit",
+   "invite_teammate": "Invite a teammate",
+   "first_post": "Publish your first post"
+  },
+  "hints": {
+   "connect_account": "Instagram, Facebook, TikTok, X, LinkedIn…",
+   "ai_provider": "Use your own key or the platform credits.",
+   "brand_kit": "Logo, colours and tone of voice for every AI result.",
+   "invite_teammate": "Writers, designers and approvers.",
+   "first_post": "Write with AI and publish everywhere at once."
+  }
+ }
+}

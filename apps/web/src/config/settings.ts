@@ -11,4 +11,5 @@ export const SETTINGS_TABS: SettingsTab[] = [
   { href: "/settings/general", label: "general", icon: "settings", order: 0, minRole: "admin" },
   { href: "/settings/members", label: "members", icon: "group", order: 10 },
   { href: "/settings/profile", label: "profile", icon: "person", order: 20 },
+  { href: "/settings/billing", label: "billing", icon: "payments", order: 30, minRole: "owner" },
 ];

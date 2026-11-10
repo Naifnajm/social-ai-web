@@ -82,6 +82,8 @@ async function request<T>(method: string, path: string, body?: unknown, query?: 
     const detail = Array.isArray(data.detail)
       ? data.detail.map((d: { msg?: string }) => d.msg).join(" · ")
       : String(data.detail || response.statusText);
+    // plan limits: the billing overlay (components/billing) opens an upgrade dialog
+    if (data.code === "limit_reached") window.dispatchEvent(new CustomEvent("sai:limit-reached", { detail: { ...data, detail } }));
     throw new ApiError(response.status, detail, data.code || "error", data);
   }
   if (response.status === 204) return undefined as T;

@@ -4,7 +4,8 @@
  "tabs": {
   "general": "Company",
   "members": "Team",
-  "profile": "My profile"
+  "profile": "My profile",
+  "billing": "Plan & billing"
  },
  "companyName": "Company name",
  "language": "Language",

@@ -1,0 +1,17 @@
+# Override for a server that already runs nginx on 80/443 (social.stravica.nl).
+# Caddy is not started; nginx proxies to the two loopback ports below.
+#   docker compose -f docker-compose.yml -f deploy/server/docker-compose.server.yml up -d --build
+name: stravica-social
+services:
+  caddy:
+    profiles: ["caddy"]          # disabled: nginx terminates TLS on this server
+  api:
+    ports: ["127.0.0.1:8110:8000"]
+    logging: &logging {driver: json-file, options: {max-size: "20m", max-file: "5"}}
+  web:
+    ports: ["127.0.0.1:3110:3000"]
+    logging: *logging
+  worker: {logging: *logging}
+  scheduler: {logging: *logging}
+  db: {logging: *logging}
+  redis: {logging: *logging}

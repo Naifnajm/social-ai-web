@@ -1,5 +1,7 @@
 {
  "hello": "Hello {name} 👋",
  "subtitle": "Everything for {workspace} in one place.",
- "cards": {}
+ "cards": {
+  "inbox": "Messages and comments from every network, with an AI assistant."
+ }
 }

@@ -5,7 +5,7 @@
     send_reply(db, conv, "Hello!", "dm", user=ctx.user)
 """
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
@@ -30,6 +30,8 @@ REPLY_WINDOW = timedelta(hours=24)
 HUMAN_AGENT_WINDOW = timedelta(days=7)
 WINDOW_PLATFORMS = ("facebook", "instagram", "whatsapp")
 BOT_MAX_AGE = timedelta(hours=24)  # never answer older messages (first sync of an old inbox)
+# a new conversation sorts by its first message (set by after_message), whatever its date
+NO_MESSAGE_YET = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
 
 # ------------------------------------------------------------------ bot scheduling (after commit)
@@ -90,7 +92,7 @@ def find_or_create(db: Session, account: SocialAccount, kind: str, thread_id, cu
         customer_handle=customer.get("handle"), external_user_id=customer.get("user_id"),
         avatar_url=customer.get("avatar_url"), post_target_id=post.get("target_id"),
         external_post_id=post.get("external_id"), post_url=post.get("url"),
-        post_preview=(post.get("text") or "")[:280] or None, last_message_at=utcnow(),
+        post_preview=(post.get("text") or "")[:280] or None, last_message_at=NO_MESSAGE_YET,
     )
     if conv.post_target_id and not (conv.post_url and conv.post_preview):
         target = db.get(PostTarget, conv.post_target_id)

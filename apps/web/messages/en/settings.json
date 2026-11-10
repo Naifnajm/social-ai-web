@@ -4,7 +4,8 @@
  "tabs": {
   "general": "Company",
   "members": "Team",
-  "profile": "My profile"
+  "profile": "My profile",
+  "inbox": "Inbox & assistant"
  },
  "companyName": "Company name",
  "language": "Language",

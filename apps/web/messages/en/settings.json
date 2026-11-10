@@ -5,7 +5,8 @@
   "general": "Company",
   "members": "Team",
   "profile": "My profile",
-  "templates": "Brand templates"
+  "templates": "Brand templates",
+  "billing": "Plan & billing"
  },
  "companyName": "Company name",
  "language": "Language",

@@ -9,6 +9,7 @@ export type SettingsTab = { href: string; label: string; icon: string; order: nu
 
 export const SETTINGS_TABS: SettingsTab[] = [
   { href: "/settings/general", label: "general", icon: "settings", order: 0, minRole: "admin" },
+  { href: "/settings/accounts", label: "accounts", icon: "link", order: 5 },
   { href: "/settings/members", label: "members", icon: "group", order: 10 },
   { href: "/settings/profile", label: "profile", icon: "person", order: 20 },
   { href: "/settings/templates", label: "templates", icon: "photo_frame", order: 40, minRole: "editor" },

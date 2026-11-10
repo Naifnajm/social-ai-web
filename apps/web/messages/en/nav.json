@@ -3,5 +3,9 @@
  "settings": "Settings",
  "quick": "Quick publish",
  "admin": "Platform admin",
- "inbox": "Inbox"
+ "inbox": "Inbox",
+ "studio": "Studio",
+ "posts": "Posts",
+ "approvals": "To approve",
+ "performance": "Performance"
 }

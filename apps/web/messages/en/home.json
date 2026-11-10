@@ -2,6 +2,10 @@
  "hello": "Hello {name} 👋",
  "subtitle": "Everything for {workspace} in one place.",
  "cards": {
-  "inbox": "Messages and comments from every network, with an AI assistant."
+  "inbox": "Messages and comments from every network, with an AI assistant.",
+  "studio": "Write with AI, preview and publish everywhere.",
+  "posts": "Every post and its result on each network.",
+  "approvals": "Posts waiting for your approval.",
+  "performance": "What works, best times and tips to grow."
  }
 }

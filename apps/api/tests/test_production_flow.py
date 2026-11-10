@@ -282,8 +282,7 @@ def test_captions_block(api, fake_ai, db):
     assert "أهلاً وسهلاً" in node["output_text"]
     assert node["output"]["mimetype"] == "video/mp4" and node["cost"] > 0
     assert fake_ai.transcribed[0]["language"] == "ar"
-    speech = db.get(Media, fake_ai.transcribed[0]["media_id"])
-    assert speech.mimetype == "audio/mpeg"  # the soundtrack was extracted for speech-to-text
+    assert fake_ai.transcribed[0]["media_id"] == upload["output"]["id"]  # the video's own soundtrack
     fake_ai.segments = []
     graph = api.run(board, [captions["id"]], force=True)
     assert "No speech" in api.by_id(graph, captions["id"])["error"]

@@ -735,7 +735,9 @@ def _run_post(g: BoardGraph, node: Node) -> None:
         post.content = content
         post.platform_media = per_network or None
         post.accounts = accounts or list(post.accounts)
-        post.media_links = [PostMedia(media_id=m.id, position=index, role="feed") for index, m in enumerate(media)]
+        stories = [link for link in post.media_links if link.role == "story"]
+        post.media_links = [PostMedia(media_id=m.id, position=index, role="feed") for index, m in enumerate(media)] + [
+            PostMedia(media_id=link.media_id, position=link.position, role="story") for link in stories]
         db.flush()
     else:
         post = social.create_post(db, node.workspace_id, board.user_id, content=content,
@@ -796,9 +798,9 @@ def _run_captions(g: BoardGraph, node: Node) -> None:
         raise media_tools.MediaToolError(_("This server's ffmpeg cannot draw subtitles (it needs libass)."),
                                          code="no_libass")
     video_bytes = read_media(video)
-    audio = speech or _store(g, node, media_tools.extract_audio(video_bytes, video.mimetype), "audio/mpeg", "mp3",
-                             suffix="speech")
-    result = ai_media.transcribe(g.db, node.workspace_id, audio.id, (node.caption_language or "").strip() or None)
+    # speech-to-text of the linked voice track, or of the video's own soundtrack
+    result = ai_media.transcribe(g.db, node.workspace_id, (speech or video).id,
+                                 (node.caption_language or "").strip() or None)
     segments = (result or {}).get("segments") or []
     if not segments:
         raise AppError(_("No speech was found in this video."), code="no_speech")

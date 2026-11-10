@@ -24,6 +24,7 @@ export const NAV: NavItem[] = [
   { href: "/approvals", label: "approvals", icon: "verified_user", order: 310, group: "plan", minRole: "approver" },
   { href: "/performance", label: "performance", icon: "bar_chart", order: 500, group: "results" },
   { href: "/ai-costs", label: "aiCosts", icon: "payments", order: 760, group: "results", minRole: "admin" },
+  { href: "/production", label: "production", icon: "account_tree", order: 40, group: "main", mobile: false },
   { href: "/settings/general", label: "settings", icon: "settings", order: 900, group: "settings", minRole: "admin" },
   { href: "/admin", label: "admin", icon: "verified_user", order: 990, group: "settings", superadmin: true },
 ];

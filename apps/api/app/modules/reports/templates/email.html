@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="{{ r.lang }}" dir="{{ r.direction }}">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+<body style="margin: 0; padding: 20px 10px; background: #f4f4f5;">
+<div dir="{{ r.direction }}" style="font-family: -apple-system, 'Segoe UI', Tahoma, Arial, sans-serif; color: #18181b; font-size: 14px; line-height: 1.55; max-width: 620px; margin: 0 auto; text-align: {{ 'right' if r.direction == 'rtl' else 'left' }};">
+  <div style="background: #0a0a0a; color: #fafafa; border-radius: 18px; padding: 18px 22px;">
+    <div style="font-size: 18px; font-weight: 700; unicode-bidi: plaintext;">{{ r.title }}</div>
+    <div style="color: #a1a1aa; font-size: 12px;">{{ r.company }} · <span style="unicode-bidi: plaintext;">{{ r.period }}</span></div>
+  </div>
+  <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 18px; padding: 16px 18px; margin-top: 10px;">
+    <p style="margin: 0 0 10px 0;">{{ _("Hello, here are the results of your social media for this period.") }}</p>
+    <table style="width: 100%; border-collapse: separate; border-spacing: 6px; table-layout: fixed;">
+      <tr>
+        {% for k in r.kpis[:4] %}
+        <td style="background: #f4f4f5; border-radius: 12px; padding: 10px 12px; vertical-align: top;">
+          <div style="font-size: 17px; font-weight: 700; unicode-bidi: plaintext;">{{ k.value }}</div>
+          <div style="color: #52525b; font-size: 11px;">{{ k.label }}</div>
+          {% if k.delta %}<div style="font-size: 11px; font-weight: 600; unicode-bidi: plaintext; color: {{ '#0a0a0a' if k.up else '#71717a' }};">{{ '▲' if k.up else '▼' }} {{ k.delta }}</div>{% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+    </table>
+    {% if r.top_posts %}
+    <p style="margin: 12px 0 4px 0;">{{ _("Best post:") }} <b style="unicode-bidi: plaintext;">{{ r.top_posts[0].name or "—" }}</b> ({{ r.top_posts[0].engagements }} {{ _("engagements") }})</p>
+    {% endif %}
+    {% if r.tips %}
+    <p style="margin: 4px 0;">{{ _("Tip:") }} <b>{{ r.tips[0].title }}</b> — {{ r.tips[0].text }}</p>
+    {% endif %}
+    <p style="color: #52525b; margin: 14px 0 0 0;">
+      {% if is_pdf %}{{ _("The full report is attached as a PDF.") }}{% else %}{{ _("The full report is attached as a web page: open it in your browser.") }}{% endif %}
+    </p>
+    <p style="margin: 16px 0 2px 0;"><a href="{{ r.web_url }}/{{ r.lang }}/reports" style="display: inline-block; background: #0a0a0a; color: #ffffff; text-decoration: none; border-radius: 999px; padding: 9px 18px; font-weight: 600;">{{ _("Open reports") }}</a></p>
+  </div>
+  <div style="color: #a1a1aa; font-size: 11px; margin-top: 10px; text-align: center;">{{ r.app_name }}</div>
+</div>
+</body>
+</html>

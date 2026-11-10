@@ -1,0 +1,12 @@
+{
+ "Account not found.": "الحساب غير موجود.",
+ "Campaign not found.": "الحملة غير موجودة.",
+ "Conversion not found.": "التحويل غير موجود.",
+ "Could not create a short link, please retry.": "تعذّر إنشاء رابط مختصر، حاول مرة أخرى.",
+ "Enter a full web address starting with https://": "أدخل عنوان ويب كاملًا يبدأ بـ https://",
+ "File not found.": "الملف غير موجود.",
+ "Link not found.": "الرابط غير موجود.",
+ "Links of published posts cannot be deleted: they would stop working.": "لا يمكن حذف روابط المنشورات المنشورة: ستتوقف عن العمل.",
+ "Product not found.": "المنتج غير موجود.",
+ "This post no longer exists.": "هذا المنشور لم يعد موجودًا."
+}

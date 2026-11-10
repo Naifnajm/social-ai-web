@@ -1,0 +1,11 @@
+{
+ "Account not found.": "الحساب غير موجود.",
+ "Campaign not found.": "الحملة غير موجودة.",
+ "Enter a tag.": "أدخل وسمًا.",
+ "File not found.": "الملف غير موجود.",
+ "Only the person who added this file or an administrator can delete it.": "يمكن حذف هذا الملف فقط من قِبل من أضافه أو من المسؤول.",
+ "Product not found.": "المنتج غير موجود.",
+ "This file is still used elsewhere (templates or production) and cannot be deleted.": "هذا الملف مستخدم في مكان آخر (القوالب أو الإنتاج) ولا يمكن حذفه.",
+ "This file is used by {count} post(s) or product(s) and cannot be deleted.": "هذا الملف مستخدم في {count} منشور أو منتج ولا يمكن حذفه.",
+ "This post no longer exists.": "هذا المنشور لم يعد موجودًا."
+}

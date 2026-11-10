@@ -10,6 +10,7 @@ dependencies = [
     "cryptography>=50.0.2",
     "email-validator>=2.3.0",
     "fastapi>=0.162.3",
+    "jinja2>=3.1.6",
     "pillow>=13.0.0",
     "psycopg[binary]>=3.3.8",
     "pydantic-settings>=2.16.2",
@@ -20,6 +21,11 @@ dependencies = [
     "rq>=3.0.0",
     "sqlalchemy>=2.0",
     "uvicorn[standard]>=0.54.0",
+]
+
+[project.optional-dependencies]
+pdf = [
+    "weasyprint>=70.0",
 ]
 
 [dependency-groups]

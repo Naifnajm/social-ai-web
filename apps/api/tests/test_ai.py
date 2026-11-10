@@ -415,7 +415,8 @@ def test_billing_limit_is_checked_with_cost(client, auth, db, mock_http, monkeyp
     monkeypatch.setattr(limits, "check", fake_check)
     with pytest.raises(LimitReached):
         ai.generate_text(db, auth.workspace_id, "sys", "prompt")
-    assert seen[0][0] == auth.workspace_id and seen[0][1] == "ai_credits" and seen[0][2] > 0
+    # own keys never consume plan credits (amount 0), but a blocked workspace is still refused
+    assert seen[0][0] == auth.workspace_id and seen[0][1] == "ai_credits" and seen[0][2] == 0
 
 
 # ------------------------------------------------------------------ "Write with AI"

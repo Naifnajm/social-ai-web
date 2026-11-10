@@ -1,0 +1,16 @@
+{
+ "newWorkspace": "مساحة شركة جديدة",
+ "newWorkspaceHint": "مساحة مستقلة بحساباتها وفريقها ومحتواها.",
+ "workspaceName": "اسم الشركة",
+ "create": "إنشاء",
+ "notifications": "الإشعارات",
+ "profile": "ملفي الشخصي",
+ "logout": "تسجيل الخروج",
+ "plan": {
+  "trial": "تجربة مجانية",
+  "starter": "المبتدئة",
+  "pro": "الاحترافية",
+  "business": "الأعمال",
+  "enterprise": "المؤسسات"
+ }
+}

@@ -1,0 +1,16 @@
+{
+ "newWorkspace": "New company workspace",
+ "newWorkspaceHint": "A separate workspace with its own accounts, team and content.",
+ "workspaceName": "Company name",
+ "create": "Create",
+ "notifications": "Notifications",
+ "profile": "My profile",
+ "logout": "Sign out",
+ "plan": {
+  "trial": "Free trial",
+  "starter": "Starter",
+  "pro": "Pro",
+  "business": "Business",
+  "enterprise": "Enterprise"
+ }
+}

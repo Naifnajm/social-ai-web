@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Stravica Social — neutral "liquid glass" design system.
+   Tokens are CSS variables (also exposed to Tailwind via @theme) so every
+   screen shares one palette: near-black ink, zinc greys, white glass.
+   Use logical utilities (ms-*, me-*, ps-*, pe-*, start-*, end-*) so Arabic RTL works.
+   ========================================================================== */
+
+:root {
+  --ink: #0a0a0a;
+  --ink-2: #27272a;
+  --text: #18181b;
+  --text-2: #3f3f46;
+  --muted: #63636b;
+  --faint: #a1a1aa;
+  --line: rgba(0, 0, 0, 0.08);
+  --line-strong: rgba(0, 0, 0, 0.14);
+  --fill: rgba(0, 0, 0, 0.035);
+  --fill-2: rgba(0, 0, 0, 0.06);
+  --track: rgba(118, 118, 128, 0.14);
+
+  --glass: rgba(255, 255, 255, 0.62);
+  --glass-strong: rgba(255, 255, 255, 0.8);
+  --glass-edge: rgba(255, 255, 255, 0.6);
+  --blur: saturate(180%) blur(20px);
+  --ring: 0 0 0 1px rgba(0, 0, 0, 0.06);
+  --highlight: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --shadow: var(--ring), var(--highlight), 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px -6px rgba(0, 0, 0, 0.08);
+  --shadow-lift: var(--ring), var(--highlight), 0 2px 4px rgba(0, 0, 0, 0.04), 0 18px 40px -10px rgba(0, 0, 0, 0.16);
+  --shadow-float: var(--ring), var(--highlight), 0 4px 10px rgba(0, 0, 0, 0.05), 0 24px 56px -12px rgba(0, 0, 0, 0.2);
+
+  --ok: #1f7a3d;
+  --ok-bg: rgba(52, 199, 89, 0.13);
+  --warn: #8a5300;
+  --warn-bg: rgba(255, 159, 10, 0.16);
+  --bad: #b42318;
+  --bad-bg: rgba(255, 59, 48, 0.1);
+  --bad-solid: #d92d20;
+
+  /* platform brand colours (badges only) */
+  --facebook: #1877f2;
+  --instagram: #e1306c;
+  --linkedin: #0a66c2;
+  --x: #000000;
+  --tiktok: #010101;
+  --threads: #000000;
+  --telegram: #229ed9;
+  --whatsapp: #25d366;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Arabic", "Inter", "Segoe UI", "Noto Sans",
+    "Noto Sans Arabic", Tahoma, system-ui, sans-serif;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass: #ffffff;
+    --glass-strong: #ffffff;
+    --glass-edge: #e4e4e7;
+    --blur: none;
+  }
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-fill: var(--fill);
+  --color-fill-2: var(--fill-2);
+  --color-track: var(--track);
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-bad: var(--bad);
+  --color-bad-bg: var(--bad-bg);
+  --font-sans: var(--font);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(60rem 40rem at 10% -10%, rgba(148, 163, 184, 0.22), transparent 60%),
+    radial-gradient(50rem 36rem at 110% 10%, rgba(214, 211, 209, 0.32), transparent 60%),
+    radial-gradient(44rem 30rem at 50% 120%, rgba(203, 213, 225, 0.28), transparent 60%),
+    #f4f4f5;
+  background-attachment: fixed;
+}
+
+/* ---- reusable surfaces ---- */
+.glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--shadow);
+}
+.glass-strong {
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: var(--blur);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--shadow-float);
+}
+
+.bidi {
+  unicode-bidi: plaintext;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.icon-spin {
+  animation: spin 0.9s linear infinite;
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}
+.pop-in {
+  animation: pop-in 0.18s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pop-in,
+  .icon-spin {
+    animation: none;
+  }
+}

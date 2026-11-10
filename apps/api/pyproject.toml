@@ -1,0 +1,30 @@
+[project]
+name = "stravica-api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.20.1",
+    "bcrypt>=5.0.0",
+    "cryptography>=50.0.2",
+    "email-validator>=2.3.0",
+    "fastapi>=0.162.3",
+    "pillow>=13.0.0",
+    "psycopg[binary]>=3.3.8",
+    "pydantic-settings>=2.16.2",
+    "pyjwt>=2.15.1",
+    "python-multipart>=0.0.33",
+    "redis>=8.1.0",
+    "requests>=2.34.2",
+    "rq>=3.0.0",
+    "sqlalchemy>=2.0",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.2.0",
+    "ruff>=0.17.4",
+]

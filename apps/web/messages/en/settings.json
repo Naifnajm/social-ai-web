@@ -1,0 +1,48 @@
+{
+ "title": "Settings",
+ "subtitle": "Your company workspace, team and profile.",
+ "tabs": {
+  "general": "Company",
+  "members": "Team",
+  "profile": "My profile"
+ },
+ "companyName": "Company name",
+ "language": "Language",
+ "timezone": "Time zone",
+ "currency": "Currency",
+ "save": "Save",
+ "saved": "Saved.",
+ "members": "Team members",
+ "you": "you",
+ "invite": "Invite",
+ "inviteSent": "Invitation sent.",
+ "remove": "Remove",
+ "pendingInvitations": "Pending invitations",
+ "revoke": "Cancel invitation",
+ "rolesTitle": "What each role can do",
+ "cancel": "Cancel",
+ "sendInvite": "Send invitation",
+ "email": "E-mail",
+ "role": "Role",
+ "roles": {
+  "viewer": "Viewer",
+  "editor": "Editor",
+  "approver": "Approver",
+  "admin": "Admin",
+  "owner": "Owner"
+ },
+ "roleHelp": {
+  "viewer": "sees everything, changes nothing.",
+  "editor": "creates content and answers messages.",
+  "approver": "editor + approves posts before they go out.",
+  "admin": "approver + accounts, AI providers, team and settings.",
+  "owner": "admin + subscription and deleting the workspace."
+ },
+ "profile": "My profile",
+ "name": "Name",
+ "password": "Password",
+ "currentPassword": "Current password",
+ "newPassword": "New password",
+ "changePassword": "Change password",
+ "passwordChanged": "Password changed. Please sign in again."
+}

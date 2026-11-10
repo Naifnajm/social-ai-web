@@ -1,0 +1,7 @@
+{
+  "name": "@stravica/icons",
+  "version": "1.0.0",
+  "private": true,
+  "main": "icons.json",
+  "description": "Solar icons (480 Design, CC BY 4.0) as {key: {linear, duo}} SVG bodies for web and mobile"
+}

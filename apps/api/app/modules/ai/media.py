@@ -24,7 +24,7 @@ from sqlalchemy.orm import Session
 
 from app.core.errors import AppError, NotFound
 from app.core.http import ApiError
-from app.core.i18n import _
+from app.core.i18n import _, set_locale
 from app.core.models import Media
 from app.core.storage import public_url, read_media, save_media
 
@@ -215,7 +215,12 @@ def poll_due(db: Session, workspace_id: int | None = None, job_ids: list[int] | 
     if job_ids is not None:
         query = query.where(MediaJob.id.in_(job_ids))
     jobs = list(db.scalars(query.order_by(MediaJob.next_check_at.nulls_first(), MediaJob.id).limit(limit)))
+    background = workspace_id is None
     for job in jobs:
+        if background:  # messages stored on the job follow the workspace language
+            from app.modules.workspaces.models import Workspace
+            workspace = db.get(Workspace, job.workspace_id)
+            set_locale(workspace.locale if workspace else None)
         poll(db, job)
     return len(jobs)
 

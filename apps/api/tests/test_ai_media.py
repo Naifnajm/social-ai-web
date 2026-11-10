@@ -37,8 +37,12 @@ def on_job(db, job):
 
 @pytest.fixture(autouse=True)
 def _fast(monkeypatch):
+    from app.core.i18n import set_locale
     monkeypatch.setattr(specialists, "POLL_SLEEP", 0)
+    set_locale("en")
     CALLS.clear()
+    yield
+    set_locale(None)
 
 
 def binary(mock_http, content, mimetype):

@@ -93,6 +93,8 @@ class Post(WorkspaceMixin, Base):
     approved_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
     approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     approval_note: Mapped[str | None] = mapped_column(Text)
+    approval_requested_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    approval_requested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # evergreen reposting
     evergreen: Mapped[bool] = mapped_column(Boolean, default=False)
     recycle_interval_days: Mapped[int] = mapped_column(Integer, default=30)
@@ -103,7 +105,7 @@ class Post(WorkspaceMixin, Base):
     recycled_from_id: Mapped[int | None] = mapped_column(ForeignKey("posts.id", ondelete="SET NULL"))
     source_ref: Mapped[str | None] = mapped_column(String(120))  # e.g. "board:12", "product:abc"
 
-    accounts = relationship("SocialAccount", secondary=post_accounts)
+    accounts = relationship("SocialAccount", secondary=post_accounts, order_by="SocialAccount.id")
     media_links = relationship("PostMedia", order_by="PostMedia.position", cascade="all, delete-orphan")
     targets = relationship("PostTarget", back_populates="post", cascade="all, delete-orphan")
 
@@ -129,6 +131,7 @@ class PostTarget(WorkspaceMixin, Base):
     story_state: Mapped[str | None] = mapped_column(String(12))  # pending | posted | failed | skipped
     story_external_id: Mapped[str | None] = mapped_column(String(255))
     story_error: Mapped[str | None] = mapped_column(Text)
+    story_url: Mapped[str | None] = mapped_column(String(1000))
     impressions: Mapped[int] = mapped_column(Integer, default=0)
     reach: Mapped[int] = mapped_column(Integer, default=0)
     likes: Mapped[int] = mapped_column(Integer, default=0)
@@ -143,3 +146,16 @@ class PostTarget(WorkspaceMixin, Base):
 
     post = relationship("Post", back_populates="targets")
     account = relationship("SocialAccount")
+
+
+class OAuthSession(WorkspaceMixin, Base):
+    """Short-lived link between an OAuth redirect and the admin (and workspace) who started it."""
+
+    __tablename__ = "social_oauth_sessions"
+
+    state_token: Mapped[str] = mapped_column(String(80), unique=True, index=True)
+    platform: Mapped[str] = mapped_column(String(20))
+    code_verifier: Mapped[str | None] = mapped_column(EncryptedString(400))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    app_source: Mapped[str] = mapped_column(String(12), default="platform")  # workspace | platform
+    locale: Mapped[str] = mapped_column(String(5), default="ar")

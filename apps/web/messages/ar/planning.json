@@ -1,0 +1,17 @@
+{
+ "states": {
+  "draft": "مسودة",
+  "to_approve": "بانتظار الاعتماد",
+  "scheduled": "مجدول",
+  "publishing": "قيد النشر",
+  "posted": "منشور",
+  "partial": "منشور جزئيًا",
+  "failed": "فشل",
+  "planned": "مخطط لها",
+  "running": "جارية",
+  "finished": "منتهية"
+ },
+ "copy": "نسخ",
+ "copied": "تم النسخ",
+ "copyFailed": "تعذّر النسخ. حدّد النص وانسخه يدويًا."
+}

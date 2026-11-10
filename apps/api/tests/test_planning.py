@@ -195,6 +195,12 @@ def test_planner_past_time_today_and_isolation(client, auth, db, fake):
                     headers=auth.headers)
     assert r.status_code == 400 and r.json()["code"] == "past_time"
     other = signup(client, email="planner2@example.com", workspace="Two")
+    assert client.get(f"/api/planner/posts/{post.id}", headers=auth.headers).json()["id"] == post.id
+    assert client.get(f"/api/planner/posts/{post.id}", headers=other.headers).status_code == 404
+    assert client.get(f"/api/evergreen/{post.id}", headers=other.headers).status_code == 404
+    make_account(db, auth.workspace_id, "instagram")
+    assert [a["platform"] for a in client.get("/api/planner/accounts", headers=auth.headers).json()] == ["instagram"]
+    assert client.get("/api/planner/accounts", headers=other.headers).json() == []
     assert client.post(f"/api/planner/posts/{post.id}/move", json={"day": str(today() + timedelta(days=2))},
                        headers=other.headers).status_code == 404
     data = client.get("/api/planner", params={"start": str(today()), "end": str(today() + timedelta(days=7))},
@@ -271,7 +277,7 @@ def test_evergreen_reposts_at_best_slot(client, auth, db, fake):
 
 def test_evergreen_rewrite_and_failures(client, auth, db, fake, monkeypatch):
     fb = make_account(db, auth.workspace_id)
-    original = _evergreen(db, auth.workspace_id, [fb], recycle_rewrite=True, variants={"x": "Short tip"})
+    _evergreen(db, auth.workspace_id, [fb], recycle_rewrite=True, variants={"x": "Short tip"})
     prompts = []
 
     def generate(db_, ws, system, user, **kw):

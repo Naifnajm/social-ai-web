@@ -1,4 +1,9 @@
 {
  "home": "Home",
- "settings": "Settings"
+ "settings": "Settings",
+ "library": "Media library",
+ "planner": "Planner",
+ "campaigns": "Campaigns",
+ "links": "Links & sales",
+ "reports": "Reports"
 }

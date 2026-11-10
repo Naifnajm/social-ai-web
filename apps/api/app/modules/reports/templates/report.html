@@ -63,7 +63,7 @@
   .empty { color: #71717a; padding: 14px; }
   .section { page-break-inside: avoid; }
   .foot { color: #a1a1aa; font-size: 10.5px; margin-top: 24px; border-top: 1px solid #e4e4e7; padding-top: 10px; }
-  @media print { html { background: #fff; } body { padding: 0; } .sheet { border: 0; box-shadow: none; padding: 0; border-radius: 0; background: #fff; } }
+  @media print { html { background: #fff; } body { padding: 0; } .sheet { border: 0; box-shadow: none; padding: 0; border-radius: 0; background: #fff; } .kpi { box-shadow: none; } }
   @media (max-width: 640px) { .sheet { padding: 14px; border-radius: 18px; } .kpis td { display: block; margin-bottom: 8px; } }
 </style>
 </head>
@@ -88,7 +88,7 @@
     <tr>
       {% for k in row %}
       <td class="kpi">
-        <div class="value">{{ k.value }}</div>
+        <div class="value" dir="ltr">{{ k.value }}</div>
         <div class="label">{{ k.label }}</div>
         {% if k.delta %}<span class="delta {{ 'up' if k.up else 'down' }}">{{ '▲' if k.up else '▼' }} {{ k.delta }}</span>
         {% else %}<span class="delta flat">—</span>{% endif %}
@@ -118,13 +118,13 @@
         {% for n in r.networks %}
           <tr>
             <td><span class="dot {{ n.platform }}"></span> {{ n.label }}</td>
-            <td class="num" style="text-align: {{ end }}">{{ n.posts }}</td>
-            <td class="num" style="text-align: {{ end }}">{{ n.impressions }}</td>
-            <td class="num" style="text-align: {{ end }}">{{ n.engagements }}</td>
-            <td class="num" style="text-align: {{ end }}">{{ n.engagement_rate }}</td>
-            <td class="num" style="text-align: {{ end }}">{{ n.clicks }}</td>
-            {% if r.show_revenue %}<td class="num" style="text-align: {{ end }}">{{ n.revenue }}</td>{% endif %}
-            <td class="num" style="text-align: {{ end }}">{{ n.followers }}</td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ n.posts }}</td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ n.impressions }}</td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ n.engagements }}</td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ n.engagement_rate }}</td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ n.clicks }}</td>
+            {% if r.show_revenue %}<td class="num" dir="ltr" style="text-align: {{ end }}">{{ n.revenue }}</td>{% endif %}
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ n.followers }}</td>
           </tr>
         {% endfor %}
         </tbody>
@@ -148,9 +148,9 @@
             <div class="post-name">{{ p.name or "—" }}</div>
             <div class="muted"><span class="dot {{ p.platform }}"></span> <span class="bidi">{{ p.account }}</span> · <span class="num">{{ p.date }}</span></div>
           </td>
-          <td class="num" style="text-align: {{ end }}">
+          <td class="num" dir="ltr" style="text-align: {{ end }}">
             <b>{{ p.engagements }}</b> <span class="muted">{{ _("engagements") }}</span><br>
-            <span class="muted">{{ p.impressions }} {{ _("impressions") }} · {{ p.rate }}</span>
+            <span class="muted">{{ p.impressions }} {{ _("impressions") }} · <span class="num">{{ p.rate }}</span></span>
           </td>
         </tr>
         {% endfor %}
@@ -174,9 +174,9 @@
         {% for p in r.top_results %}
           <tr>
             <td><span class="post-name">{{ p.name }}</span></td>
-            <td class="num" style="text-align: {{ end }}">{{ p.clicks }}</td>
-            <td class="num" style="text-align: {{ end }}">{{ p.conversions }}</td>
-            <td class="num" style="text-align: {{ end }}"><b>{{ p.revenue }}</b></td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ p.clicks }}</td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}">{{ p.conversions }}</td>
+            <td class="num" dir="ltr" style="text-align: {{ end }}"><b>{{ p.revenue }}</b></td>
           </tr>
         {% endfor %}
         </tbody>

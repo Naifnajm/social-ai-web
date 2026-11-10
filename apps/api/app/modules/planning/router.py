@@ -13,7 +13,7 @@ from app.modules.workspaces.models import Membership, Role
 
 from . import service as svc
 from .models import Campaign, ContentPillar
-from .schemas import (BestTimesOut, CampaignDetail, CampaignIn, CampaignOut, CampaignRef, CampaignStats,
+from .schemas import (AccountRef, BestTimesOut, CampaignDetail, CampaignIn, CampaignOut, CampaignRef, CampaignStats,
                       CampaignUpdate, EvergreenIn, EvergreenOut, MoveIn, NetworkRow, PillarIn, PillarOrder, PillarOut,
                       PillarUpdate, PlannerOut, PlannerPost, PostPlanUpdate, RecycleOut, ScheduleIn)
 
@@ -273,10 +273,24 @@ def planner(start: date, end: date, account_id: int | None = None, campaign_id: 
     )
 
 
+@router.get("/planner/accounts", response_model=list[AccountRef])
+def planner_accounts(ctx: Ctx = Depends(workspace_ctx())):
+    """Publishing accounts of the workspace (filters and pickers of the planning pages)."""
+    accounts = ctx.db.scalars(select(SocialAccount).where(
+        SocialAccount.workspace_id == ctx.workspace.id, SocialAccount.platform != "whatsapp",
+        SocialAccount.active.is_(True)).order_by(SocialAccount.platform, SocialAccount.name)).all()
+    return [AccountRef(id=a.id, name=a.name, platform=a.platform, avatar_url=a.avatar_url) for a in accounts]
+
+
 @router.get("/planner/best-times", response_model=BestTimesOut)
 def best_times(platforms: list[str] = Query(default=[]), ctx: Ctx = Depends(workspace_ctx())):
     return BestTimesOut(by_weekday=svc.best_by_weekday(ctx.db, ctx.workspace, platforms or None),
                         slots=svc.best_slots(ctx.db, ctx.workspace, platforms or None, count=5))
+
+
+@router.get("/planner/posts/{post_id}", response_model=PlannerPost)
+def planner_post(post_id: int, ctx: Ctx = Depends(workspace_ctx())):
+    return svc.items_for(ctx.db, ctx.workspace, [svc.get_post(ctx.db, ctx.workspace.id, post_id)])[0]
 
 
 @router.post("/planner/posts/{post_id}/move", response_model=PlannerPost)
@@ -331,6 +345,11 @@ def list_evergreen(ctx: Ctx = Depends(workspace_ctx())):
                            .options(selectinload(Post.accounts), selectinload(Post.media_links))
                            .order_by(Post.published_at.desc().nulls_last(), Post.id.desc())).unique().all()
     return _evergreen_out(ctx, list(posts))
+
+
+@router.get("/evergreen/{post_id}", response_model=EvergreenOut)
+def get_evergreen(post_id: int, ctx: Ctx = Depends(workspace_ctx())):
+    return _evergreen_out(ctx, [svc.get_post(ctx.db, ctx.workspace.id, post_id)])[0]
 
 
 @router.put("/evergreen/{post_id}", response_model=EvergreenOut)

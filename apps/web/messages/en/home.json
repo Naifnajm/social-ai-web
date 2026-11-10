@@ -1,5 +1,11 @@
 {
  "hello": "Hello {name} 👋",
  "subtitle": "Everything for {workspace} in one place.",
- "cards": {}
+ "cards": {
+  "library": "Every photo, video and audio file of your team, with tags and favourites.",
+  "planner": "Your content calendar: drag posts to the right day.",
+  "campaigns": "Group posts around a goal and follow their results.",
+  "links": "Clicks and sales that come from your posts.",
+  "reports": "Weekly or monthly results sent by e-mail."
+ }
 }

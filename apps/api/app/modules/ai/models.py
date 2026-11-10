@@ -36,6 +36,8 @@ class AIProvider(WorkspaceMixin, Base):
     balance_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     monthly_budget: Mapped[float | None] = mapped_column(Float)
     sequence: Mapped[int] = mapped_column(Integer, default=10)
+    available_models: Mapped[list | None] = mapped_column(JSON)  # ids returned by the last connection test
+    tested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class AIModel(WorkspaceMixin, Base):
@@ -61,6 +63,7 @@ class AIUsage(WorkspaceMixin, Base):
     __tablename__ = "ai_usage"
 
     provider_id: Mapped[int | None] = mapped_column(ForeignKey("ai_providers.id", ondelete="SET NULL"), index=True)
+    model_id: Mapped[int | None] = mapped_column(ForeignKey("ai_models.id", ondelete="SET NULL"))
     model_name: Mapped[str | None] = mapped_column(String(120))
     capability: Mapped[str] = mapped_column(String(10), default="text")
     tokens_in: Mapped[int] = mapped_column(Integer, default=0)
@@ -79,6 +82,7 @@ class MediaJob(WorkspaceMixin, Base):
     kind: Mapped[str] = mapped_column(String(10))  # image | video | audio
     prompt: Mapped[str] = mapped_column(Text)
     provider_id: Mapped[int | None] = mapped_column(ForeignKey("ai_providers.id", ondelete="SET NULL"))
+    model_id: Mapped[int | None] = mapped_column(ForeignKey("ai_models.id", ondelete="SET NULL"))
     model_name: Mapped[str | None] = mapped_column(String(120))
     aspect: Mapped[str] = mapped_column(String(5), default="1:1")
     style: Mapped[str | None] = mapped_column(String(30))
@@ -86,7 +90,7 @@ class MediaJob(WorkspaceMixin, Base):
     audio_mode: Mapped[str] = mapped_column(String(10), default="speech")  # speech | sfx | music
     voice: Mapped[str | None] = mapped_column(String(120))
     input_media_ids: Mapped[list | None] = mapped_column(JSON)  # reference images / image to animate
-    state: Mapped[str] = mapped_column(String(10), default="running")  # running | done | failed
+    state: Mapped[str] = mapped_column(String(10), default="running", index=True)  # running | done | failed
     progress: Mapped[int] = mapped_column(Integer, default=0)
     external_job: Mapped[str | None] = mapped_column(String(255))
     next_check_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

@@ -8,7 +8,9 @@
   "templates": "Brand templates",
   "billing": "Plan & billing",
   "inbox": "Inbox & assistant",
-  "accounts": "Accounts"
+  "accounts": "Accounts",
+  "ai": "AI providers",
+  "brand": "Brand kits"
  },
  "companyName": "Company name",
  "language": "Language",

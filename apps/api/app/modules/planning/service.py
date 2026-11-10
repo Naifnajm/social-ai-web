@@ -461,11 +461,12 @@ def open_copies(db: Session, post_ids: list[int]) -> set[int]:
                                                               Post.state.in_(OPEN_COPY))))
 
 
-def recycle_due(post: Post, now: datetime, waiting: set[int]) -> bool:
+def recycle_due(post: Post, now: datetime, waiting: set[int], tz: ZoneInfo = ZoneInfo("UTC")) -> bool:
+    """``tz`` is the workspace time zone: "repost until" ends with that day there, not with the UTC day."""
     if not post.evergreen or post.state not in PUBLISHED:
         return False
-    until = as_day(post.recycle_until, UTC)
-    if until and aware(now).astimezone(UTC).date() > until:
+    until = as_day(post.recycle_until, tz)
+    if until and aware(now).astimezone(tz).date() > until:
         return False
     nxt = next_recycle_at(post)
     return bool(nxt and nxt <= now and post.id not in waiting)
@@ -532,8 +533,11 @@ def recycle_due_posts(db: Session, workspace_id: int | None = None, now: datetim
     posts = db.scalars(query).unique().all()
     waiting = open_copies(db, [p.id for p in posts])
     created = []
+    zones: dict[int, ZoneInfo] = {}
     for post in posts:
-        if not recycle_due(post, now, waiting):
+        if post.workspace_id not in zones:
+            zones[post.workspace_id] = workspace_tz(db.get(Workspace, post.workspace_id))
+        if not recycle_due(post, now, waiting, zones[post.workspace_id]):
             continue
         try:
             with db.begin_nested():

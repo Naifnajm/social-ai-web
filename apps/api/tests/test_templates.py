@@ -407,7 +407,7 @@ def test_telegram_commands_english_and_arabic(db, client, auth, offers, fake_soc
     reply = _telegram(db, bot, "/post offers [99 SAR] Our new menu is here", [photo])
     created = fake_social["create"][-1]
     post = created["post"]
-    assert "Offers" in reply and f"/posts/{post.id}" in reply and reply.startswith("📝")
+    assert "Offers" in reply and f"/posts?post={post.id}" in reply and reply.startswith("📝")
     assert (post.state, post.publish_as, post.content) == ("draft", "feed", "Our new menu is here")
     assert created["account_ids"] == [ig.id, fb.id] and post.source_ref == "telegram"
     assert post.brand_template_id == offers["post"]["id"]

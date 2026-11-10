@@ -10,7 +10,7 @@ from app.modules.inbox.models import CannedReply, Conversation, KnowledgeEntry, 
 from app.modules.social.models import SocialAccount
 from app.modules.workspaces.models import Membership, Role
 from tests.conftest import signup
-from tests.inbox_helpers import answer, ib, make_account  # noqa: F401  (fixture)
+from .helpers import answer, make_account
 
 
 def _other_workspace(client, ib):

@@ -3,7 +3,9 @@ import logging
 
 from sqlalchemy import select
 
+from app.core.i18n import get_locale, set_locale
 from app.core.jobs import periodic, session_scope
+from app.modules.workspaces.models import Workspace
 
 from . import bot, service, sources
 from .config import inbox_settings
@@ -14,10 +16,19 @@ _logger = logging.getLogger(__name__)
 
 def run_bot(conversation_id: int) -> None:
     """Let the assistant handle the new messages of one conversation (row-locked: never two replies)."""
+    previous = get_locale()
+    try:
+        _run_bot(conversation_id)
+    finally:
+        set_locale(previous)
+
+
+def _run_bot(conversation_id: int) -> None:
     with session_scope() as db:
         conv = db.scalar(select(Conversation).where(Conversation.id == conversation_id).with_for_update())
         if conv is None:
             return
+        set_locale(db.scalar(select(Workspace.locale).where(Workspace.id == conv.workspace_id)))
         try:
             with db.begin_nested():
                 bot.handle(db, conv)

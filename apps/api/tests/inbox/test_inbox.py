@@ -19,7 +19,7 @@ from app.modules.inbox.sources import account_state
 from app.modules.inbox.text import normalize_text, utcnow
 from app.modules.social.models import PUBLISH_PLATFORMS, Post, PostTarget
 from app.modules.workspaces.settings import set_setting
-from tests.inbox_helpers import answer, ib  # noqa: F401  (fixture)
+from .helpers import answer
 
 
 def _user(ib):

@@ -98,5 +98,43 @@
  "footer": {
   "rights": "© {year} Stravica. All rights reserved.",
   "madeFor": "Made for brands in the Gulf and beyond."
+ },
+ "motion": {
+  "loading": "Loading",
+  "menu": "Menu",
+  "close": "Close",
+  "scroll": "Scroll to explore",
+  "home": "Home",
+  "manifesto": "Publish <hl>smarter</hl>, reply <hl>faster</hl>, and measure what actually drives <hl>sales</hl> — for every brand that speaks its customers' language.",
+  "platformsKicker": "Networks",
+  "stepsKicker": "How it works",
+  "featuresKicker": "Features",
+  "pricingKicker": "Pricing",
+  "faqKicker": "Questions",
+  "step": "Step",
+  "footerExplore": "Explore",
+  "footerAccount": "Account",
+  "titles": {
+   "steps": {
+    "a": "Up and running",
+    "b": "in minutes"
+   },
+   "features": {
+    "a": "Everything your",
+    "b": "marketing team needs"
+   },
+   "pricing": {
+    "a": "Simple pricing",
+    "b": "that grows with you"
+   },
+   "faq": {
+    "a": "Frequently asked",
+    "b": "questions"
+   },
+   "final": {
+    "a": "Ready to give your team",
+    "b": "its time back?"
+   }
+  }
  }
 }

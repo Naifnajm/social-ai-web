@@ -7,6 +7,7 @@ from PIL import Image
 
 from app.core.config import settings
 from app.core.db import utcnow
+from app.core.i18n import set_locale
 from app.core.storage import save_media
 from app.modules.social.models import Post, PostTarget, SocialAccount
 from app.modules.social.platforms import meta
@@ -29,6 +30,7 @@ def jobs_in_test_session(db, monkeypatch):
     from app.core import jobs
 
     monkeypatch.setattr(jobs, "SessionLocal", core_db.SessionLocal)
+    set_locale("en")  # service-level messages in English (the API tests set the locale per request)
 
 
 @pytest.fixture()

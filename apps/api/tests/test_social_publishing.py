@@ -436,3 +436,15 @@ def test_stuck_targets_are_released_not_resent(db, ws):
     assert publishing.release_stuck_targets(db) == 1
     post = db.get(Post, post.id)
     assert post.state == "failed" and "may already be published" in post.targets[0].error
+
+
+def test_problems_are_translated(db, ws):
+    from app.core.i18n import set_locale
+    x = account(db, ws, "x")
+    post = _post(db, ws, [x], content="a" * 300)
+    set_locale("ar")
+    try:
+        message = publishing.problems(db, post)[0]["message"]
+    finally:
+        set_locale("en")
+    assert message == "النص أطول من المسموح على X (300 / 280 حرفًا)."

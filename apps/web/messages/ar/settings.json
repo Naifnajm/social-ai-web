@@ -4,7 +4,8 @@
  "tabs": {
   "general": "الشركة",
   "members": "الفريق",
-  "profile": "ملفي الشخصي"
+  "profile": "ملفي الشخصي",
+  "accounts": "الحسابات"
  },
  "companyName": "اسم الشركة",
  "language": "اللغة",

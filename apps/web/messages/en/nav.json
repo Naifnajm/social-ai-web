@@ -1,4 +1,8 @@
 {
  "home": "Home",
- "settings": "Settings"
+ "settings": "Settings",
+ "studio": "Studio",
+ "posts": "Posts",
+ "approvals": "To approve",
+ "performance": "Performance"
 }

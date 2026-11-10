@@ -16,6 +16,10 @@ export type NavItem = {
 
 export const NAV: NavItem[] = [
   { href: "/", label: "home", icon: "apps", order: 0, group: "main", mobile: true },
+  { href: "/studio", label: "studio", icon: "wand_stars", order: 10, group: "main", mobile: true },
+  { href: "/posts", label: "posts", icon: "view_list", order: 20, group: "main" },
+  { href: "/approvals", label: "approvals", icon: "verified_user", order: 310, group: "plan", minRole: "approver" },
+  { href: "/performance", label: "performance", icon: "bar_chart", order: 500, group: "results" },
   { href: "/settings/general", label: "settings", icon: "settings", order: 900, group: "settings", minRole: "admin" },
 ];
 

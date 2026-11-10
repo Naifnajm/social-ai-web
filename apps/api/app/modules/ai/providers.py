@@ -275,7 +275,9 @@ def check_spend(db: Session, provider: AIProvider, cost: float) -> None:
                   "Settings › AI providers or wait until next month.", provider=provider.name,
                   spent=pricing.fmt(round(used, 2)), budget=pricing.fmt(provider.monthly_budget)),
                 code="ai_budget_exceeded", status_code=402)
-    limits.check(db, provider.workspace_id, "ai_credits", amount=round(cost or 0.0, 6))
+    # The workspace's own keys (bring-your-own-key) never consume the plan's AI credits; the check still blocks
+    # workspaces whose trial ended or whose payment is overdue. Platform-paid AI must pass its real cost here.
+    limits.check(db, provider.workspace_id, "ai_credits", amount=0)
 
 
 def record_usage(db: Session, provider: AIProvider | None, model_name: str | None, capability: str, *,

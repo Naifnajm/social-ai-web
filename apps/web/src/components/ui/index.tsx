@@ -11,6 +11,7 @@
 import clsx from "clsx";
 import { type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes,
   type TextareaHTMLAttributes, forwardRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { create } from "zustand";
 import { Icon } from "../icon";
 
@@ -232,8 +233,9 @@ export function Modal({ open, onClose, title, children, footer, size = "md" }: {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
-  if (!open) return null;
-  return (
+  if (!open || typeof document === "undefined") return null;
+  // portaled to <body>: a backdrop-filter ancestor (.glass) would otherwise trap the fixed overlay
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-0 backdrop-blur-sm sm:items-center sm:p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div
         role="dialog"
@@ -255,7 +257,8 @@ export function Modal({ open, onClose, title, children, footer, size = "md" }: {
         <div className="overflow-y-auto px-5 py-4">{children}</div>
         {footer && <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line px-5 py-3">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

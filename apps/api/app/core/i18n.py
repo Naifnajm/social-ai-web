@@ -1,7 +1,8 @@
 """Server-side translations for messages the API returns (errors, notifications, e-mails).
 
 Write messages in English with named placeholders: ``_("Post “{name}” was published.", name=post.name)``.
-Catalogs live in ``app/i18n/<locale>.json`` ({english: translation}). The locale of the current request
+Catalogs live in ``app/i18n/<locale>.json`` and ``app/modules/<feature>/i18n/<locale>.json``
+({english: translation}); all files are merged. The locale of the current request
 comes from the user's preference or the Accept-Language header (set by the middleware in main.py).
 """
 import json
@@ -17,10 +18,12 @@ _current = ContextVar("sai_locale", default=settings.default_locale)
 
 @lru_cache
 def _catalog(locale: str) -> dict:
-    path = Path(__file__).resolve().parent.parent / "i18n" / f"{locale}.json"
-    if not path.exists():
-        return {}
-    return json.loads(path.read_text(encoding="utf-8"))
+    root = Path(__file__).resolve().parent.parent
+    catalog: dict = {}
+    for path in [root / "i18n" / f"{locale}.json", *sorted((root / "modules").glob(f"*/i18n/{locale}.json"))]:
+        if path.exists():
+            catalog.update(json.loads(path.read_text(encoding="utf-8")))
+    return catalog
 
 
 def set_locale(locale: str | None) -> None:

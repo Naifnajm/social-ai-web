@@ -47,4 +47,6 @@ def design(kit: BrandKit) -> dict:
     """What templates / production need to draw with the brand."""
     return {"id": kit.id, "name": kit.name, "logo_media_id": kit.logo_media_id,
             "color": kit.color_primary or "#111111", "color2": kit.color_secondary or "#71717a",
-            "text_color": kit.color_text or "#ffffff", "font": kit.font_family or "system-ui"}
+            "text_color": kit.color_text or "#ffffff", "font": kit.font_family or "system-ui",
+            "accent": kit.color_accent or kit.color_secondary or "#71717a",
+            "font_heading": kit.font_heading or kit.font_family or "system-ui"}

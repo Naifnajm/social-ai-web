@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Icon } from "@/components/icon";
+import { AiProviderLogo } from "@/components/ai-brand";
 import { Button, Field, Input, Modal, Segmented, Switch, toast } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import type { Capability } from "@/lib/ai";
@@ -85,7 +86,7 @@ export function ProviderDialog({ entry, provider, open, onClose }: { entry: Cata
 
   return (
     <Modal open={open} onClose={onClose} size="lg" footer={footer}
-      title={<span className="flex items-center gap-2">{editing ? provider!.name : t("addTitle", { name: entry.label })}</span>}>
+      title={<span className="flex items-center gap-2.5"><AiProviderLogo type={entry.type} label={entry.label} size={32} />{editing ? provider!.name : t("addTitle", { name: entry.label })}</span>}>
       {editing && (
         <Segmented className="mb-4" value={tab} onChange={setTab}
           options={[{ value: "settings", label: t("tabSettings"), icon: "settings" }, { value: "models", label: t("tabModels"), icon: "payments" }]} />

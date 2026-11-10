@@ -10,19 +10,34 @@ from app.core.i18n import _
 from app.core.models import Media
 from app.modules.workspaces.models import Role
 
-from . import service
-from .models import BrandKit
+from . import identity, service
+from .models import EMOJI_STYLES, LANGUAGE_STYLES, BrandKit
 
 router = APIRouter(prefix="/brand-kits", tags=["brand kits"])
 
-FONTS = ["system-ui", "Tahoma, sans-serif", "Arial, sans-serif", "Georgia, serif", "'Times New Roman', serif",
-         "'Courier New', monospace", "'Noto Kufi Arabic', sans-serif", "'Cairo', sans-serif", "'Tajawal', sans-serif"]
+# CSS font stacks offered for kits; the web app loads the named Arabic families for previews.
+FONTS = ["system-ui", "'IBM Plex Sans Arabic', sans-serif", "'Cairo', sans-serif", "'Tajawal', sans-serif",
+         "'Almarai', sans-serif", "'Readex Pro', sans-serif", "'Alexandria', sans-serif",
+         "'Noto Kufi Arabic', sans-serif", "'Changa', sans-serif", "'Noto Naskh Arabic', serif", "'Amiri', serif",
+         "Tahoma, sans-serif", "Arial, sans-serif", "Georgia, serif", "'Times New Roman', serif",
+         "'Courier New', monospace"]
+COLOR_FIELDS = ("color_primary", "color_secondary", "color_text", "color_accent", "color_background")
+NULLABLE = ("logo_media_id", "tagline", "tone", "guidelines", "hashtags", "visual_style", "voice", "color_accent",
+            "color_background", "font_heading", "description", "industry", "audience", "personality",
+            "language_style", "emoji_style", "cta", "banned_words", "sample_posts", "website")
 COLOR = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")
 
 
 def _color(value):
     if value is not None and not COLOR.match(value):
         raise ValueError("colour must be like #112233")
+    return value
+
+
+def _code(value, field: str):
+    allowed = LANGUAGE_STYLES if field == "language_style" else EMOJI_STYLES
+    if value is not None and value not in allowed:
+        raise ValueError(f"must be one of: {', '.join(allowed)}")
     return value
 
 
@@ -43,6 +58,19 @@ class BrandKitOut(BaseModel):
     hashtags: str | None = None
     visual_style: str | None = None
     voice: str | None = None
+    color_accent: str | None = None
+    color_background: str | None = None
+    font_heading: str | None = None
+    description: str | None = None
+    industry: str | None = None
+    audience: str | None = None
+    personality: str | None = None
+    language_style: str | None = None
+    emoji_style: str | None = None
+    cta: str | None = None
+    banned_words: str | None = None
+    sample_posts: str | None = None
+    website: str | None = None
     is_default: bool
     active: bool
 
@@ -60,10 +88,24 @@ class BrandKitIn(BaseModel):
     hashtags: str | None = Field(default=None, max_length=500)
     visual_style: str | None = Field(default=None, max_length=4000)
     voice: str | None = Field(default=None, max_length=120)
+    color_accent: str | None = None
+    color_background: str | None = None
+    font_heading: str | None = Field(default=None, max_length=80)
+    description: str | None = Field(default=None, max_length=2000)
+    industry: str | None = Field(default=None, max_length=120)
+    audience: str | None = Field(default=None, max_length=1000)
+    personality: str | None = Field(default=None, max_length=300)
+    language_style: str | None = None
+    emoji_style: str | None = None
+    cta: str | None = Field(default=None, max_length=200)
+    banned_words: str | None = Field(default=None, max_length=2000)
+    sample_posts: str | None = Field(default=None, max_length=6000)
+    website: str | None = Field(default=None, max_length=300)
     is_default: bool = False
     active: bool = True
 
-    _colors = field_validator("color_primary", "color_secondary", "color_text")(_color)
+    _colors = field_validator(*COLOR_FIELDS)(_color)
+    _codes = field_validator("language_style", "emoji_style")(lambda v, info: _code(v, info.field_name))
 
 
 class BrandKitUpdate(BaseModel):
@@ -79,14 +121,67 @@ class BrandKitUpdate(BaseModel):
     hashtags: str | None = Field(default=None, max_length=500)
     visual_style: str | None = Field(default=None, max_length=4000)
     voice: str | None = Field(default=None, max_length=120)
+    color_accent: str | None = None
+    color_background: str | None = None
+    font_heading: str | None = Field(default=None, max_length=80)
+    description: str | None = Field(default=None, max_length=2000)
+    industry: str | None = Field(default=None, max_length=120)
+    audience: str | None = Field(default=None, max_length=1000)
+    personality: str | None = Field(default=None, max_length=300)
+    language_style: str | None = None
+    emoji_style: str | None = None
+    cta: str | None = Field(default=None, max_length=200)
+    banned_words: str | None = Field(default=None, max_length=2000)
+    sample_posts: str | None = Field(default=None, max_length=6000)
+    website: str | None = Field(default=None, max_length=300)
     is_default: bool | None = None
     active: bool | None = None
 
-    _colors = field_validator("color_primary", "color_secondary", "color_text")(_color)
+    _colors = field_validator(*COLOR_FIELDS)(_color)
+    _codes = field_validator("language_style", "emoji_style")(lambda v, info: _code(v, info.field_name))
 
 
 class BrandOptions(BaseModel):
     fonts: list[str]
+    language_styles: list[str]
+    emoji_styles: list[str]
+
+
+class BrandBrief(BaseModel):
+    """What the AI needs to draft an identity; ``palette`` = colours taken from the logo, most used first."""
+    name: str = Field(min_length=1, max_length=120)
+    description: str = Field(min_length=1, max_length=2000)
+    industry: str | None = Field(default=None, max_length=120)
+    audience: str | None = Field(default=None, max_length=1000)
+    website: str | None = Field(default=None, max_length=300)
+    language_style: str | None = None
+    palette: list[str] = Field(default_factory=list, max_length=8)
+
+    _codes = field_validator("language_style")(lambda v, info: _code(v, info.field_name))
+
+
+class BrandDraft(BaseModel):
+    """An AI-drafted identity: the form is filled with it, nothing is saved until the kit is."""
+    color_primary: str
+    color_secondary: str
+    color_text: str
+    font_family: str
+    color_accent: str | None = None
+    color_background: str | None = None
+    font_heading: str | None = None
+    tagline: str | None = None
+    description: str | None = None
+    audience: str | None = None
+    personality: str | None = None
+    tone: str | None = None
+    language_style: str | None = None
+    emoji_style: str | None = None
+    cta: str | None = None
+    guidelines: str | None = None
+    banned_words: str | None = None
+    hashtags: str | None = None
+    visual_style: str | None = None
+    sample_posts: str | None = None
 
 
 def kit_out(kit: BrandKit) -> BrandKitOut:
@@ -110,7 +205,13 @@ def list_kits(active_only: bool = False, ctx: Ctx = Depends(workspace_ctx())):
 
 @router.get("/options", response_model=BrandOptions)
 def options(ctx: Ctx = Depends(workspace_ctx())):
-    return BrandOptions(fonts=FONTS)
+    return BrandOptions(fonts=FONTS, language_styles=list(LANGUAGE_STYLES), emoji_styles=list(EMOJI_STYLES))
+
+
+@router.post("/generate", response_model=BrandDraft)
+def generate(data: BrandBrief, ctx: Ctx = Depends(workspace_ctx(Role.admin))):
+    """Draft a full identity with the workspace's text AI (uses AI credit; nothing is saved)."""
+    return identity.generate(ctx.db, ctx.workspace.id, data.model_dump(), fonts=FONTS, user_id=ctx.user.id)
 
 
 @router.get("/default", response_model=BrandKitOut | None)
@@ -145,8 +246,7 @@ def update(kit_id: int, data: BrandKitUpdate, ctx: Ctx = Depends(workspace_ctx(R
         _check_logo(ctx, values["logo_media_id"])
     want_default = values.pop("is_default", None)
     for key, value in values.items():
-        if value is None and key not in ("logo_media_id", "tagline", "tone", "guidelines", "hashtags",
-                                         "visual_style", "voice"):
+        if value is None and key not in NULLABLE:
             continue
         setattr(kit, key, value)
     if want_default:

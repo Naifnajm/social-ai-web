@@ -4,6 +4,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { AiProviderLogo } from "@/components/ai-brand";
 import { AiMediaButton } from "@/components/ai-media-dialog";
 import { Icon } from "@/components/icon";
 import { WalletChip } from "@/components/model-picker";
@@ -15,16 +16,6 @@ import { ProviderDialog } from "./provider-dialog";
 import type { CatalogEntry, Provider, TestResult } from "./types";
 
 const onError = (err: unknown) => toast.error(err instanceof ApiError ? err.message : String(err));
-
-function ProviderMark({ label, size = 40 }: { label: string; size?: number }) {
-  const letters = label.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-  return (
-    <span className="flex shrink-0 items-center justify-center rounded-[13px] bg-ink font-semibold tracking-tight text-white shadow-[0_8px_18px_-10px_rgba(0,0,0,.7)]"
-      style={{ width: size, height: size, fontSize: size * 0.36 }} dir="ltr">
-      {letters || "AI"}
-    </span>
-  );
-}
 
 function CapIcons({ caps }: { caps: Capability[] }) {
   const t = useTranslations("ai.providers");
@@ -86,7 +77,7 @@ export default function AiProvidersPage() {
               return (
                 <li key={p.id} className={cx("rounded-2xl bg-white/55 p-3.5 ring-1 ring-line", !p.active && "opacity-60")}>
                   <div className="flex flex-wrap items-start gap-3">
-                    <ProviderMark label={p.type_label} />
+                    <AiProviderLogo type={p.provider_type} label={p.type_label} />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-1.5">
                         <span className="truncate font-semibold">{p.name}</span>
@@ -143,7 +134,7 @@ export default function AiProvidersPage() {
             {visibleCatalog.map((entry) => (
               <button key={entry.type} type="button" onClick={() => setDialog({ entry })}
                 className="group flex items-center gap-3 rounded-2xl bg-white/55 p-3 text-start ring-1 ring-line transition hover:-translate-y-0.5 hover:bg-white/85 hover:shadow-[var(--shadow-lift)]">
-                <ProviderMark label={entry.label} size={36} />
+                <AiProviderLogo type={entry.type} label={entry.label} size={36} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold" dir="auto">{entry.label}</span>
                   <span className="mt-1 flex items-center gap-2">

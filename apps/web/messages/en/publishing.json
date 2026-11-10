@@ -177,7 +177,8 @@
   "recent": "Recent posts",
   "seeAll": "See all",
   "nothingYet": "Nothing published yet.",
-  "untitled": "Untitled"
+  "untitled": "Untitled",
+  "createWithAi": "Create with AI"
  },
  "results": {
   "title": "Publishing result",

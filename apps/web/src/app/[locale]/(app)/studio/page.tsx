@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { type ChangeEvent, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Icon, PlatformBadge } from "@/components/icon";
 import { ConnectDialog } from "@/components/publishing/connect-dialog";
+import { AiMediaDialog } from "@/components/ai-media-dialog";
 import { MediaPicker, MediaThumb } from "@/components/publishing/media-picker";
 import { PostPreview } from "@/components/publishing/preview";
 import { ResultsDialog } from "@/components/publishing/results-dialog";
@@ -46,6 +47,7 @@ function StudioComposer() {
   const [generating, setGenerating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [aiMediaOpen, setAiMediaOpen] = useState(false);
   const [connectOpen, setConnectOpen] = useState(false);
   const [slots, setSlots] = useState<BestSlot[] | null>(null);
   const [submitting, setSubmitting] = useState<SubmitAction | null>(null);
@@ -347,6 +349,10 @@ function StudioComposer() {
                 className="flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-black/15 text-xs text-muted hover:bg-fill-2 hover:text-text">
                 <Icon name="photo_library" size={22} />{t("library")}
               </button>
+              <button onClick={() => setAiMediaOpen(true)}
+                className="flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-black/15 text-xs text-muted hover:bg-fill-2 hover:text-text">
+                <Icon name="auto_awesome" size={22} />{t("createWithAi")}
+              </button>
               <input ref={fileRef} type="file" multiple hidden accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/quicktime,audio/mpeg,audio/wav,audio/mp4" onChange={onFiles} />
             </div>
 
@@ -449,6 +455,12 @@ function StudioComposer() {
         </aside>
       </div>
 
+      <AiMediaDialog open={aiMediaOpen} onClose={() => setAiMediaOpen(false)} initialPrompt={draft.content}
+        onCreated={(m) => {
+          set({ media: [...draft.media, { id: m.id, filename: m.filename, mimetype: m.mimetype, size: 0, width: m.width, height: m.height,
+            url: m.url, thumb_url: m.mimetype.startsWith("image/") ? m.url : "" }] });
+          setAiMediaOpen(false);
+        }} />
       <MediaPicker open={pickerOpen} onClose={() => setPickerOpen(false)} selected={draft.media.map((m) => m.id)} onPick={(items) => set({ media: [...draft.media, ...items] })} />
       <ConnectDialog open={connectOpen} onClose={() => setConnectOpen(false)} />
       <ResultsDialog postId={resultId} onClose={() => { setResultId(null); qc.invalidateQueries({ queryKey: ["studio"] }); }} />

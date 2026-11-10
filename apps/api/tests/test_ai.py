@@ -456,7 +456,7 @@ def test_write_endpoint_tailored_with_brand(client, auth, db, mock_http):
     assert '"x": "<version adapted to x>"' in seen["user"]
     assert kit["is_default"]
     usage = db.scalars(select(AIUsage).where(AIUsage.workspace_id == auth.workspace_id)).all()
-    assert len(usage) == 1 and usage[0].purpose.startswith("Post caption") and usage[0].user_id == auth.user_id
+    assert len(usage) == 1 and usage[0].purpose.endswith(": launch") and usage[0].user_id == auth.user_id
 
     mock_http(lambda m, u, k: mock_http.response(body=chat_answer("#coffee #morning")))
     r = client.post("/api/ai/text", json={"preset": "hashtags", "brief": "Morning coffee post"}, headers=auth.headers)

@@ -45,5 +45,12 @@
  "Add an AI provider that can create images: {names}.": "أضِف مزوّد ذكاء اصطناعي ينشئ الصور: {names}.",
  "Add an AI provider that can create videos: {names}.": "أضِف مزوّد ذكاء اصطناعي ينشئ الفيديو: {names}.",
  "Add an AI provider that can create voice and sound: {names}.": "أضِف مزوّد ذكاء اصطناعي ينشئ الصوت والمؤثرات: {names}.",
- "Add an AI provider that can transcribe speech: {names}.": "أضِف مزوّد ذكاء اصطناعي يحوّل الكلام إلى نص: {names}."
+ "Add an AI provider that can transcribe speech: {names}.": "أضِف مزوّد ذكاء اصطناعي يحوّل الكلام إلى نص: {names}.",
+ "Post caption": "نص منشور",
+ "Reply": "رد",
+ "Post ideas": "أفكار منشورات",
+ "Hashtags": "وسوم",
+ "Rewrite": "إعادة صياغة",
+ "AI text": "نص بالذكاء الاصطناعي",
+ "Visual prompt": "وصف بصري"
 }

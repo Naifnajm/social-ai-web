@@ -311,8 +311,8 @@ def write(data: WriteIn, ctx: Ctx = Depends(workspace_ctx(Role.editor))):
         user = data.brief
         if data.current_text:
             user = "%s\n\n<<<\n%s\n>>>" % (user or "Improve this text.", data.current_text)
-    purpose = {"post": "Post caption", "reply": "Reply", "ideas": "Post ideas", "hashtags": "Hashtags",
-               "rewrite": "Rewrite"}.get(data.preset, "AI text")
+    purpose = {"post": _("Post caption"), "reply": _("Reply"), "ideas": _("Post ideas"), "hashtags": _("Hashtags"),
+               "rewrite": _("Rewrite")}.get(data.preset) or _("AI text")
     text, usage = ai.generate_text_with_usage(ctx.db, ctx.workspace.id, system, user, model_id=data.model_id,
                                               provider_id=data.provider_id, purpose="%s: %s" % (
                                                   purpose, (data.brief or data.current_text)[:100]),
@@ -334,7 +334,7 @@ def suggest_visual(data: SuggestVisualIn, ctx: Ctx = Depends(workspace_ctx(Role.
         if hint:
             system += " Respect the brand: %s" % hint
     text, usage = ai.generate_text_with_usage(ctx.db, ctx.workspace.id, system, "Social media post:\n%s" % data.text,
-                                              model_id=data.model_id, purpose="Visual prompt", user_id=ctx.user.id)
+                                              model_id=data.model_id, purpose=_("Visual prompt"), user_id=ctx.user.id)
     return SuggestVisualOut(prompt=prompts.clean(text), cost=round(usage.cost, 6))
 
 
@@ -425,7 +425,8 @@ def usage(provider_id: int | None = None, capability: str | None = None, date_fr
     rows = ctx.db.execute(select(AIUsage, AIProvider.name, User.name)
                           .outerjoin(AIProvider, AIProvider.id == AIUsage.provider_id)
                           .outerjoin(User, User.id == AIUsage.user_id)
-                          .where(*where).order_by(AIUsage.id.desc()).limit(limit).offset(offset)).all()
+                          .where(*where).order_by(AIUsage.created_at.desc(), AIUsage.id.desc()).limit(limit)
+                          .offset(offset)).all()
     items = [UsageOut(id=u.id, created_at=u.created_at, provider_id=u.provider_id, provider=pname,
                       model_name=u.model_name, capability=u.capability, tokens_in=u.tokens_in, tokens_out=u.tokens_out,
                       units=u.units, cost=u.cost, purpose=u.purpose, user_id=u.user_id, user_name=uname)

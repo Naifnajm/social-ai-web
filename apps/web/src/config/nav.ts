@@ -16,6 +16,7 @@ export type NavItem = {
 
 export const NAV: NavItem[] = [
   { href: "/", label: "home", icon: "apps", order: 0, group: "main", mobile: true },
+  { href: "/ai-costs", label: "aiCosts", icon: "payments", order: 760, group: "results", minRole: "admin" },
   { href: "/settings/general", label: "settings", icon: "settings", order: 900, group: "settings", minRole: "admin" },
 ];
 

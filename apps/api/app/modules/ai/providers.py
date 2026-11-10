@@ -54,8 +54,7 @@ def list_providers(db: Session, workspace_id: int, capability: str | None = None
 
 def provider_models(db: Session, provider: AIProvider, capability: str | None = None, active_only: bool = True):
     query = select(AIModel).where(AIModel.workspace_id == provider.workspace_id,
-                                  AIModel.provider_id == provider.id).order_by(AIModel.capability, AIModel.sequence,
-                                                                               AIModel.id)
+                                  AIModel.provider_id == provider.id).order_by(AIModel.sequence, AIModel.id)
     if capability:
         query = query.where(AIModel.capability == capability)
     if active_only:

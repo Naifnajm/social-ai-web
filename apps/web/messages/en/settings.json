@@ -4,7 +4,9 @@
  "tabs": {
   "general": "Company",
   "members": "Team",
-  "profile": "My profile"
+  "profile": "My profile",
+  "ai": "AI providers",
+  "brand": "Brand kits"
  },
  "companyName": "Company name",
  "language": "Language",

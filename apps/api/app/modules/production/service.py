@@ -227,8 +227,14 @@ def template_choices(db: Session, workspace_id: int) -> list[dict]:
     if not choices:
         return []
     try:
-        return [{"value": str(c["value"]), "label": str(c["label"])} for c in choices(db, workspace_id) or []]
-    except Exception:
+        result = []
+        for choice in choices(db, workspace_id) or []:
+            value = choice.get("value") or choice.get("key")
+            label = choice.get("label") or choice.get("name") or value
+            if value and str(value).partition(":")[0] in ("template", "set"):
+                result.append({"value": str(value), "label": str(label)})
+        return result
+    except Exception:  # the templates feature is optional for the canvas
         return []
 
 

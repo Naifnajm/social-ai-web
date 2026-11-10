@@ -149,8 +149,8 @@ class FakeFrame:
         self.calls: list[tuple] = []
         monkeypatch.setattr(frame, "compose", self.compose)
         monkeypatch.setattr(frame, "compose_for_post", self.compose_for_post)
-        monkeypatch.setattr(frame, "choices", lambda db, ws: [{"value": "template:7", "label": "Sale 4:5"},
-                                                              {"value": "set:3", "label": "Launch set"}], raising=False)
+        monkeypatch.setattr(frame, "choices", lambda db, ws: [{"key": "template:7", "name": "Sale 4:5"},
+                                                              {"key": "set:3", "name": "Launch set"}], raising=False)
 
     def compose(self, db, workspace_id, template_id, media_id, text=None):
         self.calls.append(("compose", template_id, media_id, text))

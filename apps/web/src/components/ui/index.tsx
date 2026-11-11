@@ -130,7 +130,7 @@ export function PageHeader({ icon, title, subtitle, actions }: { icon?: string; 
   return (
     <header className="mb-6 flex flex-wrap items-start gap-4">
       {icon && (
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ink text-white shadow-[0_10px_24px_-10px_rgba(0,0,0,.6)]">
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#ff5c9d,#b3124f)] text-white shadow-[0_10px_24px_-10px_rgba(224,36,111,.75)]">
           <Icon name={icon} size={22} duo />
         </span>
       )}
@@ -197,7 +197,7 @@ export function Spinner({ size = 20, className }: { size?: number; className?: s
 export function EmptyState({ icon = "inbox", title, text, action }: { icon?: string; title: ReactNode; text?: ReactNode; action?: ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 px-6 py-14 text-center">
-      <span className="mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-ink text-white">
+      <span className="mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#ff5c9d,#b3124f)] text-white">
         <Icon name={icon} size={26} duo />
       </span>
       <div className="text-[15px] font-semibold">{title}</div>

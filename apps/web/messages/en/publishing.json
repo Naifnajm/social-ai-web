@@ -116,7 +116,9 @@
    "auto": "Same as the brief",
    "ar": "Arabic",
    "en": "English",
-   "nl": "Dutch"
+   "nl": "Dutch",
+   "de": "German",
+   "fr": "French"
   },
   "lengths": {
    "short": "Short",

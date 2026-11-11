@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.core.db import get_db
 from app.core.deps import Ctx, current_user, workspace_ctx
 from app.core.errors import AppError, NotFound
-from app.core.i18n import _
+from app.core.i18n import LOCALES, _
 from app.core.mail import send_mail
 from app.modules.auth.models import User
 
@@ -102,6 +102,8 @@ def current(ctx: Ctx = Depends(workspace_ctx())):
 @router.patch("/workspace", response_model=WorkspaceOut)
 def update_current(data: WorkspaceUpdate, ctx: Ctx = Depends(workspace_ctx(Role.admin))):
     for key, value in data.model_dump(exclude_unset=True).items():
+        if key == "locale" and value not in LOCALES:
+            continue  # the language is used in links (invitations): only the ones the app has
         setattr(ctx.workspace, key, value)
     return ctx.workspace
 

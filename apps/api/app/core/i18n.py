@@ -4,6 +4,8 @@ Write messages in English with named placeholders: ``_("Post “{name}” was pu
 Catalogs live in ``app/i18n/<locale>.json`` and ``app/modules/<feature>/i18n/<locale>.json``
 ({english: translation}); all files are merged. The locale of the current request
 comes from the user's preference or the Accept-Language header (set by the middleware in main.py).
+
+A locale without a catalog (Dutch, German, French for now) gets the English messages, never the Arabic ones.
 """
 import json
 from contextvars import ContextVar
@@ -12,7 +14,9 @@ from pathlib import Path
 
 from .config import settings
 
-LOCALES = ("ar", "en")
+LOCALES = ("ar", "en", "nl", "de", "fr")
+# English names of the same languages, for prompts ("Write in Dutch.")
+LANGUAGE_NAMES = {"ar": "Arabic", "en": "English", "nl": "Dutch", "de": "German", "fr": "French"}
 _current = ContextVar("sai_locale", default=settings.default_locale)
 
 
@@ -26,8 +30,13 @@ def _catalog(locale: str) -> dict:
     return catalog
 
 
+def clean_locale(locale: str | None) -> str:
+    """``locale`` when the app has it, else the default one."""
+    return locale if locale in LOCALES else settings.default_locale
+
+
 def set_locale(locale: str | None) -> None:
-    _current.set(locale if locale in LOCALES else settings.default_locale)
+    _current.set(clean_locale(locale))
 
 
 def get_locale() -> str:

@@ -15,7 +15,7 @@ from app.core.db import get_db
 from app.core.deps import ACCESS_COOKIE, REFRESH_COOKIE, Unauthorized, current_user
 from app.core.errors import AppError
 from app.core.hardening import rate_limit
-from app.core.i18n import _, set_locale
+from app.core.i18n import LOCALES, _, clean_locale, set_locale
 from app.core.mail import send_mail
 from app.core.security import (create_access_token, create_purpose_token, create_refresh_token, decode_token,
                                hash_password, verify_password)
@@ -82,7 +82,7 @@ def signup(data: SignupIn, response: Response, db: Session = Depends(get_db)):
     if _find_user(db, data.email):
         raise AppError(_("An account with this e-mail already exists. Sign in instead."), code="email_taken")
     user = User(email=data.email.lower(), name=data.name.strip(), password_hash=hash_password(data.password),
-                locale=data.locale if data.locale in ("ar", "en") else "ar")
+                locale=clean_locale(data.locale))
     db.add(user)
     db.flush()
     if data.invitation_token:
@@ -133,7 +133,7 @@ def me(user: User = Depends(current_user), db: Session = Depends(get_db)):
 @router.patch("/me", response_model=MeOut)
 def update_me(data: MeUpdate, user: User = Depends(current_user), db: Session = Depends(get_db)):
     for key, value in data.model_dump(exclude_unset=True).items():
-        if key == "locale" and value not in ("ar", "en"):
+        if key == "locale" and value not in LOCALES:
             continue
         if key == "username":
             value = _clean_username(db, value or "", user)

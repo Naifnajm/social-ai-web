@@ -9,6 +9,7 @@ from app.core.db import Base, WorkspaceMixin
 LANGUAGE_STYLES = {
     "msa": "Modern Standard Arabic", "gulf": "Arabic close to the Gulf dialect", "saudi": "Saudi dialect",
     "english": "English", "bilingual": "Arabic and English side by side",
+    "dutch": "Dutch", "german": "German", "french": "French",
 }
 EMOJI_STYLES = {"none": "no emojis", "light": "a few emojis", "rich": "emojis welcome"}
 

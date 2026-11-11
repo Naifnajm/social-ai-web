@@ -288,7 +288,10 @@
    "gulf": "قريبة من الخليجية",
    "saudi": "سعودية",
    "english": "إنجليزية",
-   "bilingual": "عربي وإنجليزي"
+   "bilingual": "عربي وإنجليزي",
+   "dutch": "هولندية",
+   "german": "ألمانية",
+   "french": "فرنسية"
   },
   "emojiStyle": "الإيموجي",
   "emojiStyles": {

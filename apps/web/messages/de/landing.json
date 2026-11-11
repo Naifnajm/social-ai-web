@@ -1,0 +1,140 @@
+{
+ "metaTitle": "Stravica Social — alle Social-Media-Kanäle an einem Ort, in deiner Sprache",
+ "metaDescription": "Schreibe mit KI in der Stimme deiner Marke, poste überall und lass den Assistenten deinen Kunden antworten.",
+ "nav": {
+  "features": "Funktionen",
+  "pricing": "Preise",
+  "faq": "FAQ",
+  "login": "Anmelden",
+  "signup": "Kostenlos starten",
+  "app": "App öffnen"
+ },
+ "badge": "Neu · komplette Videos mit KI",
+ "heroTitle": "Alle Kanäle. Ein Ort.",
+ "heroHighlight": "In deiner Sprache.",
+ "heroText": "Schreibe mit KI in der Stimme deiner Marke. Poste überall mit einem Tipp. Lass den Assistenten deinen Kunden antworten. Du kümmerst dich um die Ideen.",
+ "ctaPrimary": "{days} Tage kostenlos testen",
+ "ctaSecondary": "Preise ansehen",
+ "trust": "Keine Kreditkarte · jederzeit kündbar · danach kostenlos weiter",
+ "preview": {
+  "studio": "KI-Studio",
+  "prompt": "Sommeraktion für unsere neue Kaffeemischung, warmer Ton",
+  "caption": "Probier unsere neue Mischung ☕️ 20 % Rabatt, den ganzen Monat",
+  "scheduled": "Geplant · Do 20:30",
+  "best": "Beste Zeit",
+  "inbox": "Posteingang-Assistent",
+  "question": "Liefert ihr auch nach München?",
+  "answer": "Ja! Lieferung nach München in 2 Tagen 🚚",
+  "reach": "Reichweite",
+  "sales": "Umsatz aus Beiträgen"
+ },
+ "platformsTitle": "Poste dort, wo dein Publikum ist",
+ "featuresTitle": "Alle Tools an einem Ort",
+ "featuresText": "Sieben Tools, die zusammenarbeiten, mit Inhalten, Antworten und Zahlen im Blick.",
+ "features": {
+  "studio": {
+   "title": "Mit KI schreiben",
+   "text": "Captions, Hashtags, Bilder, Voice-over und Video. Alles in der Stimme deiner Marke, auf Deutsch, Englisch oder Arabisch."
+  },
+  "production": {
+   "title": "Von der Idee zum Video",
+   "text": "Skizziere dein Kampagnenvideo Szene für Szene auf einem Board, und die KI produziert es."
+  },
+  "templates": {
+   "title": "Vorlagen in deinem Design",
+   "text": "Deine Farben, dein Logo und deine Schrift auf jedem Motiv, in jedem Format. Mit einem Tipp posten."
+  },
+  "inbox": {
+   "title": "Ein Assistent, der für dich antwortet",
+   "text": "Alle Kommentare und Nachrichten in einem Posteingang. Der Assistent antwortet mit deinen Infos und übergibt, was einen Menschen braucht."
+  },
+  "planning": {
+   "title": "Kalender und Freigabe",
+   "text": "Ein Kalender für das ganze Team, und nichts geht ohne Freigabe live."
+  },
+  "analytics": {
+   "title": "Zahlen, die du verstehst",
+   "text": "Welcher Beitrag Menschen erreicht hat, welcher verkauft hat, und die beste Zeit zum Posten."
+  },
+  "mobile": {
+   "title": "Mobile App · bald",
+   "text": "Freigeben, antworten und posten vom Handy. Wir bauen sie gerade; bis dahin läuft das Produkt im Browser deines Handys."
+  }
+ },
+ "stepsTitle": "In fünf Minuten startklar",
+ "steps": {
+  "1": {
+   "title": "Konten verbinden",
+   "text": "Melde dich über jedes Netzwerk an. Wir fragen nie nach Passwörtern."
+  },
+  "2": {
+   "title": "Stell deine Marke vor",
+   "text": "Logo, Farben und Tonfall, und die KI hält sich daran."
+  },
+  "3": {
+   "title": "Planen, posten, antworten",
+   "text": "Lade dein Team ein und überlass dem Assistenten die Routinearbeit."
+  }
+ },
+ "pricingTitle": "Klare Preise, die mitwachsen",
+ "pricingText": "Jedes Paket startet mit {days} Tagen Test aller Funktionen. Verbinde deinen eigenen KI-Schlüssel ohne Aufpreis.",
+ "faqTitle": "Häufige Fragen",
+ "faq": {
+  "q1": "Brauche ich eine Kreditkarte für den Test?",
+  "a1": "Nein. Du bekommst {days} Tage alle Funktionen. Danach machst du kostenlos weiter oder wählst ein Paket; deine Inhalte bleiben erhalten.",
+  "q2": "In welchen Sprachen funktioniert es?",
+  "a2": "Die KI schreibt deine Beiträge auf Deutsch, Englisch, Niederländisch, Französisch oder Arabisch. Die App selbst ist vollständig auf Englisch und Arabisch; die deutsche Übersetzung aller Bildschirme ist in Arbeit.",
+  "q3": "Was sind KI-Credits?",
+  "a3": "Nutzt du unsere KI statt eigener Schlüssel, werden die Kosten von deinen monatlichen KI-Credits abgezogen. Mit deinem eigenen OpenAI-, Anthropic- oder Gemini-Schlüssel ist KI unbegrenzt und du zahlst direkt beim Anbieter.",
+  "q4": "Welche Netzwerke werden unterstützt?",
+  "a4": "Instagram, Facebook, TikTok, X, LinkedIn, Threads und Telegram zum Posten, dazu WhatsApp im Posteingang.",
+  "q5": "Kann ich mein Paket ändern oder kündigen?",
+  "a5": "Jederzeit unter Einstellungen › Paket & Abrechnung. Upgrades gelten sofort mit anteiliger Berechnung; Kündigungen greifen zum Ende des Zeitraums.",
+  "q6": "Kann ich in Euro zahlen?",
+  "a6": "Die Preise werden per Karte in US-Dollar abgerechnet. Europreise und lokale Zahlarten sind geplant. Für Rechnungen und Überweisung wende dich an unser Vertriebsteam."
+ },
+ "finalTitle": "Bereit, dein Team zu entlasten?",
+ "finalText": "Starte heute kostenlos. Dein erster geplanter Beitrag ist fünf Minuten entfernt.",
+ "footer": {
+  "rights": "© {year} Stravica. Alle Rechte vorbehalten.",
+  "madeFor": "Gemacht für lokale Unternehmen und Marken."
+ },
+ "motion": {
+  "loading": "Lädt",
+  "menu": "Menü",
+  "close": "Schließen",
+  "scroll": "Scrollen und entdecken",
+  "home": "Start",
+  "manifesto": "Wir posten <hl>klüger</hl>, antworten <hl>schneller</hl> und wissen, welcher Beitrag wirklich <hl>verkauft</hl>. Damit deine Marke Menschen in ihrer Sprache erreicht.",
+  "platformsKicker": "Netzwerke",
+  "stepsKicker": "So funktioniert's",
+  "featuresKicker": "Funktionen",
+  "pricingKicker": "Preise",
+  "faqKicker": "Fragen",
+  "step": "Schritt",
+  "footerExplore": "Entdecken",
+  "footerAccount": "Konto",
+  "titles": {
+   "steps": {
+    "a": "Startklar",
+    "b": "in fünf Minuten"
+   },
+   "features": {
+    "a": "Alle Tools",
+    "b": "an einem Ort"
+   },
+   "pricing": {
+    "a": "Klare Preise",
+    "b": "die mitwachsen"
+   },
+   "faq": {
+    "a": "Häufige",
+    "b": "Fragen"
+   },
+   "final": {
+    "a": "Bereit, dein Team",
+    "b": "zu entlasten?"
+   }
+  }
+ }
+}

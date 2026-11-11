@@ -2,6 +2,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button, Card, Field, Input, Select, toast } from "@/components/ui";
+import { LOCALE_NAMES, routing } from "@/i18n/routing";
 import { ApiError, api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 
@@ -39,8 +40,7 @@ export default function GeneralSettingsPage() {
         </Field>
         <Field label={t("language")}>
           <Select value={form.locale} onChange={(e) => setForm({ ...form, locale: e.target.value })}>
-            <option value="ar">العربية</option>
-            <option value="en">English</option>
+            {routing.locales.map((code) => <option key={code} value={code}>{LOCALE_NAMES[code]}</option>)}
           </Select>
         </Field>
         <Field label={t("timezone")}>

@@ -14,8 +14,10 @@ import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { PricingTable } from "@/components/billing/pricing";
 import { Icon, PlatformBadge, PlatformIcon } from "@/components/icon";
+import { LanguageLinks, LanguageMenu } from "@/components/language-menu";
 import { cx } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
+import { shotLocale } from "@/i18n/routing";
 import { api } from "@/lib/api";
 import { usePlans } from "@/lib/billing";
 import { scroller, setupLanding } from "./motion";
@@ -156,7 +158,6 @@ export function Landing() {
   const m = useTranslations("landing.motion");
   const tb = useTranslations("billing");
   const locale = useLocale();
-  const other = locale === "ar" ? "en" : "ar";
   const plans = usePlans();
   const days = plans.data?.trial_days ?? 14;
   const me = useQuery({ queryKey: ["landing-me"], queryFn: () => api.get("/auth/me"), retry: false, staleTime: 300_000 });
@@ -207,7 +208,7 @@ export function Landing() {
         <div data-intro="header" className="flex items-center gap-1.5 px-4 py-4 sm:gap-2 sm:px-7 sm:py-5">
           <Link href="/welcome" aria-label="Stravica Social"><Logo /></Link>
           <div className="ms-auto flex items-center gap-1 sm:gap-2">
-            <Link href="/welcome" locale={other} className="lx-header-link hidden sm:inline-flex">{other === "ar" ? "العربية" : "English"}</Link>
+            <span className="hidden sm:inline-flex"><LanguageMenu href="/welcome" className="lx-header-link" /></span>
             {!signedIn && <Link href="/login" className="lx-header-link hidden md:inline-flex">{t("nav.login")}</Link>}
             <span data-magnetic className="inline-flex">
               <Link href={startHref} className="lx-pill max-[360px]:px-3 max-[360px]:text-[13px]">{startLabel} <Arrow /></Link>
@@ -245,7 +246,7 @@ export function Landing() {
                     <Link href="/login" className="lx-ghost">{t("nav.login")}</Link>
                   </>
                 )}
-                <Link href="/welcome" locale={other} className="lx-ghost">{other === "ar" ? "العربية" : "English"}</Link>
+                <LanguageMenu href="/welcome" className="lx-ghost" up />
               </div>
             </nav>
             <div className="hidden grid-cols-2 gap-4 lg:grid">
@@ -390,7 +391,7 @@ export function Landing() {
                   </div>
                   <div className={cx("lx-shot relative my-5", f.key === "mobile" && "lx-shot-phone")}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/landing/shots/${locale}/${f.key}.webp`} alt="" loading="lazy" decoding="async" width={f.key === "mobile" ? 585 : 1040} height={f.key === "mobile" ? 1170 : 780} />
+                    <img src={`/landing/shots/${shotLocale(locale)}/${f.key}.webp`} alt="" loading="lazy" decoding="async" width={f.key === "mobile" ? 585 : 1040} height={f.key === "mobile" ? 1170 : 780} />
                   </div>
                   <h3 className="lx-display relative text-[22px] !leading-tight">{t(`features.${f.key}.title`)}</h3>
                   <p className="relative mt-2 text-[13.5px] leading-relaxed opacity-60">{t(`features.${f.key}.text`)}</p>
@@ -500,7 +501,7 @@ export function Landing() {
                   <Link href="/login" className="lx-foot-link">{t("nav.login")}</Link>
                 </>
               )}
-              <Link href="/welcome" locale={other} className="lx-foot-link">{other === "ar" ? "العربية" : "English"}</Link>
+              <span className="mt-3 flex flex-wrap justify-end gap-x-4 gap-y-1 text-sm opacity-70"><LanguageLinks href="/welcome" className="hover:text-[var(--accent)]" /></span>
             </nav>
           </div>
         </div>

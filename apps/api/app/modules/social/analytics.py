@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import utcnow
 from app.core.http import ApiError
-from app.core.i18n import _, get_locale
+from app.core.i18n import LANGUAGE_NAMES, _, get_locale
 from app.modules.workspaces.models import Workspace
 
 from . import hooks
@@ -485,7 +485,8 @@ def ai_report(db: Session, workspace_id: int, days: int = 30, platform: str | No
                       for p in data["top_posts"]],
         "extra_results": data.get("extra") or {},
     }
-    language = "Arabic (Modern Standard, Gulf-friendly)" if get_locale() == "ar" else "English"
+    language = ("Arabic (Modern Standard, Gulf-friendly)" if get_locale() == "ar"
+                else LANGUAGE_NAMES.get(get_locale(), "English"))
     system = (
         "You are a senior social media strategist. Analyse the account statistics and give a practical plan. "
         f"Write in {language}. Use short sections with these headings: Summary, What works, What to improve, "

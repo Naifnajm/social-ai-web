@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { BrandLogo } from "@/components/brand-mark";
 import { Icon, PlatformIcon } from "@/components/icon";
 import { Link } from "@/i18n/navigation";
+import { shotLocale } from "@/i18n/routing";
 import { LocaleSwitch } from "./locale-switch";
 
 const PLATFORMS = ["instagram", "tiktok", "x", "facebook", "linkedin", "whatsapp"];
@@ -56,7 +57,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
                 {["#ff5f57", "#febc2e", "#28c840"].map((c) => <span key={c} className="h-2.5 w-2.5 rounded-full" style={{ background: c }} />)}
               </div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/landing/shots/${locale}/planning.webp`} alt="" width={1040} height={780} className="block w-full" />
+              <img src={`/landing/shots/${shotLocale(locale)}/planning.webp`} alt="" width={1040} height={780} className="block w-full" />
             </div>
             <div className="absolute -start-6 top-[38%] flex items-center gap-2.5 rounded-2xl bg-white px-3.5 py-2.5 text-[13px] font-semibold text-black shadow-[0_20px_50px_-15px_rgba(0,0,0,.6)]">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#ff3d8b] text-white"><Icon name="check" size={16} /></span>

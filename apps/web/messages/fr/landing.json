@@ -1,0 +1,140 @@
+{
+ "metaTitle": "Stravica Social — tous vos réseaux au même endroit, dans votre langue",
+ "metaDescription": "Écrivez avec l'IA dans la voix de votre marque, publiez partout et laissez l'assistant répondre à vos clients.",
+ "nav": {
+  "features": "Fonctionnalités",
+  "pricing": "Tarifs",
+  "faq": "FAQ",
+  "login": "Se connecter",
+  "signup": "Commencer gratuitement",
+  "app": "Ouvrir l'app"
+ },
+ "badge": "Nouveau · des vidéos complètes créées par l'IA",
+ "heroTitle": "Tous vos réseaux. Un seul endroit.",
+ "heroHighlight": "Dans votre langue.",
+ "heroText": "Écrivez avec l'IA dans la voix de votre marque. Publiez partout en un geste. Laissez l'assistant répondre à vos clients. Vous, concentrez-vous sur les idées.",
+ "ctaPrimary": "Essayez gratuitement {days} jours",
+ "ctaSecondary": "Voir les tarifs",
+ "trust": "Sans carte · résiliable à tout moment · puis gratuit",
+ "preview": {
+  "studio": "Studio IA",
+  "prompt": "Offre d'été pour notre nouveau mélange de café, ton chaleureux",
+  "caption": "Goûtez notre nouveau mélange ☕️ −20 % tout le mois",
+  "scheduled": "Planifié · jeu. 20 h 30",
+  "best": "Meilleur moment",
+  "inbox": "Assistant de messagerie",
+  "question": "Livrez-vous à Lyon ?",
+  "answer": "Oui ! Livraison à Lyon sous 2 jours 🚚",
+  "reach": "Portée",
+  "sales": "Ventes issues des publications"
+ },
+ "platformsTitle": "Publiez là où se trouve votre public",
+ "featuresTitle": "Tous vos outils au même endroit",
+ "featuresText": "Sept outils qui fonctionnent ensemble, avec vos contenus, vos réponses et vos chiffres sous les yeux.",
+ "features": {
+  "studio": {
+   "title": "Écrivez avec l'IA",
+   "text": "Légendes, hashtags, images, voix off et vidéo. Le tout dans la voix de votre marque, en français, en anglais ou en arabe."
+  },
+  "production": {
+   "title": "De l'idée à la vidéo",
+   "text": "Esquissez votre vidéo de campagne scène par scène sur un tableau, et l'IA la produit."
+  },
+  "templates": {
+   "title": "Des modèles à votre image",
+   "text": "Vos couleurs, votre logo et votre police sur chaque visuel, dans chaque format. Publiez en un geste."
+  },
+  "inbox": {
+   "title": "Un assistant qui répond pour vous",
+   "text": "Tous les commentaires et messages dans une seule messagerie. L'assistant répond avec vos informations et transmet ce qui demande un humain."
+  },
+  "planning": {
+   "title": "Calendrier et validation",
+   "text": "Un calendrier pour toute l'équipe, et rien n'est publié sans validation."
+  },
+  "analytics": {
+   "title": "Des chiffres lisibles",
+   "text": "Quelle publication a touché du monde, laquelle a vendu, et le meilleur moment pour publier."
+  },
+  "mobile": {
+   "title": "Application mobile · bientôt",
+   "text": "Validez, répondez et publiez depuis votre téléphone. Nous la développons ; d'ici là, le produit s'ouvre dans le navigateur de votre téléphone."
+  }
+ },
+ "stepsTitle": "Prêt en cinq minutes",
+ "steps": {
+  "1": {
+   "title": "Connectez vos comptes",
+   "text": "Connectez-vous via chaque réseau. Nous ne demandons jamais de mot de passe."
+  },
+  "2": {
+   "title": "Présentez votre marque",
+   "text": "Votre logo, vos couleurs et votre ton, et l'IA s'y tient."
+  },
+  "3": {
+   "title": "Planifiez, publiez, répondez",
+   "text": "Invitez votre équipe et laissez l'assistant gérer les tâches répétitives."
+  }
+ },
+ "pricingTitle": "Des tarifs clairs qui évoluent avec vous",
+ "pricingText": "Chaque offre commence par {days} jours d'essai de tout. Connectez votre propre clé IA sans frais supplémentaires.",
+ "faqTitle": "Questions fréquentes",
+ "faq": {
+  "q1": "Faut-il une carte bancaire pour l'essai ?",
+  "a1": "Non. Vous avez {days} jours avec toutes les fonctionnalités. Ensuite vous continuez gratuitement ou choisissez une offre ; vos contenus sont conservés.",
+  "q2": "Dans quelles langues cela fonctionne-t-il ?",
+  "a2": "L'IA rédige vos publications en français, anglais, néerlandais, allemand ou arabe. L'application elle-même est entièrement en anglais et en arabe ; la traduction française de tous les écrans est en cours.",
+  "q3": "Que sont les crédits IA ?",
+  "a3": "Si vous utilisez notre IA plutôt que vos propres clés, le coût est déduit de vos crédits IA mensuels. Avec votre propre clé OpenAI, Anthropic ou Gemini, l'IA est illimitée et vous payez directement le fournisseur.",
+  "q4": "Quels réseaux sont pris en charge ?",
+  "a4": "Instagram, Facebook, TikTok, X, LinkedIn, Threads et Telegram pour publier, plus WhatsApp dans la messagerie.",
+  "q5": "Puis-je changer ou résilier mon offre ?",
+  "a5": "À tout moment, dans Paramètres › Offre et facturation. Les montées en gamme s'appliquent immédiatement au prorata ; les résiliations prennent effet à la fin de la période.",
+  "q6": "Puis-je payer en euros ?",
+  "a6": "Les prix sont débités par carte en dollars américains. Des tarifs en euros et des moyens de paiement locaux sont prévus. Pour les factures et les virements, contactez notre équipe commerciale."
+ },
+ "finalTitle": "Prêt à soulager votre équipe ?",
+ "finalText": "Commencez gratuitement aujourd'hui. Votre première publication planifiée est à cinq minutes.",
+ "footer": {
+  "rights": "© {year} Stravica. Tous droits réservés.",
+  "madeFor": "Conçu pour les commerces et les marques locales."
+ },
+ "motion": {
+  "loading": "Chargement",
+  "menu": "Menu",
+  "close": "Fermer",
+  "scroll": "Faites défiler pour découvrir",
+  "home": "Accueil",
+  "manifesto": "Nous publions <hl>mieux</hl>, répondons <hl>plus vite</hl> et savons quelle publication <hl>vend</hl> vraiment. Pour que votre marque parle aux gens dans leur langue.",
+  "platformsKicker": "Réseaux",
+  "stepsKicker": "Comment ça marche",
+  "featuresKicker": "Fonctionnalités",
+  "pricingKicker": "Tarifs",
+  "faqKicker": "Questions",
+  "step": "Étape",
+  "footerExplore": "Explorer",
+  "footerAccount": "Compte",
+  "titles": {
+   "steps": {
+    "a": "Prêt",
+    "b": "en cinq minutes"
+   },
+   "features": {
+    "a": "Tous vos outils",
+    "b": "au même endroit"
+   },
+   "pricing": {
+    "a": "Des tarifs clairs",
+    "b": "qui évoluent avec vous"
+   },
+   "faq": {
+    "a": "Questions",
+    "b": "fréquentes"
+   },
+   "final": {
+    "a": "Prêt à soulager",
+    "b": "votre équipe ?"
+   }
+  }
+ }
+}

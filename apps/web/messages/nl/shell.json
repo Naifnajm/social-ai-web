@@ -1,0 +1,17 @@
+{
+ "newWorkspace": "Nieuwe bedrijfsworkspace",
+ "newWorkspaceHint": "Een aparte workspace met eigen accounts, team en content.",
+ "workspaceName": "Bedrijfsnaam",
+ "create": "Aanmaken",
+ "notifications": "Meldingen",
+ "profile": "Mijn profiel",
+ "logout": "Uitloggen",
+ "plan": {
+  "trial": "Gratis proefperiode",
+  "free": "Gratis",
+  "starter": "Starter",
+  "pro": "Pro",
+  "business": "Business",
+  "enterprise": "Enterprise"
+ }
+}

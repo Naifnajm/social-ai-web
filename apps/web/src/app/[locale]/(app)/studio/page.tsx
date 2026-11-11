@@ -30,7 +30,7 @@ type Draft = {
 };
 const EMPTY: Draft = { postId: null, content: "", variants: {}, accountIds: [], media: [], publishAs: "feed", scheduleOn: false, scheduleAt: "", brief: "" };
 const TONES = ["professional", "friendly", "playful", "inspiring", "informative", "persuasive"];
-const LANGUAGES = ["auto", "ar", "en", "nl"];
+const LANGUAGES = ["auto", "ar", "en", "nl", "de", "fr"];
 const LENGTHS = ["short", "medium", "long"];
 
 function StudioComposer() {

@@ -1,0 +1,17 @@
+{
+ "newWorkspace": "Nouvel espace d'entreprise",
+ "newWorkspaceHint": "Un espace séparé avec ses comptes, son équipe et ses contenus.",
+ "workspaceName": "Nom de l'entreprise",
+ "create": "Créer",
+ "notifications": "Notifications",
+ "profile": "Mon profil",
+ "logout": "Se déconnecter",
+ "plan": {
+  "trial": "Essai gratuit",
+  "free": "Gratuit",
+  "starter": "Starter",
+  "pro": "Pro",
+  "business": "Business",
+  "enterprise": "Enterprise"
+ }
+}

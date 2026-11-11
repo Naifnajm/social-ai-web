@@ -1,0 +1,140 @@
+{
+ "metaTitle": "Stravica Social — al je socials op één plek, in jouw taal",
+ "metaDescription": "Schrijf met AI in de stem van je merk, publiceer overal en laat de assistent je klanten antwoorden.",
+ "nav": {
+  "features": "Functies",
+  "pricing": "Prijzen",
+  "faq": "FAQ",
+  "login": "Inloggen",
+  "signup": "Start gratis",
+  "app": "Open de app"
+ },
+ "badge": "Nieuw · complete video's gemaakt met AI",
+ "heroTitle": "Al je socials. Eén plek.",
+ "heroHighlight": "In jouw taal.",
+ "heroText": "Schrijf met AI in de stem van je merk. Publiceer overal met één tik. Laat de assistent je klanten antwoorden. Jij richt je op de ideeën.",
+ "ctaPrimary": "Probeer {days} dagen gratis",
+ "ctaSecondary": "Bekijk prijzen",
+ "trust": "Geen creditcard · altijd opzegbaar · daarna gratis verder",
+ "preview": {
+  "studio": "AI-studio",
+  "prompt": "Zomeractie voor onze nieuwe koffiemelange, warme toon",
+  "caption": "Proef onze nieuwe melange ☕️ 20% korting, de hele maand",
+  "scheduled": "Ingepland · do 20:30",
+  "best": "Beste tijd",
+  "inbox": "Inbox-assistent",
+  "question": "Bezorgen jullie ook in Utrecht?",
+  "answer": "Ja! Binnen 2 dagen bezorgd in Utrecht 🚚",
+  "reach": "Bereik",
+  "sales": "Verkoop uit berichten"
+ },
+ "platformsTitle": "Post waar je publiek is",
+ "featuresTitle": "Al je tools op één plek",
+ "featuresText": "Zeven tools die samenwerken, met je content, reacties en cijfers in één overzicht.",
+ "features": {
+  "studio": {
+   "title": "Schrijf met AI",
+   "text": "Captions, hashtags, beelden, voice-overs en video. Alles in de stem van je merk, in het Nederlands, Engels of Arabisch."
+  },
+  "production": {
+   "title": "Van idee naar video",
+   "text": "Schets je campagnevideo scène voor scène op één bord, en AI maakt hem."
+  },
+  "templates": {
+   "title": "Templates in je huisstijl",
+   "text": "Je kleuren, logo en lettertype op elk ontwerp, in elk formaat. Publiceer met één tik."
+  },
+  "inbox": {
+   "title": "Een assistent die voor je antwoordt",
+   "text": "Elke reactie en DM in één inbox. De assistent antwoordt met jouw informatie en draagt over wat een mens nodig heeft."
+  },
+  "planning": {
+   "title": "Kalender en goedkeuring",
+   "text": "Eén kalender voor het hele team, en niets gaat live zonder akkoord."
+  },
+  "analytics": {
+   "title": "Cijfers die je snapt",
+   "text": "Welk bericht mensen bereikte, welk bericht verkocht, en de beste tijd om te posten."
+  },
+  "mobile": {
+   "title": "Mobiele app · binnenkort",
+   "text": "Keur goed, reageer en publiceer vanaf je telefoon. We bouwen hem nu; tot dan werkt het product in de browser van je telefoon."
+  }
+ },
+ "stepsTitle": "Klaar in vijf minuten",
+ "steps": {
+  "1": {
+   "title": "Koppel je accounts",
+   "text": "Log in via elk netwerk. We vragen nooit om wachtwoorden."
+  },
+  "2": {
+   "title": "Stel je merk voor",
+   "text": "Je logo, kleuren en toon, en de AI houdt zich eraan."
+  },
+  "3": {
+   "title": "Plan, publiceer, reageer",
+   "text": "Nodig je team uit en laat de assistent het terugkerende werk doen."
+  }
+ },
+ "pricingTitle": "Heldere prijzen die met je meegroeien",
+ "pricingText": "Elk pakket begint met {days} dagen alles proberen. Koppel je eigen AI-sleutel zonder extra kosten.",
+ "faqTitle": "Veelgestelde vragen",
+ "faq": {
+  "q1": "Heb ik een creditcard nodig voor de proefperiode?",
+  "a1": "Nee. Je krijgt {days} dagen alle functies. Daarna ga je gratis verder of kies je een pakket; je content blijft bewaard.",
+  "q2": "In welke talen werkt het?",
+  "a2": "De AI schrijft je berichten in het Nederlands, Engels, Duits, Frans of Arabisch. De app zelf is volledig in het Engels en Arabisch; de Nederlandse vertaling van alle schermen is onderweg.",
+  "q3": "Wat zijn AI-credits?",
+  "a3": "Gebruik je onze AI in plaats van je eigen sleutels, dan gaan de kosten van je maandelijkse AI-credits af. Met je eigen OpenAI-, Anthropic- of Gemini-sleutel is AI onbeperkt en betaal je de aanbieder direct.",
+  "q4": "Welke netwerken worden ondersteund?",
+  "a4": "Instagram, Facebook, TikTok, X, LinkedIn, Threads en Telegram om te publiceren, plus WhatsApp in de inbox.",
+  "q5": "Kan ik mijn pakket wijzigen of opzeggen?",
+  "a5": "Altijd, via Instellingen › Pakket & facturering. Upgrades gaan direct in met een verrekening naar rato; opzeggen gaat in aan het einde van de periode.",
+  "q6": "Kan ik in euro's betalen?",
+  "a6": "Prijzen worden per kaart in Amerikaanse dollars afgerekend. Europrijzen en lokale betaalmethoden staan gepland. Neem voor facturen en overboekingen contact op met ons salesteam."
+ },
+ "finalTitle": "Klaar om je team te ontlasten?",
+ "finalText": "Start vandaag gratis. Je eerste ingeplande bericht is vijf minuten verderop.",
+ "footer": {
+  "rights": "© {year} Stravica. Alle rechten voorbehouden.",
+  "madeFor": "Gemaakt voor lokale ondernemers en merken."
+ },
+ "motion": {
+  "loading": "Laden",
+  "menu": "Menu",
+  "close": "Sluiten",
+  "scroll": "Scroll om te ontdekken",
+  "home": "Home",
+  "manifesto": "We posten <hl>slimmer</hl>, reageren <hl>sneller</hl> en weten welk bericht echt <hl>verkoopt</hl>. Zodat je merk mensen aanspreekt in hun taal.",
+  "platformsKicker": "Netwerken",
+  "stepsKicker": "Zo werkt het",
+  "featuresKicker": "Functies",
+  "pricingKicker": "Prijzen",
+  "faqKicker": "Vragen",
+  "step": "Stap",
+  "footerExplore": "Ontdek",
+  "footerAccount": "Account",
+  "titles": {
+   "steps": {
+    "a": "Klaar",
+    "b": "in vijf minuten"
+   },
+   "features": {
+    "a": "Al je tools",
+    "b": "op één plek"
+   },
+   "pricing": {
+    "a": "Heldere prijzen",
+    "b": "die meegroeien"
+   },
+   "faq": {
+    "a": "Veelgestelde",
+    "b": "vragen"
+   },
+   "final": {
+    "a": "Klaar om je team",
+    "b": "te ontlasten?"
+   }
+  }
+ }
+}

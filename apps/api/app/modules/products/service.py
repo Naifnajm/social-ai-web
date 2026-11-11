@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import utcnow
 from app.core.errors import ApiError, AppError
-from app.core.i18n import _
+from app.core.i18n import LANGUAGE_NAMES, _
 from app.core.models import Media
 from app.modules.social import service as social
 from app.modules.social.models import Post, SocialAccount
@@ -17,7 +17,6 @@ from .models import Product
 
 _logger = logging.getLogger(__name__)
 DEFAULT_TEMPLATE = "✨ {name}\n{description}\n{price}\n{url}"
-LANGUAGES = {"ar": "Arabic", "en": "English", "nl": "Dutch"}
 
 
 def product_settings(db: Session, workspace_id: int) -> dict:
@@ -52,7 +51,7 @@ def template_caption(product: Product, workspace: Workspace, template: str) -> s
 def ai_caption(db: Session, workspace: Workspace, product: Product, platforms: list[str],
                user_id: int | None = None) -> str:
     from app.modules.ai import service as ai
-    language = LANGUAGES.get(workspace.locale, "Arabic")
+    language = LANGUAGE_NAMES.get(workspace.locale, "Arabic")
     system = ("You write one social media post announcing a new product. Make people want it; mention the price "
               "if given. Do not invent features. If a link is given, put it at the end exactly as given. "
               f"Write in {language}. Networks: {', '.join(platforms) or 'any'}. "

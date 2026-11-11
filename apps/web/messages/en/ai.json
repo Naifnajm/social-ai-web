@@ -288,7 +288,10 @@
    "gulf": "Close to Gulf Arabic",
    "saudi": "Saudi dialect",
    "english": "English",
-   "bilingual": "Arabic and English"
+   "bilingual": "Arabic and English",
+   "dutch": "Dutch",
+   "german": "German",
+   "french": "French"
   },
   "emojiStyle": "Emojis",
   "emojiStyles": {

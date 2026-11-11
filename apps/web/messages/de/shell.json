@@ -1,0 +1,17 @@
+{
+ "newWorkspace": "Neuer Firmen-Workspace",
+ "newWorkspaceHint": "Ein eigener Workspace mit eigenen Konten, Team und Inhalten.",
+ "workspaceName": "Firmenname",
+ "create": "Erstellen",
+ "notifications": "Benachrichtigungen",
+ "profile": "Mein Profil",
+ "logout": "Abmelden",
+ "plan": {
+  "trial": "Kostenlose Testphase",
+  "free": "Kostenlos",
+  "starter": "Starter",
+  "pro": "Pro",
+  "business": "Business",
+  "enterprise": "Enterprise"
+ }
+}

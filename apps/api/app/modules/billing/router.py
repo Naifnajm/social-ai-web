@@ -8,7 +8,7 @@ from app.core.config import settings
 from app.core.db import get_db
 from app.core.deps import Ctx, workspace_ctx
 from app.core.errors import AppError
-from app.core.i18n import _
+from app.core.i18n import _, clean_locale
 from app.modules.workspaces.models import Invitation, Membership, Role
 from app.modules.workspaces.settings import get_setting, set_setting
 
@@ -69,7 +69,7 @@ def summary(ctx: Ctx = Depends(workspace_ctx())):
 
 
 def _return_url(ctx: Ctx, query: str = "") -> str:
-    locale = ctx.user.locale if ctx.user.locale in ("ar", "en") else "ar"
+    locale = clean_locale(ctx.user.locale)
     return f"{settings.web_url.rstrip('/')}/{locale}/settings/billing{query}"
 
 

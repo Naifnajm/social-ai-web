@@ -4,11 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { type ReactNode, useEffect, useState } from "react";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
+import { LOCALE_NAMES, routing } from "@/i18n/routing";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import { sortedNav } from "@/config/nav";
 import { BillingOverlay } from "./billing/billing-overlay";
 import { Icon } from "./icon";
+import { BrandLogo } from "./brand-mark";
 import { Avatar, Spinner, cx } from "./ui";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -40,6 +42,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <aside className="glass sticky top-3 m-3 hidden h-[calc(100vh-24px)] w-[232px] shrink-0 flex-col rounded-[22px] p-3 lg:flex">
+        <div className="mb-2 px-2 pt-1 text-[13px]"><BrandLogo size={24} /></div>
         <WorkspaceSwitcher />
         <nav className="mt-3 flex flex-1 flex-col gap-0.5 overflow-y-auto">
           {items.map((item, index) => (
@@ -52,7 +55,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   active(item.href) ? "bg-ink text-white shadow-[0_6px_16px_-8px_rgba(0,0,0,.6)]" : "text-text-2 hover:bg-fill-2 hover:text-text",
                 )}
               >
-                <Icon name={item.icon} size={18} duo={active(item.href)} />
+                <Icon name={item.icon} size={18} duo={active(item.href)} className={active(item.href) ? "text-[#ff8fbc]" : undefined} />
                 {t(item.label)}
               </Link>
             </div>
@@ -81,7 +84,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <nav className="glass-strong fixed inset-x-3 bottom-3 z-40 flex justify-around rounded-[22px] px-2 py-1.5 lg:hidden">
         {items.filter((i) => i.mobile).slice(0, 5).map((item) => (
-          <Link key={item.href} href={item.href} className={cx("flex flex-col items-center gap-0.5 rounded-xl px-3 py-1 text-[11px]", active(item.href) ? "text-ink font-semibold" : "text-muted")}>
+          <Link key={item.href} href={item.href} className={cx("flex flex-col items-center gap-0.5 rounded-xl px-3 py-1 text-[11px]", active(item.href) ? "text-accent-deep font-semibold" : "text-muted")}>
             <Icon name={item.icon} size={22} duo={active(item.href)} />
             {t(item.label)}
           </Link>
@@ -151,7 +154,6 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
     clear();
     router.replace("/login");
   };
-  const otherLocale = locale === "ar" ? "en" : "ar";
   return (
     <div className="relative">
       <button onClick={() => setOpen(!open)} className={cx("flex w-full items-center gap-2.5 rounded-2xl p-2 text-start hover:bg-fill-2", compact && "p-1")}>
@@ -168,10 +170,16 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
           <Link href="/settings/profile" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-fill-2">
             <Icon name="person" size={16} /> {t("profile")}
           </Link>
-          <button onClick={() => { api.patch("/auth/me", { locale: otherLocale }).catch(() => undefined); router.replace(pathname, { locale: otherLocale }); }}
-            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-start text-sm hover:bg-fill-2">
-            <Icon name="sync_alt" size={16} /> {otherLocale === "ar" ? "العربية" : "English"}
-          </button>
+          <div className="my-1 h-px bg-line" />
+          <div className="flex flex-wrap gap-1 px-1.5 py-1" role="group" aria-label="Language">
+            {routing.locales.map((code) => (
+              <button key={code} title={LOCALE_NAMES[code]} aria-pressed={code === locale}
+                onClick={() => { if (code === locale) return; api.patch("/auth/me", { locale: code }).catch(() => undefined); router.replace(pathname, { locale: code }); }}
+                className={cx("rounded-lg px-2 py-1 text-xs font-semibold uppercase", code === locale ? "bg-accent-soft text-accent-deep" : "text-muted hover:bg-fill-2 hover:text-text")}>
+                {code}
+              </button>
+            ))}
+          </div>
           <div className="my-1 h-px bg-line" />
           <button onClick={logout} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-start text-sm text-bad hover:bg-bad-bg">
             <Icon name="outbox" size={16} /> {t("logout")}

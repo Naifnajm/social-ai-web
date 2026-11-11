@@ -21,7 +21,7 @@ from app.modules.social.models import Post, PostTarget, SocialAccount
 from app.modules.workspaces.models import Membership, Role
 from app.modules.workspaces.settings import set_setting
 
-from . import bot, service, sources
+from . import bot, history, service, sources, subscription
 from .bot_config import (WORKSPACE_DEFAULTS, account_secrets, bot_config, mode_for, set_account_secret,
                          update_bot_config, whatsapp_provider, workspace_option)
 from .config import inbox_settings
@@ -29,7 +29,7 @@ from .messaging import get_messenger
 from .models import (INBOX_PLATFORMS, INTENTS, SENTIMENTS, BotTrigger, CannedReply, Contact, Conversation,
                      ConversationTag, KnowledgeEntry, Message, MetaApp)
 from .public import meta_webhook_url, telegram_webhook_url, twilio_webhook_url
-from .schemas import (AccountCheckOut, AttachmentOut, BotSettings, CannedIn, CannedOut, ContactOut, ContactUpdate,
+from .schemas import (HistoryIn, HistoryOut, AccountCheckOut, AttachmentOut, BotSettings, CannedIn, CannedOut, ContactOut, ContactUpdate,
                       ConversationPage, ConversationRow, ConversationUpdate, FolderCounts, HideIn,
                       InboxAccountOut, InboxAccountUpdate, InboxMeta, InboxSettingsIn, InboxSettingsOut,
                       InboxStats, KnowledgeIn, KnowledgeOut, MessageOut, PlatformStat, PostRef, SendIn, SendOut,
@@ -542,6 +542,11 @@ def _account_out(ctx: Ctx, account: SocialAccount, open_counts: dict | None = No
         sync_error=state.sync_error, whatsapp_provider=provider,
         whatsapp_number=extra.get("whatsapp_number") if account.platform == "whatsapp" else None,
         has_token=has_token, open_conversations=(open_counts or {}).get(account.id, 0),
+        webhook_ok=subscription.health(account).get("ok") if account.platform in ("facebook", "instagram") and
+        subscription.health(account) else None,
+        webhook_fields=subscription.health(account).get("fields") or [],
+        webhook_error=subscription.health(account).get("error"),
+        webhook_checked_at=subscription.health(account).get("checked_at"),
     )
 
 
@@ -584,6 +589,43 @@ def sync_account(account_id: int, ctx: Ctx = Depends(workspace_ctx(Role.editor))
     ctx.db.commit()
     service.run_scheduled(ctx.db)
     return SyncOut(**result)
+
+
+def _meta_account(ctx: Ctx, account_id: int) -> SocialAccount:
+    account = _inbox_account(ctx, account_id)
+    if account.platform not in ("facebook", "instagram"):
+        raise AppError(_("Only Facebook and Instagram accounts use Meta webhooks."), code="not_meta_account")
+    return account
+
+
+@router.post("/accounts/{account_id}/webhook/check", response_model=InboxAccountOut)
+def check_webhook(account_id: int, ctx: Ctx = Depends(workspace_ctx(Role.admin))):
+    """Ask Meta whether the page is subscribed to the app and repair it when it is not."""
+    account = _meta_account(ctx, account_id)
+    subscription.ensure(ctx.db, [account])
+    return _account_out(ctx, account)
+
+
+@router.post("/accounts/{account_id}/webhook/subscribe", response_model=InboxAccountOut)
+def subscribe_webhook(account_id: int, ctx: Ctx = Depends(workspace_ctx(Role.admin))):
+    """Subscribe the page to the app (messages + feed) even if it looks subscribed."""
+    account = _meta_account(ctx, account_id)
+    subscription.ensure(ctx.db, [account], force=True)
+    return _account_out(ctx, account)
+
+
+@router.post("/accounts/{account_id}/import-history", response_model=HistoryOut)
+def import_history(account_id: int, data: HistoryIn, ctx: Ctx = Depends(workspace_ctx(Role.admin))):
+    """Read past conversations, past posts with their comments and the posts scheduled on Meta."""
+    account = _meta_account(ctx, account_id)
+    try:
+        result = history.import_history(ctx.db, account, days=data.days, max_threads=data.max_threads,
+                                        max_posts=data.max_posts)
+    except ApiError as exc:
+        raise AppError(exc.message, code="meta_error")
+    ctx.db.commit()
+    service.run_scheduled(ctx.db)
+    return HistoryOut(**result)
 
 
 @router.post("/accounts/{account_id}/telegram-webhook", response_model=InboxAccountOut)

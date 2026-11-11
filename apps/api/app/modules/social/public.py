@@ -18,7 +18,7 @@ from app.modules.billing import limits
 from app.modules.workspaces.models import ROLE_RANK, Membership, Role
 
 from . import accounts as account_service
-from . import oauth
+from . import hooks, oauth
 from .models import OAuthSession
 
 router = APIRouter(tags=["public"])
@@ -56,6 +56,11 @@ def oauth_callback(state: str | None = None, code: str | None = None, error: str
         values = oauth.exchange(db, workspace_id, platform, code, verifier, source)
         accounts = account_service.upsert_from_oauth(
             db, workspace_id, values, check_limit=lambda: limits.check(db, workspace_id, "social_accounts"))
+        for after in hooks.AFTER_CONNECT:
+            try:
+                after(db, accounts)
+            except Exception:
+                _logger.exception("after-connect hook failed")
     except ApiError as exc:
         db.rollback()
         return _back(locale, error=exc.message)

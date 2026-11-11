@@ -15,10 +15,11 @@ from app.modules.workspaces.settings import set_setting
 
 from . import publishing
 from .analytics import next_best_slots, workspace_tz
-from .models import PUBLISH_PLATFORMS, POST_STATES, Post, PostTarget, SocialAccount, post_accounts
+from .models import (PUBLISH_PLATFORMS, POST_STATES, ExternalPost, Post, PostTarget, SocialAccount,
+                     post_accounts)
 from .platforms import STORY_PLATFORMS, platform_rules
 from .routes_accounts import account_out
-from .schemas import (ApprovalSettings, BestSlot, ChangesIn, ComposeIn, PostIn, PostOut, PostPage, Problem,
+from .schemas import (ApprovalSettings, ExternalPostOut, BestSlot, ChangesIn, ComposeIn, PostIn, PostOut, PostPage, Problem,
                       StudioKpis, StudioOut, SubmitIn, TargetOut, ValidationOut)
 
 router = APIRouter(tags=["posts"])
@@ -116,6 +117,28 @@ def studio(ctx: Ctx = Depends(workspace_ctx())):
 
 
 # ------------------------------------------------------------------ posts
+@router.get("/posts/external", response_model=list[ExternalPostOut])
+def list_external_posts(kind: str | None = Query(None, pattern="^(published|scheduled)$"),
+                        account_id: int | None = None, limit: int = Query(100, ge=1, le=300),
+                        ctx: Ctx = Depends(workspace_ctx())):
+    """Posts that exist on the networks but were not made here: what Meta has scheduled (``kind=scheduled``, soonest
+    first) and the history read from the accounts (``kind=published``, newest first). Read-only."""
+    query = select(ExternalPost, SocialAccount.name).join(SocialAccount, SocialAccount.id == ExternalPost.account_id)\
+        .where(ExternalPost.workspace_id == ctx.workspace.id)
+    if kind:
+        query = query.where(ExternalPost.kind == kind)
+    if account_id:
+        query = query.where(ExternalPost.account_id == account_id)
+    query = query.order_by(ExternalPost.scheduled_at.asc() if kind == "scheduled" else
+                           func.coalesce(ExternalPost.published_at, ExternalPost.scheduled_at).desc()).limit(limit)
+    out = []
+    for row, account_name in ctx.db.execute(query).all():
+        item = ExternalPostOut.model_validate(row)
+        item.account_name = account_name
+        out.append(item)
+    return out
+
+
 @router.get("/posts", response_model=PostPage)
 def list_posts(state: list[str] = Query(default=[]), platform: str | None = None, account_id: int | None = None,
                campaign_id: int | None = None, q: str | None = None, limit: int = 30, offset: int = 0,

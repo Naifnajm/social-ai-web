@@ -8,7 +8,7 @@ import { Icon, PlatformBadge } from "@/components/icon";
 import { Badge, Button, Card, EmptyState, Field, IconButton, Input, Modal, SectionTitle, Segmented, Select, Switch, Textarea, cx, toast } from "@/components/ui";
 import { api } from "@/lib/api";
 import { copyText, showError } from "../../inbox/_components/bits";
-import type { BotMode, BotSettings, Canned, InboxAccount, InboxSettings, Knowledge, Trigger } from "../../inbox/_lib/types";
+import type { BotMode, BotSettings, Canned, HistoryResult, InboxAccount, InboxSettings, Knowledge, Trigger } from "../../inbox/_lib/types";
 
 const ACCOUNTS_KEY = ["inbox", "accounts"];
 
@@ -59,6 +59,21 @@ function AccountRow({ account }: { account: InboxAccount }) {
       qc.setQueryData<InboxAccount[]>(ACCOUNTS_KEY, (list) => list?.map((a) => (a.id === out.id ? out : a)));
       qc.invalidateQueries({ queryKey: ["inbox", "meta"] });
       if (key === "save") toast.success(t("settings.saved"));
+    } catch (err) {
+      showError(err);
+    } finally {
+      setBusy(null);
+    }
+  };
+  const importHistory = async () => {
+    setBusy("history");
+    try {
+      const out = await api.post<HistoryResult>(`/inbox/accounts/${account.id}/import-history`, { days: 90 });
+      qc.invalidateQueries({ queryKey: ACCOUNTS_KEY });
+      qc.invalidateQueries({ queryKey: ["inbox"] });
+      qc.invalidateQueries({ queryKey: ["external-posts"] });
+      toast.success(t("settings.historyDone", { messages: out.messages, comments: out.comments, posts: out.posts, scheduled: out.scheduled }));
+      if (out.errors.length) toast.error(out.errors.join("; "));
     } catch (err) {
       showError(err);
     } finally {
@@ -151,6 +166,17 @@ function AccountRow({ account }: { account: InboxAccount }) {
                   <Button size="sm" variant="ghost" icon="refresh" loading={busy === "rotate"} onClick={() => call("rotate", () => api.post(`/inbox/accounts/${account.id}/rotate-secret`))}>{t("settings.rotateSecret")}</Button>
                 </div>
               )}
+            </div>
+          )}
+          {isMeta && (
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted md:col-span-2">
+              <Badge tone={account.webhook_ok ? "ok" : account.webhook_ok === false ? "bad" : "neutral"}>
+                {account.webhook_ok ? t("settings.webhookOk") : account.webhook_ok === false ? t("settings.webhookMissing") : t("settings.webhookUnknown")}
+              </Badge>
+              {account.webhook_ok === false && account.webhook_error && <span className="bidi text-bad">{account.webhook_error}</span>}
+              <Button size="sm" variant="ghost" icon="verified" loading={busy === "whcheck"} onClick={() => call("whcheck", () => api.post(`/inbox/accounts/${account.id}/webhook/check`), t("settings.webhookChecked"))}>{t("settings.webhookCheck")}</Button>
+              <Button size="sm" variant="ghost" icon="link" loading={busy === "whsub"} onClick={() => call("whsub", () => api.post(`/inbox/accounts/${account.id}/webhook/subscribe`), t("settings.webhookSubscribed"))}>{t("settings.webhookSubscribe")}</Button>
+              <Button size="sm" variant="ghost" icon="history" loading={busy === "history"} onClick={importHistory}>{t("settings.importHistory")}</Button>
             </div>
           )}
           {account.sync_error && <p className="bidi text-xs text-bad md:col-span-2"><Icon name="error" size={13} /> {account.sync_error}</p>}

@@ -7,6 +7,7 @@ by their network id) and never fail towards the platform once authenticated: pro
 """
 import json
 import logging
+import re
 from urllib.parse import parse_qsl
 
 from fastapi import APIRouter, Depends, Request
@@ -18,13 +19,27 @@ from app.core.config import settings
 from app.core.db import get_db
 from app.modules.social.models import SocialAccount
 
-from . import service, sources, webhook_auth
+from . import service, sources, subscription, webhook_auth  # noqa: F401  (subscription registers its hook)
 from .bot_config import account_secrets, whatsapp_provider
 from .config import inbox_settings
 from .models import AccountInboxState, MetaApp
 
 _logger = logging.getLogger(__name__)
 router = APIRouter(tags=["inbox webhooks"], include_in_schema=False)
+
+
+class _RedactVerifyToken(logging.Filter):
+    """Meta's subscription check puts the verify token in the URL, which uvicorn's access log would print."""
+
+    _pattern = re.compile(r"(hub[._]verify_token=)[^&\s\"]+")
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if isinstance(record.args, tuple):
+            record.args = tuple(self._pattern.sub(r"\1***", a) if isinstance(a, str) else a for a in record.args)
+        return True
+
+
+logging.getLogger("uvicorn.access").addFilter(_RedactVerifyToken())
 
 META_PATH = "/webhooks/meta"
 TELEGRAM_PATH = "/webhooks/telegram/{account_id}/{secret}"

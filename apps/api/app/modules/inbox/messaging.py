@@ -154,6 +154,45 @@ class MetaMessenger(BaseMessenger):
                                   "access_token": self.token})
         return data.get("data") or []
 
+    # -- history (follows Graph cursors) --------------------------------------
+    def _pages(self, url, params, operation, max_items):
+        """Rows of a Graph edge, page after page, at most ``max_items``."""
+        params = dict(params, access_token=self.token)
+        seen = 0
+        while True:
+            data = self._call("GET", url, operation, params=params)
+            rows = data.get("data") or []
+            for row in rows:
+                yield row
+                seen += 1
+                if seen >= max_items:
+                    return
+            paging = data.get("paging") or {}
+            after = (paging.get("cursors") or {}).get("after")
+            if not rows or not after or not paging.get("next"):
+                return
+            params = dict(params, after=after)
+
+    def iter_conversations(self, max_threads=100, per_thread=50):
+        params = {"platform": "messenger" if self.account.platform == "facebook" else "instagram",
+                  "fields": "id,updated_time,participants,messages.limit(%d){id,message,from,to,created_time}"
+                            % per_thread, "limit": 25}
+        return self._pages("%s/me/conversations" % self._graph(), params, "Read conversation history", max_threads)
+
+    def iter_posts(self, kind="published", max_items=50):
+        """Posts of the page / media of the Instagram account. ``kind="scheduled"``: posts scheduled in Meta's
+        own tools (Facebook only: Instagram does not expose them)."""
+        if self.account.platform == "facebook":
+            edge = "scheduled_posts" if kind == "scheduled" else "published_posts"
+            fields = "id,message,created_time,permalink_url,full_picture,status_type,scheduled_publish_time"
+        else:
+            if kind == "scheduled":
+                return iter(())
+            edge = "media"
+            fields = "id,caption,permalink,timestamp,media_type,media_url,thumbnail_url,comments_count"
+        return self._pages("%s/%s/%s" % (self._graph(), self.account.external_id, edge),
+                           {"fields": fields, "limit": 25}, "Read posts", max_items)
+
 
 # ---------------------------------------------------------------------------
 # Telegram Bot API (private chats with the bot) — the bot token is the account's access token

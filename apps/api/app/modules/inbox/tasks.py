@@ -7,7 +7,7 @@ from app.core.i18n import get_locale, set_locale
 from app.core.jobs import periodic, session_scope
 from app.modules.workspaces.models import Workspace
 
-from . import bot, service, sources
+from . import bot, history, service, sources, subscription
 from .config import inbox_settings
 from .models import Conversation, Message
 
@@ -62,3 +62,25 @@ def poll_inboxes():
         service.run_scheduled(db)
     if result["errors"]:
         _logger.info("inbox polling: %s", "; ".join(result["errors"])[:1000])
+
+
+@periodic(seconds=6 * 3600)
+def check_page_subscriptions():
+    """Meta sends nothing to a page that is not subscribed to the app (it happens silently after a reconnect, a
+    permission change or when the page admin changes). Check every page and repair the ones that lost it."""
+    with session_scope() as db:
+        result = subscription.ensure_all(db)
+        db.commit()
+    if result["problems"]:
+        _logger.warning("inbox: %s of %s Meta accounts are not subscribed to webhooks", result["problems"],
+                        result["checked"])
+
+
+@periodic(seconds=1800)
+def sync_meta_scheduled():
+    """Posts scheduled in Meta's own tools, so they show here as well (Facebook Pages)."""
+    with session_scope() as db:
+        result = history.sync_all_scheduled(db)
+        db.commit()
+    if result["errors"]:
+        _logger.info("meta scheduled posts: %s", "; ".join(result["errors"])[:1000])

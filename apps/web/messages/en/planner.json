@@ -1,6 +1,8 @@
 {
  "title": "Planner",
  "subtitle": "Your content calendar: plan, move and balance your posts.",
+ "externalTitle": "Scheduled on Meta",
+ "externalHelp": "Posts scheduled outside this platform (Meta Business Suite). Read-only.",
  "newPost": "New post",
  "previous": "Previous",
  "next": "Next",

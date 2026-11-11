@@ -64,7 +64,7 @@ PLATFORMS = {
         "scopes": "pages_show_list,pages_read_engagement,pages_manage_posts,business_management,"
                   "instagram_basic,instagram_content_publish,instagram_manage_insights,read_insights,"
                   # inbox: messages and comments
-                  "pages_read_user_content,pages_manage_engagement,pages_manage_metadata,"
+                  "pages_messaging,pages_read_user_content,pages_manage_engagement,pages_manage_metadata,"
                   "instagram_manage_messages,instagram_manage_comments",
     },
     "threads": {

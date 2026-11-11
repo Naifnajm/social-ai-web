@@ -17,5 +17,21 @@
   "User not found.": "المستخدم غير موجود.",
   "You cannot disable your own account.": "لا يمكنك تعطيل حسابك أنت.",
   "You cannot remove your own administrator rights.": "لا يمكنك إزالة صلاحية المدير عن حسابك أنت.",
-  "Your monthly AI limit in this workspace is used up (${spent} of ${limit}). Ask a workspace admin to raise it.": "استهلكت حدّك الشهري من الذكاء الاصطناعي في هذه المساحة (${spent} من ${limit}). اطلب من مدير المساحة رفعه."
+  "Your monthly AI limit in this workspace is used up (${spent} of ${limit}). Ask a workspace admin to raise it.": "استهلكت حدّك الشهري من الذكاء الاصطناعي في هذه المساحة (${spent} من ${limit}). اطلب من مدير المساحة رفعه.",
+  "This code is not right, or it was already used. Try the newest code.": "الرمز غير صحيح أو استُخدم من قبل. جرّب أحدث رمز.",
+  "This sign-in has expired. Enter your password again.": "انتهت مهلة تسجيل الدخول. أدخل كلمة المرور من جديد.",
+  "Two-step sign-in is already on.": "التحقق بخطوتين مفعّل بالفعل.",
+  "Start the setup again.": "ابدأ الإعداد من جديد.",
+  "This code is not right. Check that the phone's clock is automatic and try the newest code.": "الرمز غير صحيح. تأكد أن ساعة الجوال على الضبط التلقائي وجرّب أحدث رمز.",
+  "The password is not right.": "كلمة المرور غير صحيحة.",
+  "Two-step sign-in is off.": "التحقق بخطوتين غير مفعّل.",
+  "This request has expired. Try again.": "انتهت مهلة الطلب. حاول مرة أخرى.",
+  "The passkey could not be saved: {reason}": "تعذّر حفظ مفتاح المرور: {reason}",
+  "This passkey is already saved.": "مفتاح المرور هذا محفوظ من قبل.",
+  "This passkey is not linked to an account here. Sign in with your password.": "مفتاح المرور هذا غير مرتبط بأي حساب هنا. سجّل الدخول بكلمة المرور.",
+  "The passkey could not be checked. Try again or sign in with your password.": "تعذّر التحقق من مفتاح المرور. حاول مرة أخرى أو سجّل الدخول بكلمة المرور.",
+  "Passkey not found.": "مفتاح المرور غير موجود.",
+  "Unknown AI provider.": "مزوّد ذكاء اصطناعي غير معروف.",
+  "No key is saved for this provider yet.": "لا يوجد مفتاح محفوظ لهذا المزوّد بعد.",
+  "Connected: {count} models available.": "متصل: {count} نموذج متاح."
 }

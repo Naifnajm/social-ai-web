@@ -15,12 +15,15 @@ dependencies = [
     "psycopg[binary]>=3.3.8",
     "pydantic-settings>=2.16.2",
     "pyjwt>=2.15.1",
+    "pyotp>=2.9",
     "python-multipart>=0.0.33",
     "redis>=8.1.0",
     "requests>=2.34.2",
     "rq>=3.0.0",
+    "segno>=1.6",
     "sqlalchemy>=2.0",
     "uvicorn[standard]>=0.54.0",
+    "webauthn>=2.5",
 ]
 
 [project.optional-dependencies]

@@ -9,7 +9,7 @@ import { useSession } from "@/lib/session";
 
 type AdminUser = {
   id: number; name: string; email: string; username: string | null; is_active: boolean; is_superadmin: boolean;
-  last_login_at: string | null; created_at: string; workspaces: string[];
+  last_login_at: string | null; created_at: string; workspaces: string[]; two_step: boolean; passkeys: number;
 };
 type Page = { items: AdminUser[]; total: number; page: number; page_size: number };
 
@@ -24,6 +24,11 @@ export default function AdminUsersPage() {
   const users = useQuery({ queryKey: ["admin-users", q, page], queryFn: () => api.get<Page>("/admin/users", { q, page }), placeholderData: keepPreviousData });
   const change = useMutation({
     mutationFn: (v: { id: number; what: "active" | "superadmin"; value: boolean }) => api.post<AdminUser>(`/admin/users/${v.id}/${v.what}`, { value: v.value }),
+    onSuccess: () => { client.invalidateQueries({ queryKey: ["admin-users"] }); toast.success(t("done")); },
+    onError: (e) => toast.error(e instanceof ApiError ? e.message : String(e)),
+  });
+  const resetTwoStep = useMutation({
+    mutationFn: (id: number) => api.post<AdminUser>(`/admin/users/${id}/reset-two-step`),
     onSuccess: () => { client.invalidateQueries({ queryKey: ["admin-users"] }); toast.success(t("done")); },
     onError: (e) => toast.error(e instanceof ApiError ? e.message : String(e)),
   });
@@ -62,6 +67,8 @@ export default function AdminUsersPage() {
                         <div className="flex flex-wrap gap-1.5">
                           <Badge tone={u.is_active ? "ok" : "bad"}>{u.is_active ? t("users.active") : t("users.disabled")}</Badge>
                           {u.is_superadmin && <Badge tone="ink">{t("users.admin")}</Badge>}
+                          {u.two_step && <Badge tone="ok">{t("users.twoStep")}</Badge>}
+                          {u.passkeys > 0 && <Badge>{t("users.passkeys", { n: u.passkeys })}</Badge>}
                         </div>
                       </td>
                       <td className="py-3">
@@ -73,6 +80,11 @@ export default function AdminUsersPage() {
                             <Button size="sm" loading={change.isPending} onClick={() => change.mutate({ id: u.id, what: "superadmin", value: !u.is_superadmin })}>
                               {u.is_superadmin ? t("users.revokeAdmin") : t("users.makeAdmin")}
                             </Button>
+                            {(u.two_step || u.passkeys > 0) && (
+                              <Button size="sm" variant="ghost" title={t("users.resetTwoStepHint")} loading={resetTwoStep.isPending} onClick={() => resetTwoStep.mutate(u.id)}>
+                                {t("users.resetTwoStep")}
+                              </Button>
+                            )}
                           </div>
                         )}
                       </td>

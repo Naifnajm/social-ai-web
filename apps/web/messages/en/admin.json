@@ -109,7 +109,11 @@
   "prices": "Stripe price ids (override the environment)",
   "general": "General",
   "announcement": "Announcement banner (shown in every workspace)",
-  "saved": "Platform settings saved."
+  "saved": "Platform settings saved.",
+  "test": "Test connection",
+  "works": "Works",
+  "broken": "Not working",
+  "savedNotTested": "Saved, not tested"
  },
  "users": {
   "search": "Search by name, e-mail or username",
@@ -124,7 +128,11 @@
   "disable": "Disable",
   "enable": "Enable",
   "makeAdmin": "Make admin",
-  "revokeAdmin": "Remove admin"
+  "revokeAdmin": "Remove admin",
+  "twoStep": "Two-step",
+  "passkeys": "{n, plural, one {# passkey} other {# passkeys}}",
+  "resetTwoStep": "Reset two-step",
+  "resetTwoStepHint": "For a lost phone: turns the authenticator app off, removes passkeys and signs the person out."
  },
  "ai": {
   "keys": "Platform keys",

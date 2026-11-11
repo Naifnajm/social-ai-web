@@ -40,6 +40,23 @@ def client_ip(request: Request) -> str:
     return request.client.host if request.client else ""
 
 
+def first_use(key: str, ttl: int) -> bool:
+    """True the first time ``key`` is seen within ``ttl`` seconds (single-use sign-in challenges)."""
+    if settings.is_test:
+        now = time.monotonic()
+        seen = _memory.get(f"once:{key}")
+        if seen and seen[1] > now:
+            return False
+        _memory[f"once:{key}"] = (1, now + ttl)
+        return True
+    try:
+        from redis import Redis
+        redis = Redis.from_url(settings.redis_url, socket_timeout=0.5, socket_connect_timeout=0.5)
+        return bool(redis.set(f"sai:once:{key}", 1, nx=True, ex=ttl))
+    except Exception:  # noqa: BLE001 - the challenge still expires on its own
+        return True
+
+
 def _hit(key: str, window: int) -> int:
     """Count one request under ``key`` and return the count inside the current window."""
     if settings.is_test:

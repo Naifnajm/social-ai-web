@@ -24,7 +24,9 @@ from app.modules.workspaces.service import accept_invitation, create_workspace
 
 from .models import User
 from .schemas import (ForgotIn, LoginIn, MeOut, MeUpdate, MembershipOut, PasswordChange, RefreshIn, ResetIn,
-                      SessionOut, SignupIn, UserOut)
+                      SessionOut, SignupIn, TwoStepOut, UserOut)
+from .two_step import router as two_step_router
+from .two_step import two_step_challenge
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -45,6 +47,9 @@ def _session(db: Session, user: User, response: Response) -> SessionOut:
     response.set_cookie(ACCESS_COOKIE, access, max_age=settings.access_token_minutes * 60, **cookie)
     response.set_cookie(REFRESH_COOKIE, refresh, max_age=settings.refresh_token_days * 86400, path="/api/auth", **cookie)
     return SessionOut(access_token=access, refresh_token=refresh, me=me_payload(db, user))
+
+
+session_for = _session  # used by the second sign-in step and passkeys (two_step.py)
 
 
 def _find_user(db: Session, email: str) -> User | None:
@@ -93,13 +98,15 @@ def signup(data: SignupIn, response: Response, db: Session = Depends(get_db)):
     return _session(db, user, response)
 
 
-@router.post("/login", response_model=SessionOut, dependencies=[Depends(rate_limit("login", 10, 300))])
+@router.post("/login", response_model=SessionOut | TwoStepOut, dependencies=[Depends(rate_limit("login", 10, 300))])
 def login(data: LoginIn, response: Response, db: Session = Depends(get_db)):
     user = _find_login(db, data.email)
     if not user or not user.is_active or not verify_password(data.password, user.password_hash):
         raise Unauthorized(_("Wrong e-mail, username or password."), code="bad_credentials")
-    user.last_login_at = datetime.now(timezone.utc)
     set_locale(user.locale)
+    if user.two_step:  # the password alone is not enough: the code comes next
+        return TwoStepOut(**two_step_challenge(user))
+    user.last_login_at = datetime.now(timezone.utc)
     return _session(db, user, response)
 
 
@@ -162,7 +169,8 @@ def forgot_password(data: ForgotIn, db: Session = Depends(get_db)):
               f'<p><a href="{link}">{link}</a></p>', text=link)
 
 
-@router.post("/password/reset", response_model=SessionOut, dependencies=[Depends(rate_limit("reset", 10, 3600))])
+@router.post("/password/reset", response_model=SessionOut | TwoStepOut,
+             dependencies=[Depends(rate_limit("reset", 10, 3600))])
 def reset_password(data: ResetIn, response: Response, db: Session = Depends(get_db)):
     payload = decode_token(data.token, "reset")
     match = re.fullmatch(r"(\d+):(\d+)", payload["sub"]) if payload else None
@@ -171,9 +179,14 @@ def reset_password(data: ResetIn, response: Response, db: Session = Depends(get_
         raise AppError(_("This link has expired. Ask for a new one."), code="bad_token")
     user.password_hash = hash_password(data.password)
     user.token_version += 1
+    if user.two_step:  # a reset link (an e-mail) never replaces the phone
+        return TwoStepOut(**two_step_challenge(user))
     return _session(db, user, response)
 
 
 def ensure_owner_membership(db: Session, user: User, workspace_id: int) -> None:  # used by tests/admin tools
     if not db.scalar(select(Membership).where(Membership.user_id == user.id, Membership.workspace_id == workspace_id)):
         db.add(Membership(user_id=user.id, workspace_id=workspace_id, role=Role.owner))
+
+
+router.include_router(two_step_router)

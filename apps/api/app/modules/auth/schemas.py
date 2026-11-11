@@ -54,6 +54,14 @@ class SessionOut(TokensOut):
     me: MeOut
 
 
+class TwoStepOut(BaseModel):
+    """The password was right; the account also asks for a code (POST /auth/login/two-step)."""
+
+    two_step: bool = True
+    challenge: str
+    methods: list[str]
+
+
 class MeUpdate(BaseModel):
     name: str | None = Field(default=None, max_length=120)
     username: str | None = Field(default=None, max_length=30)  # "" clears it

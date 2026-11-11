@@ -212,6 +212,7 @@ class PlatformSettingsOut(BaseModel):
     stripe_configured: bool
     stripe_webhook_configured: bool
     webhook_url: str
+    ai_status: dict[str, dict] = {}  # last connection test of each platform AI key
 
     model_config = {"populate_by_name": True}
 

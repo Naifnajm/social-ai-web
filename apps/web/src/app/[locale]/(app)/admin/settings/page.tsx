@@ -1,19 +1,20 @@
 "use client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { Icon } from "@/components/icon";
 import { Badge, Button, Card, Field, IconButton, Input, SectionTitle, Select, Spinner, Textarea, toast } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 
 type Values = Record<string, string | number | boolean | Record<string, string> | null>;
-type SettingsOut = { values: Values; schema: Record<string, string>; stripe_configured: boolean; stripe_webhook_configured: boolean; webhook_url: string };
+type KeyStatus = { ok: boolean; message: string; models: number; at: string };
+type SettingsOut = { values: Values; schema: Record<string, string>; stripe_configured: boolean; stripe_webhook_configured: boolean; webhook_url: string; ai_status?: Record<string, KeyStatus> };
 
 const AI_KEYS = [
-  { key: "ai.openai_api_key", label: "OpenAI" },
-  { key: "ai.anthropic_api_key", label: "Anthropic" },
-  { key: "ai.gemini_api_key", label: "Google Gemini" },
-  { key: "ai.elevenlabs_api_key", label: "ElevenLabs" },
+  { key: "ai.openai_api_key", type: "openai", label: "OpenAI" },
+  { key: "ai.anthropic_api_key", type: "anthropic", label: "Anthropic" },
+  { key: "ai.gemini_api_key", type: "gemini", label: "Google Gemini" },
+  { key: "ai.elevenlabs_api_key", type: "elevenlabs", label: "ElevenLabs" },
 ];
 const PRICE_KEYS = ["starter_month", "starter_year", "pro_month", "pro_year", "business_month", "business_year"];
 
@@ -33,6 +34,22 @@ function SettingsForm({ initial }: { initial: SettingsOut }) {
     announcement: String(v["platform.announcement"] ?? ""),
   });
   const [secrets, setSecrets] = useState<Record<string, string>>({});
+  const [status, setStatus] = useState<Record<string, KeyStatus>>(initial.ai_status ?? {});
+  const [testing, setTesting] = useState<string | null>(null);
+  const locale = useLocale();
+  const when = (iso: string) => new Date(iso).toLocaleString(locale === "ar" ? "ar-SA-u-nu-latn-ca-gregory" : locale, { dateStyle: "medium", timeStyle: "short" });
+  /** A free call to the provider (its list of models): proves the key works without spending credit. */
+  const testKey = async (type: string) => {
+    setTesting(type);
+    try {
+      const result = await api.post<KeyStatus>(`/admin/settings/ai/${type}/test`);
+      setStatus((s) => ({ ...s, [type]: result }));
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : String(err));
+    } finally {
+      setTesting(null);
+    }
+  };
 
   const save = useMutation({
     mutationFn: () => api.put<SettingsOut>("/admin/settings", { values: {
@@ -43,8 +60,12 @@ function SettingsForm({ initial }: { initial: SettingsOut }) {
     } }),
     onSuccess: (data) => {
       qc.setQueryData(["admin-settings"], data);
+      // every newly pasted AI key is tested right away
+      const fresh = AI_KEYS.filter(({ key }) => secrets[key]).map(({ type }) => type);
+      setStatus(Object.fromEntries(Object.entries(data.ai_status ?? {}).filter(([type]) => !fresh.includes(type))));
       setSecrets({});
       toast.success(t("saved"));
+      fresh.reduce((chain, type) => chain.then(() => testKey(type)), Promise.resolve());
     },
     onError: (err) => toast.error(err instanceof ApiError ? err.message : String(err)),
   });
@@ -67,16 +88,27 @@ function SettingsForm({ initial }: { initial: SettingsOut }) {
           <Field label={t("imageModel")}><Input dir="ltr" value={form.imageModel} onChange={(e) => setForm({ ...form, imageModel: e.target.value })} /></Field>
         </div>
         <ul className="mt-5 flex flex-col divide-y divide-line">
-          {AI_KEYS.map(({ key, label }) => {
+          {AI_KEYS.map(({ key, type, label }) => {
             const configured = initial.values[key] === true && secrets[key] !== "";
+            const result = configured ? status[type] : undefined;
             return (
-              <li key={key} className="flex flex-wrap items-center gap-3 py-3">
-                <Icon name="key" size={18} className="text-text-2" />
-                <span className="w-32 text-sm font-semibold" dir="ltr">{label}</span>
-                <Badge tone={configured ? "ok" : "neutral"}>{configured ? t("configured") : t("notConfigured")}</Badge>
-                <Input className="min-w-[200px] flex-1" type="password" dir="ltr" autoComplete="off" placeholder={configured ? "••••••••  " + t("replace") : "sk-…"}
-                  value={secrets[key] ?? ""} onChange={(e) => setSecrets({ ...secrets, [key]: e.target.value })} />
-                {initial.values[key] === true && <IconButton icon="delete" label={t("clear")} onClick={() => setSecrets({ ...secrets, [key]: "" })} />}
+              <li key={key} id={`ai-${type}`} className="flex flex-col gap-2 py-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Icon name="key" size={18} className="text-text-2" />
+                  <span className="w-32 text-sm font-semibold" dir="ltr">{label}</span>
+                  {!configured ? <Badge>{t("notConfigured")}</Badge>
+                    : !result ? <Badge tone="warn">{t("savedNotTested")}</Badge>
+                      : <Badge tone={result.ok ? "ok" : "bad"}>{result.ok ? t("works") : t("broken")}</Badge>}
+                  <Input className="min-w-[200px] flex-1" type="password" dir="ltr" autoComplete="off" placeholder={configured ? "••••••••  " + t("replace") : "sk-…"}
+                    value={secrets[key] ?? ""} onChange={(e) => setSecrets({ ...secrets, [key]: e.target.value })} />
+                  {configured && <Button size="sm" loading={testing === type} disabled={!!testing} onClick={() => testKey(type)}>{t("test")}</Button>}
+                  {initial.values[key] === true && <IconButton icon="delete" label={t("clear")} onClick={() => setSecrets({ ...secrets, [key]: "" })} />}
+                </div>
+                {result && (
+                  <p className={`bidi ps-[30px] text-xs ${result.ok ? "text-ok" : "text-bad"}`}>
+                    {result.message} <span className="text-faint">· {when(result.at)}</span>
+                  </p>
+                )}
               </li>
             );
           })}

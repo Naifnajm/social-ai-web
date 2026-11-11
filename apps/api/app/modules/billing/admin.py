@@ -3,6 +3,7 @@ suspend/reactivate, extend trial, manual plan changes, platform stats and platfo
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
@@ -222,7 +223,48 @@ def _settings_out(db: Session) -> PlatformSettingsOut:
         stripe_configured=bool(billing_settings().stripe_secret_key),
         stripe_webhook_configured=bool(billing_settings().stripe_webhook_secret),
         webhook_url=f"{settings.public_api_url.rstrip('/')}/billing/webhooks/stripe",
+        ai_status={name: platform.get_setting(db, f"ai.status.{name}") for name in platform.AI_PROVIDERS
+                   if platform.ai_key(db, name) and platform.get_setting(db, f"ai.status.{name}")},
     )
+
+
+class AiKeyTestOut(BaseModel):
+    provider: str
+    ok: bool
+    message: str
+    models: int = 0
+    at: datetime
+
+
+@router.post("/settings/ai/{provider_type}/test", response_model=AiKeyTestOut)
+def test_platform_ai_key(provider_type: str, admin: User = Depends(superadmin), db: Session = Depends(get_db)):
+    """Prove that a platform AI key works with a free call (the provider's list of models); costs no credit.
+    The result is kept and shown next to the key."""
+    from app.core.http import ApiError
+    from app.modules.ai import catalog
+    from app.modules.ai.clients import get_client
+    from app.modules.ai.generators import get_media_client
+    from app.modules.ai.models import AIProvider
+    from app.modules.ai.providers import catalog_defaults
+
+    if provider_type not in platform.AI_PROVIDERS:
+        raise NotFound(_("Unknown AI provider."))
+    key = platform.ai_key(db, provider_type)
+    if not key:
+        raise AppError(_("No key is saved for this provider yet."), code="no_key")
+    # a throw-away provider row (never saved) carrying the platform key
+    probe = AIProvider(**catalog_defaults(provider_type), provider_type=provider_type, api_key=key, managed=True,
+                       active=True)
+    now = datetime.now().astimezone()
+    try:
+        models = (get_client(probe).list_models() if catalog.can(provider_type, catalog.TEXT)
+                  else get_media_client(probe).test())
+        result = {"ok": True, "message": _("Connected: {count} models available.", count=len(models or [])),
+                  "models": len(models or [])}
+    except ApiError as exc:
+        result = {"ok": False, "message": exc.message, "models": 0}
+    platform.set_setting(db, f"ai.status.{provider_type}", {**result, "at": now.isoformat()}, admin.id)
+    return AiKeyTestOut(provider=provider_type, at=now, **result)
 
 
 @router.get("/settings", response_model=PlatformSettingsOut)
@@ -240,6 +282,8 @@ def write_settings(data: PlatformSettingsIn, admin: User = Depends(superadmin), 
             if value is None or isinstance(value, bool):
                 continue  # untouched (the UI shows secrets as configured/not configured)
             platform.set_secret(db, key, str(value).strip(), admin.id)
+            if key.startswith("ai.") and key.endswith("_api_key"):  # a new key has not been tested yet
+                platform.set_setting(db, f"ai.status.{key[3:-8]}", None, admin.id)
             continue
         if value in ("", None):
             platform.set_setting(db, key, None, admin.id)
@@ -262,7 +306,6 @@ def write_settings(data: PlatformSettingsIn, admin: User = Depends(superadmin), 
 
 
 # ------------------------------------------------------------------ users
-from pydantic import BaseModel  # noqa: E402
 
 
 class AdminUserOut(BaseModel):
@@ -275,6 +318,8 @@ class AdminUserOut(BaseModel):
     last_login_at: datetime | None = None
     created_at: datetime
     workspaces: list[str] = []
+    two_step: bool = False
+    passkeys: int = 0
 
 
 class AdminUserPage(BaseModel):
@@ -293,7 +338,8 @@ def _user_out(db: Session, user: User) -> AdminUserOut:
                        .where(Membership.user_id == user.id).order_by(Workspace.name)).all()
     return AdminUserOut(id=user.id, name=user.name, email=user.email, username=user.username,
                         is_active=user.is_active, is_superadmin=user.is_superadmin,
-                        last_login_at=user.last_login_at, created_at=user.created_at, workspaces=list(names))
+                        last_login_at=user.last_login_at, created_at=user.created_at, workspaces=list(names),
+                        two_step=user.two_step, passkeys=len(user.passkeys))
 
 
 def _user(db: Session, user_id: int) -> User:
@@ -337,6 +383,18 @@ def set_user_superadmin(user_id: int, data: FlagIn, admin: User = Depends(supera
         raise AppError(_("You cannot remove your own administrator rights."), code="self_action")
     user.is_superadmin = data.value
     user.token_version += 1
+    return _user_out(db, user)
+
+
+@router.post("/users/{user_id}/reset-two-step", response_model=AdminUserOut)
+def reset_user_two_step(user_id: int, admin: User = Depends(superadmin), db: Session = Depends(get_db)):
+    """Support for a lost phone: switches the authenticator app off, removes the passkeys and signs the person out
+    everywhere. They sign in with the password again and set it up anew."""
+    from app.modules.auth.two_step import reset_two_step
+
+    user = _user(db, user_id)
+    reset_two_step(user)
+    db.flush()
     return _user_out(db, user)
 
 

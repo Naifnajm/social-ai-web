@@ -38,9 +38,9 @@ def create_refresh_token(user_id: int, token_version: int) -> str:
                    timedelta(days=settings.refresh_token_days))
 
 
-def create_purpose_token(purpose: str, subject: str, hours: int = 24) -> str:
-    """Single-purpose signed token (password reset, e-mail links…)."""
-    return _encode({"sub": subject, "typ": purpose}, timedelta(hours=hours))
+def create_purpose_token(purpose: str, subject: str, hours: int = 24, minutes: int | None = None) -> str:
+    """Single-purpose signed token (password reset, e-mail links, the second sign-in step…)."""
+    return _encode({"sub": subject, "typ": purpose}, timedelta(minutes=minutes) if minutes else timedelta(hours=hours))
 
 
 def decode_token(token: str, expected_type: str) -> dict | None:

@@ -1,6 +1,7 @@
 "use client";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { SecuritySettings } from "@/components/auth/security-settings";
 import { Button, Card, Field, Input, SectionTitle, toast } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import { useSession } from "@/lib/session";
@@ -36,6 +37,7 @@ export default function ProfilePage() {
           <Button onClick={() => api.post("/auth/password", pw).then(() => { toast.success(t("passwordChanged")); window.location.href = "/"; }).catch(onError)}>{t("changePassword")}</Button>
         </div>
       </Card>
+      <SecuritySettings />
     </div>
   );
 }

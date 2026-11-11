@@ -376,9 +376,9 @@ export function Landing() {
             </div>
             <p data-reveal="fade" className="lx-dim max-w-md text-[15px] leading-relaxed lg:justify-self-end lg:pb-3">{t("featuresText")}</p>
           </div>
-          <div className="mt-16 grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-16 grid grid-cols-1 items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {FEATURES.map((f, i) => (
-              <div key={f.key} data-reveal="fade" className="lg:even:mt-20">
+              <div key={f.key} data-reveal="fade" className="sm:max-xl:even:mt-14 xl:[&:nth-child(3n+2)]:mt-14">
                 <article className="lx-feature flex h-full flex-col p-5 sm:p-6">
                   <div className="lx-feature-orb" />
                   <div className="relative flex items-center justify-between">
@@ -387,15 +387,15 @@ export function Landing() {
                   </div>
                   <div className={cx("lx-shot relative my-5", f.key === "mobile" && "lx-shot-phone")}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/landing/shots/${locale}/${f.key}.webp`} alt="" loading="lazy" decoding="async" width={f.key === "mobile" ? 585 : 1176} height={f.key === "mobile" ? 1170 : 960} />
+                    <img src={`/landing/shots/${locale}/${f.key}.webp`} alt="" loading="lazy" decoding="async" width={f.key === "mobile" ? 585 : 1040} height={f.key === "mobile" ? 1170 : 780} />
                   </div>
                   <h3 className="lx-display relative text-[22px] !leading-tight">{t(`features.${f.key}.title`)}</h3>
                   <p className="relative mt-2 text-[13.5px] leading-relaxed opacity-60">{t(`features.${f.key}.text`)}</p>
                 </article>
               </div>
             ))}
-            <div data-reveal="fade" className="lg:even:mt-20">
-              <Link href="/signup" className="lx-feature lx-feature-cta flex h-full min-h-[220px] flex-col justify-between p-6 sm:min-h-[400px]">
+            <div data-reveal="fade" className="sm:max-xl:even:mt-14 xl:[&:nth-child(3n+2)]:mt-14">
+              <Link href="/signup" className="lx-feature lx-feature-cta flex h-full min-h-[220px] flex-col justify-between p-6 sm:min-h-[360px]">
                 <span className="flex items-center justify-between"><span className="lx-tag !opacity-80" dir="ltr">08</span><Arrow className="h-7 w-7" /></span>
                 <span className="lx-display text-[clamp(28px,2.6vw,40px)] !leading-[1.05]">{t("ctaPrimary", { days })}</span>
               </Link>

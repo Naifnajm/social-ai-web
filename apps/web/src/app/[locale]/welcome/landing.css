@@ -199,17 +199,13 @@ a:hover > .lx-arrow { transform: translate(2px, -2px); }
 .lx-feature:hover .lx-feature-orb { transform: translate(-50%, -50%) scale(1.25); opacity: 1; }
 .lx-feature-icon { transition: transform 0.6s var(--ease); }
 .lx-feature:hover .lx-feature-icon { transform: scale(1.12) rotate(-6deg); }
-/* A real screenshot of the product inside a feature card: a small window on the page's top corner; hover pans across it. */
-.lx-shot { position: relative; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 16px; background: #fff; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 30px 60px -30px rgba(255, 61, 139, 0.5); transform: perspective(900px) rotateX(5deg); transform-origin: 50% 100%; transition: transform 0.7s var(--ease); }
-.lx-shot img { position: absolute; top: 0; inset-inline-start: 0; width: 185%; max-width: none; height: auto; transition: transform 1.6s var(--ease); }
-.lx-shot::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(11, 11, 14, 0.22), transparent 40%); pointer-events: none; }
-.lx-feature:hover .lx-shot { transform: perspective(900px) rotateX(0deg); }
-.lx-feature:hover .lx-shot img { transform: translate(-18%, -16%); }
-[dir="rtl"] .lx-feature:hover .lx-shot img { transform: translate(18%, -16%); }
+/* A real screenshot of the product inside a feature card: a tight 4:3 crop of the part of the screen that shows the feature. */
+.lx-shot { position: relative; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 16px; background: #fff; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 30px 60px -30px rgba(255, 61, 139, 0.5); }
+.lx-shot img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--ease); }
+.lx-feature:hover .lx-shot img { transform: scale(1.045); }
 .lx-shot-phone { display: flex; justify-content: center; background: transparent; box-shadow: none; }
-.lx-shot-phone::after { display: none; }
-.lx-shot-phone img { position: relative; inset-inline-start: auto; width: 44%; margin-top: 8px; align-self: flex-start; border-radius: 18px; box-shadow: 0 0 0 5px #17171a, 0 0 0 6px rgba(255, 255, 255, 0.2), 0 30px 60px -20px rgba(255, 61, 139, 0.55); }
-.lx-feature:hover .lx-shot-phone img, [dir="rtl"] .lx-feature:hover .lx-shot-phone img { transform: translateY(-24%); }
+.lx-shot-phone img { width: auto; height: 178%; align-self: flex-start; margin-top: 10px; border-radius: 22px; object-fit: contain; box-shadow: 0 0 0 6px #17171a, 0 0 0 7px rgba(255, 255, 255, 0.2), 0 30px 60px -20px rgba(255, 61, 139, 0.55); }
+.lx-feature:hover .lx-shot-phone img { transform: translateY(-20%); }
 .lx-feature-cta { background: var(--accent); color: var(--on-accent); box-shadow: none; }
 .lx-feature-cta:hover { box-shadow: 0 30px 80px -30px var(--accent); }
 

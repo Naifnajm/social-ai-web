@@ -13,5 +13,9 @@
   "Your session has expired. Please sign in again.": "انتهت جلستك. سجّل الدخول من جديد.",
   "Reset your password": "إعادة تعيين كلمة المرور",
   "Too many attempts. Wait a few minutes and try again.": "محاولات كثيرة. انتظر بضع دقائق ثم حاول من جديد.",
-  "This address is not allowed. Use a public https:// address.": "هذا العنوان غير مسموح. استخدم عنواناً عاماً يبدأ بـ https://"
+  "This address is not allowed. Use a public https:// address.": "هذا العنوان غير مسموح. استخدم عنواناً عاماً يبدأ بـ https://",
+  "User not found.": "المستخدم غير موجود.",
+  "You cannot disable your own account.": "لا يمكنك تعطيل حسابك أنت.",
+  "You cannot remove your own administrator rights.": "لا يمكنك إزالة صلاحية المدير عن حسابك أنت.",
+  "Your monthly AI limit in this workspace is used up (${spent} of ${limit}). Ask a workspace admin to raise it.": "استهلكت حدّك الشهري من الذكاء الاصطناعي في هذه المساحة (${spent} من ${limit}). اطلب من مدير المساحة رفعه."
 }

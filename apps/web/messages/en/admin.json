@@ -4,7 +4,10 @@
  "forbidden": "Platform administrators only.",
  "tabs": {
   "overview": "Overview",
-  "settings": "Platform settings"
+  "settings": "Platform settings",
+  "users": "Users",
+  "ai": "AI credit",
+  "system": "System health"
  },
  "stats": {
   "mrr": "MRR",
@@ -106,5 +109,49 @@
   "general": "General",
   "announcement": "Announcement banner (shown in every workspace)",
   "saved": "Platform settings saved."
+ },
+ "users": {
+  "search": "Search by name, e-mail or username",
+  "total": "{n} users",
+  "empty": "No matching users",
+  "user": "User",
+  "workspaces": "Workspaces",
+  "state": "State",
+  "active": "Active",
+  "disabled": "Disabled",
+  "admin": "Platform admin",
+  "disable": "Disable",
+  "enable": "Enable",
+  "makeAdmin": "Make admin",
+  "revokeAdmin": "Remove admin"
+ },
+ "ai": {
+  "keys": "Platform keys",
+  "keySet": "Set",
+  "keyMissing": "Not set",
+  "keysHintOn": "Workspaces without their own provider are served with these keys, and the usage comes out of their plan's AI credit.",
+  "keysHintOff": "No platform key yet, so the AI credit included in the plans does not work. Add at least one key.",
+  "manageKeys": "Manage keys in platform settings",
+  "spendTitle": "Platform spend this month",
+  "spendHint": "Cost of everything run on the platform's keys across all workspaces, at the provider's price.",
+  "noSpend": "Nothing has been run on the platform's keys this month.",
+  "byWorkspace": "Heaviest workspaces",
+  "calls": "{n} calls"
+ },
+ "system": {
+  "services": "Services",
+  "ok": "Running",
+  "down": "Down",
+  "queue": "Queue {name}",
+  "postsToday": "Posts published today",
+  "failedPosts": "Posts failed today",
+  "errors24h": "Integration errors, last 24 h",
+  "failedJobs": "Failed jobs in the queue",
+  "recentErrors": "Latest errors with networks and providers",
+  "checks": {
+   "database": "Database",
+   "redis": "Redis",
+   "worker": "Background worker"
+  }
  }
 }

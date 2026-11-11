@@ -606,3 +606,22 @@ def test_cli_create_superadmin(db, capsys):
     assert cli.main(["revoke-superadmin", "boss@example.com"]) == 0
     assert not user.is_superadmin
     assert cli.main(["revoke-superadmin", "ghost@example.com"]) == 1
+
+
+def test_admin_users_ai_and_system(db, client, auth):
+    from app.modules.auth.models import User
+    other = signup(client, email="second@example.com", name="Second", workspace="Beta")
+    assert client.get("/api/admin/users", headers=auth.headers).status_code == 403
+    db.get(User, auth.user_id).is_superadmin = True
+    db.flush()
+    page = client.get("/api/admin/users?q=second", headers=auth.headers).json()
+    assert page["total"] == 1 and page["items"][0]["workspaces"] == ["Beta"]
+    off = client.post(f"/api/admin/users/{other.user_id}/active", json={"value": False}, headers=auth.headers)
+    assert off.status_code == 200 and off.json()["is_active"] is False
+    assert client.get("/api/auth/me", headers=other.headers).status_code == 401      # signed out everywhere
+    assert client.post(f"/api/admin/users/{auth.user_id}/active", json={"value": False},
+                       headers=auth.headers).json()["code"] == "self_action"
+    ai = client.get("/api/admin/ai", headers=auth.headers).json()
+    assert ai["month_total"] == 0 and set(ai["keys"]) == {"openai", "anthropic", "gemini", "elevenlabs"}
+    system = client.get("/api/admin/system", headers=auth.headers).json()
+    assert system["checks"][0] == {"key": "database", "ok": True, "detail": ""} and "errors_24h" in system

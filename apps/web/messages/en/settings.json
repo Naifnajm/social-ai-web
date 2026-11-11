@@ -53,5 +53,8 @@
  "changePassword": "Change password",
  "passwordChanged": "Password changed. Please sign in again.",
  "username": "Username",
- "usernameHint": "Optional. Sign in with it instead of your e-mail: English letters and digits, 3 to 30 characters."
+ "usernameHint": "Optional. Sign in with it instead of your e-mail: English letters and digits, 3 to 30 characters.",
+ "aiLimit": "AI limit $",
+ "aiLimitHelp": "The most this member may spend per month from the included AI credit. Leave empty for no limit. Spent this month: ${spent}",
+ "aiLimitSaved": "Member limit saved"
 }

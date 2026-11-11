@@ -1,6 +1,6 @@
 """Platform admin (superadmins only): workspaces with plan/status/usage, support view (no impersonation),
 suspend/reactivate, extend trial, manual plan changes, platform stats and platform-wide settings."""
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, or_, select
@@ -97,7 +97,8 @@ def stats(admin: User = Depends(superadmin), db: Session = Depends(get_db)):
             mrr += state.plan.monthly_value(sub.interval)
     since30 = now - timedelta(days=30)
     signup_days = db.execute(
-        select(func.date_trunc("day", Workspace.created_at).label("d"), func.count())
+        # Bucket by UTC day: date_trunc alone uses the database session's time zone, which shifted late signups.
+        select(func.date_trunc("day", func.timezone("UTC", Workspace.created_at)).label("d"), func.count())
         .where(Workspace.created_at >= since30).group_by("d").order_by("d")).all()
     counts = {d.date().isoformat(): c for d, c in signup_days}
     series = [DayCount(day=(now - timedelta(days=i)).date().isoformat(),
@@ -258,3 +259,174 @@ def write_settings(data: PlatformSettingsIn, admin: User = Depends(superadmin), 
             raise AppError(_("Invalid value for {key}.", key=key), code="bad_setting") from None
         platform.set_setting(db, key, value, admin.id)
     return _settings_out(db)
+
+
+# ------------------------------------------------------------------ users
+from pydantic import BaseModel  # noqa: E402
+
+
+class AdminUserOut(BaseModel):
+    id: int
+    name: str
+    email: str
+    username: str | None = None
+    is_active: bool
+    is_superadmin: bool
+    last_login_at: datetime | None = None
+    created_at: datetime
+    workspaces: list[str] = []
+
+
+class AdminUserPage(BaseModel):
+    items: list[AdminUserOut]
+    total: int
+    page: int
+    page_size: int
+
+
+class FlagIn(BaseModel):
+    value: bool
+
+
+def _user_out(db: Session, user: User) -> AdminUserOut:
+    names = db.scalars(select(Workspace.name).join(Membership, Membership.workspace_id == Workspace.id)
+                       .where(Membership.user_id == user.id).order_by(Workspace.name)).all()
+    return AdminUserOut(id=user.id, name=user.name, email=user.email, username=user.username,
+                        is_active=user.is_active, is_superadmin=user.is_superadmin,
+                        last_login_at=user.last_login_at, created_at=user.created_at, workspaces=list(names))
+
+
+def _user(db: Session, user_id: int) -> User:
+    user = db.get(User, user_id)
+    if user is None:
+        raise NotFound(_("User not found."))
+    return user
+
+
+@router.get("/users", response_model=AdminUserPage)
+def list_users(q: str = "", page: int = Query(1, ge=1), page_size: int = Query(25, ge=1, le=100),
+               admin: User = Depends(superadmin), db: Session = Depends(get_db)):
+    """Every account on the platform, newest first; ``q`` matches the name, e-mail or username."""
+    query = select(User)
+    if q.strip():
+        like = f"%{q.strip().lower()}%"
+        query = query.where(or_(func.lower(User.name).like(like), func.lower(User.email).like(like),
+                                func.lower(func.coalesce(User.username, "")).like(like)))
+    total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
+    rows = db.scalars(query.order_by(User.id.desc()).limit(page_size).offset((page - 1) * page_size)).all()
+    return AdminUserPage(items=[_user_out(db, u) for u in rows], total=total, page=page, page_size=page_size)
+
+
+@router.post("/users/{user_id}/active", response_model=AdminUserOut)
+def set_user_active(user_id: int, data: FlagIn, admin: User = Depends(superadmin), db: Session = Depends(get_db)):
+    """Disable or enable an account. A disabled account is signed out everywhere and cannot sign in."""
+    user = _user(db, user_id)
+    if user.id == admin.id and not data.value:
+        raise AppError(_("You cannot disable your own account."), code="self_action")
+    user.is_active = data.value
+    if not data.value:
+        user.token_version += 1
+    return _user_out(db, user)
+
+
+@router.post("/users/{user_id}/superadmin", response_model=AdminUserOut)
+def set_user_superadmin(user_id: int, data: FlagIn, admin: User = Depends(superadmin),
+                        db: Session = Depends(get_db)):
+    user = _user(db, user_id)
+    if user.id == admin.id and not data.value:
+        raise AppError(_("You cannot remove your own administrator rights."), code="self_action")
+    user.is_superadmin = data.value
+    user.token_version += 1
+    return _user_out(db, user)
+
+
+# ------------------------------------------------------------------ platform-paid AI
+class AdminAiRow(BaseModel):
+    key: str
+    label: str
+    cost: float
+    calls: int
+    limit: float | None = None
+
+
+class AdminAiOut(BaseModel):
+    month_total: float
+    keys: dict[str, bool]
+    by_provider: list[AdminAiRow]
+    by_workspace: list[AdminAiRow]
+
+
+@router.get("/ai", response_model=AdminAiOut)
+def ai_overview(admin: User = Depends(superadmin), db: Session = Depends(get_db)):
+    """What the platform's own AI keys cost this month: per provider and for the ten heaviest workspaces."""
+    from app.modules.ai import catalog
+    from app.modules.ai.models import AIProvider, AIUsage
+    since = limits.month_start()
+    paid = [AIUsage.provider_id == AIProvider.id, AIProvider.managed.is_(True), AIUsage.created_at >= since]
+    cost, calls = func.coalesce(func.sum(AIUsage.cost), 0.0), func.count(AIUsage.id)
+    providers = db.execute(select(AIProvider.provider_type, cost, calls).where(*paid)
+                           .group_by(AIProvider.provider_type).order_by(cost.desc())).all()
+    workspaces = db.execute(select(Workspace.id, Workspace.name, cost, calls).where(*paid, Workspace.id == AIUsage.workspace_id)
+                            .group_by(Workspace.id, Workspace.name).order_by(cost.desc()).limit(10)).all()
+    return AdminAiOut(
+        month_total=round(sum(float(row[1]) for row in providers), 4),
+        keys={name: bool(platform.ai_key(db, name)) for name in platform.AI_PROVIDERS},
+        by_provider=[AdminAiRow(key=t, label=catalog.info(t)["label"], cost=round(float(c), 4), calls=n)
+                     for t, c, n in providers],
+        by_workspace=[AdminAiRow(key=str(wid), label=name, cost=round(float(c), 4), calls=n,
+                                 limit=limits.usage(db, wid).get("ai_credits", {}).get("limit"))
+                      for wid, name, c, n in workspaces])
+
+
+# ------------------------------------------------------------------ system health
+class AdminCheck(BaseModel):
+    key: str
+    ok: bool
+    detail: str = ""
+
+
+class AdminSystemOut(BaseModel):
+    checks: list[AdminCheck]
+    queues: dict[str, int]
+    workers: int
+    failed_jobs: int
+    errors_24h: int
+    posts_today: int
+    failed_posts_today: int
+    recent_errors: list[AdminErrorOut]
+
+
+@router.get("/system", response_model=AdminSystemOut)
+def system_health(admin: User = Depends(superadmin), db: Session = Depends(get_db)):
+    """Is everything running: database, Redis, the background worker and its queues, and recent failures."""
+    from app.modules.social.models import Post
+    now = service.utcnow()
+    checks = [AdminCheck(key="database", ok=True)]
+    queues, workers, failed = {}, 0, 0
+    try:
+        from redis import Redis
+        from rq import Queue, Worker
+        connection = Redis.from_url(settings.redis_url, socket_timeout=2, socket_connect_timeout=2)
+        connection.ping()
+        checks.append(AdminCheck(key="redis", ok=True))
+        for name in ("default", "periodic", "media"):
+            queue = Queue(name, connection=connection)
+            queues[name] = queue.count
+            failed += queue.failed_job_registry.count
+        workers = len(Worker.all(connection=connection))
+        checks.append(AdminCheck(key="worker", ok=workers > 0, detail=str(workers)))
+    except Exception as error:  # noqa: BLE001 - the page must load when Redis is down: that is what it reports
+        checks.append(AdminCheck(key="redis", ok=False, detail=str(error)[:200]))
+        checks.append(AdminCheck(key="worker", ok=False))
+    day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    errors = select(ApiLog).where(ApiLog.error.is_not(None))
+    recent = db.scalars(errors.order_by(ApiLog.id.desc()).limit(15)).all()
+    return AdminSystemOut(
+        checks=checks, queues=queues, workers=workers, failed_jobs=failed,
+        errors_24h=db.scalar(select(func.count()).select_from(
+            errors.where(ApiLog.created_at >= now - timedelta(hours=24)).subquery())) or 0,
+        posts_today=db.scalar(select(func.count()).select_from(Post).where(Post.published_at >= day)) or 0,
+        failed_posts_today=db.scalar(select(func.count()).select_from(Post).where(
+            Post.state.in_(("failed", "partial")), Post.updated_at >= day)) or 0,
+        recent_errors=[AdminErrorOut(id=e.id, service=e.service, operation=e.operation, status_code=e.status_code,
+                                     error=(e.error or "")[:300], created_at=e.created_at) for e in recent])

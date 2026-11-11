@@ -6,7 +6,7 @@ import { Avatar, Badge, Button, Card, Field, IconButton, Input, Modal, SectionTi
 import { ApiError, api } from "@/lib/api";
 import { type Role, useSession } from "@/lib/session";
 
-type Member = { id: number; user_id: number; name: string; email: string; role: Role; avatar_url?: string | null };
+type Member = { id: number; user_id: number; name: string; email: string; role: Role; avatar_url?: string | null; ai_monthly_limit: number | null; ai_spent_month: number };
 type Invitation = { id: number; email: string; role: Role; expires_at: string };
 const ROLES: Role[] = ["viewer", "editor", "approver", "admin", "owner"];
 
@@ -24,6 +24,13 @@ export default function MembersPage() {
   const changeRole = useMutation({
     mutationFn: ({ id, role }: { id: number; role: Role }) => api.patch(`/workspace/members/${id}`, { role }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["members"] }),
+    onError,
+  });
+  // Monthly AI limit of one member ($ of the plan's AI credit); an empty box removes the limit.
+  const setAiLimit = useMutation({
+    mutationFn: ({ m, value }: { m: Member; value: string }) =>
+      api.patch(`/workspace/members/${m.id}`, { role: m.role, ai_monthly_limit: value.trim() === "" ? null : Number(value) }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["members"] }); toast.success(t("aiLimitSaved")); },
     onError,
   });
   const remove = useMutation({
@@ -61,6 +68,14 @@ export default function MembersPage() {
                 <div className="truncate text-sm font-semibold">{m.name}{m.user_id === me?.user.id && <span className="text-muted"> · {t("you")}</span>}</div>
                 <div className="truncate text-xs text-muted" dir="ltr">{m.email}</div>
               </div>
+              {isAdmin && (
+                <label className="hidden shrink-0 items-center gap-1.5 text-xs text-muted sm:flex" title={t("aiLimitHelp", { spent: m.ai_spent_month.toFixed(2) })}>
+                  {t("aiLimit")}
+                  <input type="number" min={0} step="0.5" inputMode="decimal" dir="ltr" defaultValue={m.ai_monthly_limit ?? ""} placeholder="∞"
+                    className="h-9 w-20 rounded-xl border border-line bg-white px-2 text-sm text-text outline-none focus:border-ink"
+                    onBlur={(e) => { if (e.target.value !== String(m.ai_monthly_limit ?? "")) setAiLimit.mutate({ m, value: e.target.value }); }} />
+                </label>
+              )}
               {isAdmin ? (
                 <Select className="!h-9 !w-36 shrink-0" value={m.role} onChange={(e) => changeRole.mutate({ id: m.id, role: e.target.value as Role })}>
                   {ROLES.map((r) => <option key={r} value={r}>{t(`roles.${r}`)}</option>)}

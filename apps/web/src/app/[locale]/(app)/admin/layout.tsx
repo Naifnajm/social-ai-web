@@ -10,6 +10,7 @@ const TABS = [
   { href: "/admin", label: "overview", icon: "bar_chart" },
   { href: "/admin/users", label: "users", icon: "group" },
   { href: "/admin/ai", label: "ai", icon: "auto_awesome" },
+  { href: "/admin/support", label: "support", icon: "support_agent" },
   { href: "/admin/system", label: "system", icon: "check_circle" },
   { href: "/admin/settings", label: "settings", icon: "settings" },
 ];

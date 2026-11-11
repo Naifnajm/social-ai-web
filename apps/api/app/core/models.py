@@ -26,6 +26,23 @@ class ApiLog(TimestampMixin, Base):
     ref_id: Mapped[int | None] = mapped_column(Integer)
 
 
+class ErrorEvent(TimestampMixin, Base):
+    """A failure on our side (an unhandled error or a failed external API call) that a person saw, kept under the
+    reference shown to them so support can find exactly what happened."""
+
+    __tablename__ = "error_events"
+
+    ref: Mapped[str] = mapped_column(String(12), unique=True, index=True)
+    status: Mapped[int] = mapped_column(Integer)
+    code: Mapped[str] = mapped_column(String(40))
+    method: Mapped[str] = mapped_column(String(10))
+    path: Mapped[str] = mapped_column(String(500))
+    message: Mapped[str] = mapped_column(Text)
+    detail: Mapped[str | None] = mapped_column(Text)  # traceback, shown to platform admins only
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
+    workspace_id: Mapped[int | None] = mapped_column(ForeignKey("workspaces.id", ondelete="SET NULL"), index=True)
+
+
 class Media(WorkspaceMixin, Base):
     """A file of a workspace (upload, AI result, framed image, production output…)."""
 

@@ -9,6 +9,7 @@ import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import { sortedNav } from "@/config/nav";
 import { BillingOverlay } from "./billing/billing-overlay";
+import { SupportDialog } from "./support/support-dialog";
 import { Icon } from "./icon";
 import { BrandLogo } from "./brand-mark";
 import { Avatar, Spinner, cx } from "./ui";
@@ -78,6 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
         <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 pb-28 lg:px-6 lg:pb-10">
           <BillingOverlay />
+          <SupportDialog />
           {children}
         </main>
       </div>
@@ -169,6 +171,9 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
         <div className={cx("glass-strong pop-in absolute z-50 w-56 rounded-2xl p-1.5", compact ? "end-0 top-full mt-1" : "bottom-full start-0 mb-1")}>
           <Link href="/settings/profile" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-fill-2">
             <Icon name="person" size={16} /> {t("profile")}
+          </Link>
+          <Link href="/settings/support" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-fill-2">
+            <Icon name="support_agent" size={16} /> {t("support")}
           </Link>
           <div className="my-1 h-px bg-line" />
           <div className="flex flex-wrap gap-1 px-1.5 py-1" role="group" aria-label="Language">

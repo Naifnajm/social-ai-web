@@ -1,0 +1,7 @@
+{
+ "Ticket not found.": "التذكرة غير موجودة.",
+ "Unknown ticket status.": "حالة التذكرة غير معروفة.",
+ "New support ticket from {workspace}": "تذكرة دعم جديدة من {workspace}",
+ "Support answered: {subject}": "ردّ الدعم الفني: {subject}",
+ "Something went wrong on our side. Our team can see what happened under reference {ref}.": "حدث خلل من جهتنا. فريقنا يستطيع رؤية ما حدث تحت المرجع {ref}."
+}

@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core import registry
 from app.core.config import settings
-from app.core.errors import ApiError, AppError, api_error_handler, app_error_handler
+from app.core.errors import ApiError, AppError, api_error_handler, app_error_handler, unexpected_error_handler
 from app.core.hardening import API_HEADERS
 from app.core.i18n import pick_locale, set_locale
 
@@ -30,7 +30,10 @@ def create_app() -> FastAPI:
     @app.middleware("http")
     async def locale_middleware(request: Request, call_next):
         set_locale(pick_locale(request.headers.get("accept-language")))
-        response = await call_next(request)
+        try:
+            response = await call_next(request)
+        except Exception as exc:  # noqa: BLE001 — nobody handled it: answer with a reference instead of a bare 500
+            response = await unexpected_error_handler(request, exc)
         for name, value in API_HEADERS.items():
             response.headers.setdefault(name, value)
         return response

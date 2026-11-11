@@ -9,16 +9,21 @@
  * With React Query: useQuery({ queryKey: ["posts"], queryFn: () => api.get("/posts") }).
  */
 
+import { noteFailure } from "@/components/support/store";
+
 export class ApiError extends Error {
   status: number;
   code: string;
   data: unknown;
+  /** Reference of a failure on our side: support finds the details under it. */
+  ref: string | null;
 
   constructor(status: number, message: string, code = "error", data: unknown = null) {
     super(message);
     this.status = status;
     this.code = code;
     this.data = data;
+    this.ref = (data as { ref?: string } | null)?.ref ?? null;
   }
 }
 
@@ -67,7 +72,14 @@ async function request<T>(method: string, path: string, body?: unknown, query?: 
     headers["Content-Type"] = "application/json";
     payload = JSON.stringify(body);
   }
-  const response = await fetch(buildUrl(path, query), { method, headers, body: payload, credentials: "include" });
+  let response: Response;
+  try {
+    response = await fetch(buildUrl(path, query), { method, headers, body: payload, credentials: "include" });
+  } catch (err) {
+    // no answer at all (offline, server down): remembered so the person can send it to support
+    noteFailure({ message: err instanceof Error ? err.message : String(err), code: "network", status: 0, request: `${method} ${path}` });
+    throw err;
+  }
   if (response.status === 401 && retry && !path.startsWith("/auth/")) {
     if (await refresh()) return request<T>(method, path, body, query, false);
     onUnauthenticated?.();
@@ -84,7 +96,9 @@ async function request<T>(method: string, path: string, body?: unknown, query?: 
       : String(data.detail || response.statusText);
     // plan limits: the billing overlay (components/billing) opens an upgrade dialog
     if (data.code === "limit_reached") window.dispatchEvent(new CustomEvent("sai:limit-reached", { detail: { ...data, detail } }));
-    throw new ApiError(response.status, detail, data.code || "error", data);
+    const error = new ApiError(response.status, detail, data.code || "error", data);
+    if (response.status !== 401) noteFailure({ message: detail, code: error.code, status: response.status, ref: error.ref, request: `${method} ${path}` });
+    throw error;
   }
   if (response.status === 204) return undefined as T;
   const type = response.headers.get("content-type") || "";

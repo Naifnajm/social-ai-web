@@ -12,8 +12,10 @@ import clsx from "clsx";
 import { type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes,
   type TextareaHTMLAttributes, forwardRef, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 import { create } from "zustand";
 import { Icon } from "../icon";
+import { type Failure, recentFailure, useSupport } from "../support/store";
 
 export const cx = clsx;
 
@@ -263,38 +265,55 @@ export function Modal({ open, onClose, title, children, footer, size = "md" }: {
 }
 
 // ---------------------------------------------------------------- toasts
-type Toast = { id: number; tone: "ok" | "bad" | "info"; text: string };
+type Toast = { id: number; tone: "ok" | "bad" | "info"; text: string; failure?: Failure | null };
 const useToasts = create<{ items: Toast[]; push: (t: Omit<Toast, "id">) => void; drop: (id: number) => void }>((set) => ({
   items: [],
   push: (t) => {
     const id = Date.now() + Math.random();
     set((s) => ({ items: [...s.items, { ...t, id }] }));
-    setTimeout(() => set((s) => ({ items: s.items.filter((i) => i.id !== id) })), 4200);
+    // an error stays long enough to read it and to press "report"
+    setTimeout(() => set((s) => ({ items: s.items.filter((i) => i.id !== id) })), t.tone === "bad" ? 9000 : 4200);
   },
   drop: (id) => set((s) => ({ items: s.items.filter((i) => i.id !== id) })),
 }));
 
 export const toast = {
   success: (text: string) => useToasts.getState().push({ tone: "ok", text }),
-  error: (text: string) => useToasts.getState().push({ tone: "bad", text }),
+  /** An error. When a request has just failed, its details ride along so the person can send them to support. */
+  error: (text: string) => useToasts.getState().push({ tone: "bad", text, failure: recentFailure() }),
   info: (text: string) => useToasts.getState().push({ tone: "info", text }),
 };
 
 export function Toaster() {
   const { items, drop } = useToasts();
+  const t = useTranslations("support");
+  const canReport = useSupport((s) => s.enabled);
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[60] flex flex-col items-center gap-2 px-4">
-      {items.map((t) => (
-        <button
-          key={t.id}
-          onClick={() => drop(t.id)}
-          className="glass-strong pop-in pointer-events-auto flex max-w-md items-center gap-2 rounded-full px-4 py-2.5 text-sm"
-        >
-          <Icon name={t.tone === "ok" ? "check_circle" : t.tone === "bad" ? "error" : "info"} size={18}
-            className={t.tone === "ok" ? "text-ok" : t.tone === "bad" ? "text-bad" : "text-text-2"} />
-          <span className="bidi">{t.text}</span>
-        </button>
-      ))}
+      {items.map((item) => {
+        const report = item.tone === "bad" && canReport;
+        return (
+          <div key={item.id} role={item.tone === "bad" ? "alert" : "status"}
+            className={cx("glass-strong pop-in pointer-events-auto flex max-w-lg items-center gap-2 px-4 py-2.5 text-sm", report ? "rounded-2xl" : "rounded-full")}>
+            <button onClick={() => drop(item.id)} className="flex min-w-0 items-center gap-2 text-start">
+              <Icon name={item.tone === "ok" ? "check_circle" : item.tone === "bad" ? "error" : "info"} size={18}
+                className={item.tone === "ok" ? "text-ok" : item.tone === "bad" ? "text-bad" : "text-text-2"} />
+              <span className="bidi min-w-0">
+                {item.text}
+                {item.failure?.ref && !item.text.includes(item.failure.ref) && (
+                  <span className="ms-2 rounded-md bg-fill-2 px-1.5 py-0.5 font-mono text-[11px] text-muted" dir="ltr">{item.failure.ref}</span>
+                )}
+              </span>
+            </button>
+            {report && (
+              <button onClick={() => { drop(item.id); useSupport.getState().show(item.failure ?? { message: item.text, code: "shown", status: 0, request: "", page: window.location.pathname, at: Date.now() }); }}
+                className="shrink-0 rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-white hover:bg-ink-2">
+                {t("report")}
+              </button>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

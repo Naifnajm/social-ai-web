@@ -1,0 +1,71 @@
+{
+ "plans": {
+  "trial": "Essai gratuit",
+  "starter": "Starter",
+  "pro": "Pro",
+  "business": "Business",
+  "enterprise": "Enterprise",
+  "free": "Gratuit"
+ },
+ "planTagline": {
+  "starter": "Pour une marque qui s'organise.",
+  "pro": "Pour les marques en croissance et les petites agences.",
+  "business": "Pour les équipes avec plusieurs marques et de la production vidéo.",
+  "enterprise": "Limites, contrat et support sur mesure.",
+  "free": "Commencez sans frais."
+ },
+ "limitLine": {
+  "social_accounts": "{n} comptes sociaux",
+  "members": "{n} membres d'équipe",
+  "posts_month": "{n} publications / mois",
+  "ai_credits": "{n} de crédits IA / mois",
+  "storage_gb": "{n} Go de stockage"
+ },
+ "unlimitedLine": {
+  "social_accounts": "Comptes sociaux illimités",
+  "members": "Membres d'équipe illimités",
+  "posts_month": "Publications illimitées",
+  "ai_credits": "Crédits IA sur demande",
+  "storage_gb": "Stockage illimité"
+ },
+ "features": {
+  "ai_studio": "Studio IA",
+  "templates": "Modèles",
+  "quick_publish": "Publication rapide",
+  "planning": "Planning et calendrier",
+  "inbox": "Messagerie unifiée",
+  "analytics": "Statistiques",
+  "approvals": "Validations",
+  "inbox_assistant": "Assistant de messagerie",
+  "reports": "Rapports programmés",
+  "link_tracking": "Suivi des liens et des ventes",
+  "evergreen": "Republication evergreen",
+  "production": "Tableau de production",
+  "priority_support": "Support prioritaire",
+  "custom_branding": "Image de marque personnalisée"
+ },
+ "monthly": "Mensuel",
+ "yearly": "Annuel",
+ "save": "2 mois offerts",
+ "perMonth": "/ mois",
+ "billedYearly": "{amount} facturés par an",
+ "billedMonthly": "facturé chaque mois",
+ "custom": "Sur mesure",
+ "popular": "Le plus choisi",
+ "contactSales": "Contacter l'équipe commerciale",
+ "choose": "Choisir {plan}",
+ "startTrial": "Commencer l'essai gratuit",
+ "currentPlan": "Offre actuelle",
+ "upgrade": "Passer à l'offre supérieure",
+ "downgrade": "Changer",
+ "everythingIn": "Tout {plan}, plus :",
+ "vatNote": "Les prix en riyals saoudiens sont indicatifs ; le paiement est traité en USD.",
+ "banner": {
+  "trial": "{days, plural, =0 {Votre essai gratuit se termine aujourd'hui.} one {Il reste # jour d'essai gratuit.} other {Il reste # jours d'essai gratuit.}}",
+  "cta": "Voir les offres",
+  "fix": "Mettre à jour le paiement",
+  "dismiss": "Masquer"
+ },
+ "freeTitle": "Et après l'essai ? Cela reste gratuit.",
+ "freeText": "{accounts} comptes et {posts} publications par mois sans carte, et l'IA avec votre propre clé. Passez à l'offre supérieure quand il vous en faut plus."
+}

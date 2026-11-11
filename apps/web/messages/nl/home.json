@@ -1,0 +1,16 @@
+{
+ "hello": "Hallo {name} 👋",
+ "subtitle": "Alles voor {workspace} op één plek.",
+ "cards": {
+  "inbox": "Berichten en reacties van elk netwerk, met een AI-assistent.",
+  "studio": "Schrijf met AI, bekijk het voorbeeld en publiceer overal.",
+  "posts": "Elk bericht en het resultaat per netwerk.",
+  "approvals": "Berichten die op je akkoord wachten.",
+  "performance": "Wat werkt, de beste tijden en tips om te groeien.",
+  "library": "Elke foto, video en audio van je team, met tags en favorieten.",
+  "planner": "Je contentkalender: sleep berichten naar de juiste dag.",
+  "campaigns": "Groepeer berichten rond een doel en volg de resultaten.",
+  "links": "Kliks en verkopen die uit je berichten komen.",
+  "reports": "Wekelijkse of maandelijkse resultaten per e-mail."
+ }
+}

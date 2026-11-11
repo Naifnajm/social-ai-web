@@ -1,0 +1,71 @@
+{
+ "plans": {
+  "trial": "Kostenlose Testphase",
+  "starter": "Starter",
+  "pro": "Pro",
+  "business": "Business",
+  "enterprise": "Enterprise",
+  "free": "Kostenlos"
+ },
+ "planTagline": {
+  "starter": "Für eine Marke, die Ordnung schafft.",
+  "pro": "Für wachsende Marken und kleine Agenturen.",
+  "business": "Für Teams mit vielen Marken und Videoproduktion.",
+  "enterprise": "Individuelle Limits, Verträge und Support.",
+  "free": "Ohne Kosten starten."
+ },
+ "limitLine": {
+  "social_accounts": "{n} Social-Media-Konten",
+  "members": "{n} Teammitglieder",
+  "posts_month": "{n} Beiträge / Monat",
+  "ai_credits": "{n} KI-Credits / Monat",
+  "storage_gb": "{n} GB Speicher"
+ },
+ "unlimitedLine": {
+  "social_accounts": "Unbegrenzt Social-Media-Konten",
+  "members": "Unbegrenzt Teammitglieder",
+  "posts_month": "Unbegrenzt Beiträge",
+  "ai_credits": "KI-Credits auf Anfrage",
+  "storage_gb": "Unbegrenzter Speicher"
+ },
+ "features": {
+  "ai_studio": "KI-Studio",
+  "templates": "Vorlagen",
+  "quick_publish": "Schnell posten",
+  "planning": "Planung und Kalender",
+  "inbox": "Ein Posteingang",
+  "analytics": "Statistiken",
+  "approvals": "Freigaben",
+  "inbox_assistant": "Posteingang-Assistent",
+  "reports": "Geplante Berichte",
+  "link_tracking": "Links und Umsatz messen",
+  "evergreen": "Evergreen-Wiederholung",
+  "production": "Produktionsboard",
+  "priority_support": "Bevorzugter Support",
+  "custom_branding": "Eigenes Branding"
+ },
+ "monthly": "Monatlich",
+ "yearly": "Jährlich",
+ "save": "2 Monate gratis",
+ "perMonth": "/ Monat",
+ "billedYearly": "{amount} jährlich abgerechnet",
+ "billedMonthly": "monatlich abgerechnet",
+ "custom": "Individuell",
+ "popular": "Am beliebtesten",
+ "contactSales": "Vertrieb kontaktieren",
+ "choose": "{plan} wählen",
+ "startTrial": "Kostenlos testen",
+ "currentPlan": "Aktuelles Paket",
+ "upgrade": "Upgraden",
+ "downgrade": "Wechseln",
+ "everythingIn": "Alles aus {plan}, plus:",
+ "vatNote": "Preise in Saudi-Riyal dienen der Orientierung; abgerechnet wird in USD.",
+ "banner": {
+  "trial": "{days, plural, =0 {Deine kostenlose Testphase endet heute.} one {Noch # Tag in deiner kostenlosen Testphase.} other {Noch # Tage in deiner kostenlosen Testphase.}}",
+  "cta": "Pakete ansehen",
+  "fix": "Zahlung aktualisieren",
+  "dismiss": "Ausblenden"
+ },
+ "freeTitle": "Und nach der Testphase? Es bleibt kostenlos.",
+ "freeText": "{accounts} Konten und {posts} Beiträge im Monat ohne Karte, und KI mit deinem eigenen Schlüssel. Upgrade, wenn du mehr brauchst."
+}

@@ -16,6 +16,8 @@ export function PricingToggles({ interval, setInterval, currency, setCurrency, t
   interval: Interval; setInterval: (v: Interval) => void; currency: Currency; setCurrency: (v: Currency) => void; tone: "dark" | "light";
 }) {
   const t = useTranslations("billing");
+  const locale = useLocale();
+  const riyal = locale === "ar" || locale === "en";  // the riyal price is for the Gulf: not offered in Dutch, German, French
   const dark = tone === "dark";
   const pill = (active: boolean) =>
     cx("inline-flex h-8 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-medium transition",
@@ -30,11 +32,13 @@ export function PricingToggles({ interval, setInterval, currency, setCurrency, t
           <span className={cx("rounded-full px-1.5 py-px text-[10px] font-bold", interval === "year" ? "bg-ok-bg text-ok" : dark ? "bg-white/10 text-white" : "bg-ok-bg text-ok")}>{t("save")}</span>
         </button>
       </div>
-      <div className={cx("inline-flex rounded-full p-0.5", track)} role="tablist" dir="ltr">
-        {(["SAR", "USD"] as Currency[]).map((c) => (
-          <button key={c} role="tab" aria-selected={currency === c} className={pill(currency === c)} onClick={() => setCurrency(c)}>{c}</button>
-        ))}
-      </div>
+      {riyal && (
+        <div className={cx("inline-flex rounded-full p-0.5", track)} role="tablist" dir="ltr">
+          {(["SAR", "USD"] as Currency[]).map((c) => (
+            <button key={c} role="tab" aria-selected={currency === c} className={pill(currency === c)} onClick={() => setCurrency(c)}>{c}</button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

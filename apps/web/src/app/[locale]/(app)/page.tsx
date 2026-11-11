@@ -20,8 +20,8 @@ export default function HomePage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {items.map((item) => (
           <Link key={item.href} href={item.href}>
-            <Card className="h-full transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]">
-              <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-fill-2">
+            <Card className="group h-full transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]">
+              <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-fill-2 transition-colors group-hover:bg-accent-soft group-hover:text-accent-deep">
                 <Icon name={item.icon} size={22} duo />
               </span>
               <div className="font-semibold">{nav(item.label)}</div>

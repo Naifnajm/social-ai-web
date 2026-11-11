@@ -38,7 +38,7 @@ export function OnboardingCard() {
           <svg viewBox="0 0 36 36" className="h-12 w-12 -rotate-90" aria-hidden>
             <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--track)" strokeWidth="3" />
             {progress > 0 && (
-              <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--ink)" strokeWidth="3" strokeLinecap="round"
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--accent)" strokeWidth="3" strokeLinecap="round"
                 strokeDasharray={`${(progress / 100) * 97.4} 97.4`} />
             )}
           </svg>

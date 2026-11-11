@@ -1,0 +1,16 @@
+{
+ "hello": "Hallo {name} 👋",
+ "subtitle": "Alles für {workspace} an einem Ort.",
+ "cards": {
+  "inbox": "Nachrichten und Kommentare aus jedem Netzwerk, mit KI-Assistent.",
+  "studio": "Mit KI schreiben, Vorschau ansehen und überall posten.",
+  "posts": "Jeder Beitrag und sein Ergebnis pro Netzwerk.",
+  "approvals": "Beiträge, die auf deine Freigabe warten.",
+  "performance": "Was funktioniert, die besten Zeiten und Tipps zum Wachsen.",
+  "library": "Alle Fotos, Videos und Audiodateien deines Teams, mit Tags und Favoriten.",
+  "planner": "Dein Redaktionskalender: Beiträge auf den richtigen Tag ziehen.",
+  "campaigns": "Beiträge um ein Ziel gruppieren und die Ergebnisse verfolgen.",
+  "links": "Klicks und Verkäufe, die aus deinen Beiträgen kommen.",
+  "reports": "Wöchentliche oder monatliche Ergebnisse per E-Mail."
+ }
+}

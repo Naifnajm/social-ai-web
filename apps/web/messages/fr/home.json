@@ -1,0 +1,16 @@
+{
+ "hello": "Bonjour {name} 👋",
+ "subtitle": "Tout pour {workspace} au même endroit.",
+ "cards": {
+  "inbox": "Messages et commentaires de chaque réseau, avec un assistant IA.",
+  "studio": "Écrivez avec l'IA, prévisualisez et publiez partout.",
+  "posts": "Chaque publication et son résultat par réseau.",
+  "approvals": "Les publications en attente de votre validation.",
+  "performance": "Ce qui fonctionne, les meilleurs moments et des conseils pour grandir.",
+  "library": "Toutes les photos, vidéos et audios de votre équipe, avec tags et favoris.",
+  "planner": "Votre calendrier de contenu : glissez les publications au bon jour.",
+  "campaigns": "Regroupez les publications autour d'un objectif et suivez les résultats.",
+  "links": "Les clics et les ventes qui viennent de vos publications.",
+  "reports": "Résultats hebdomadaires ou mensuels envoyés par e-mail."
+ }
+}

@@ -1,0 +1,71 @@
+{
+ "plans": {
+  "trial": "Gratis proefperiode",
+  "starter": "Starter",
+  "pro": "Pro",
+  "business": "Business",
+  "enterprise": "Enterprise",
+  "free": "Gratis"
+ },
+ "planTagline": {
+  "starter": "Voor één merk dat orde wil.",
+  "pro": "Voor groeiende merken en kleine bureaus.",
+  "business": "Voor teams met veel merken en videoproductie.",
+  "enterprise": "Limieten, contract en support op maat.",
+  "free": "Begin zonder kosten."
+ },
+ "limitLine": {
+  "social_accounts": "{n} social accounts",
+  "members": "{n} teamleden",
+  "posts_month": "{n} berichten / maand",
+  "ai_credits": "{n} AI-credits / maand",
+  "storage_gb": "{n} GB opslag"
+ },
+ "unlimitedLine": {
+  "social_accounts": "Onbeperkt social accounts",
+  "members": "Onbeperkt teamleden",
+  "posts_month": "Onbeperkt berichten",
+  "ai_credits": "AI-credits op aanvraag",
+  "storage_gb": "Onbeperkte opslag"
+ },
+ "features": {
+  "ai_studio": "AI-studio",
+  "templates": "Templates",
+  "quick_publish": "Snel publiceren",
+  "planning": "Planning en kalender",
+  "inbox": "Eén inbox",
+  "analytics": "Statistieken",
+  "approvals": "Goedkeuringen",
+  "inbox_assistant": "Inbox-assistent",
+  "reports": "Geplande rapporten",
+  "link_tracking": "Links en verkoop meten",
+  "evergreen": "Evergreen opnieuw plaatsen",
+  "production": "Productiebord",
+  "priority_support": "Support met voorrang",
+  "custom_branding": "Eigen huisstijl"
+ },
+ "monthly": "Maandelijks",
+ "yearly": "Jaarlijks",
+ "save": "2 maanden gratis",
+ "perMonth": "/ maand",
+ "billedYearly": "{amount} per jaar gefactureerd",
+ "billedMonthly": "maandelijks gefactureerd",
+ "custom": "Op maat",
+ "popular": "Meest gekozen",
+ "contactSales": "Neem contact op",
+ "choose": "Kies {plan}",
+ "startTrial": "Start gratis proefperiode",
+ "currentPlan": "Huidig pakket",
+ "upgrade": "Upgraden",
+ "downgrade": "Wisselen",
+ "everythingIn": "Alles uit {plan}, plus:",
+ "vatNote": "Prijzen in Saoedische riyal zijn ter indicatie; de betaling verloopt in USD.",
+ "banner": {
+  "trial": "{days, plural, =0 {Je gratis proefperiode eindigt vandaag.} one {Nog # dag in je gratis proefperiode.} other {Nog # dagen in je gratis proefperiode.}}",
+  "cta": "Bekijk pakketten",
+  "fix": "Betaling bijwerken",
+  "dismiss": "Verbergen"
+ },
+ "freeTitle": "En na de proefperiode? Dan blijft het gratis.",
+ "freeText": "{accounts} accounts en {posts} berichten per maand zonder creditcard, en AI met je eigen sleutel. Upgrade wanneer je meer nodig hebt."
+}

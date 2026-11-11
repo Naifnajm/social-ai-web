@@ -40,8 +40,8 @@ function LoginForm() {
         <h1 className="text-xl font-bold tracking-tight">{t("loginTitle")}</h1>
         <p className="mt-1 text-sm text-muted">{t("loginSubtitle")}</p>
       </div>
-      <Field label={t("email")}>
-        <Input type="email" autoComplete="email" dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} />
+      <Field label={t("emailOrUsername")}>
+        <Input type="text" inputMode="email" autoComplete="username" autoCapitalize="none" spellCheck={false} dir="ltr" required value={email} onChange={(e) => setEmail(e.target.value)} />
       </Field>
       <Field label={t("password")}>
         <Input type="password" autoComplete="current-password" dir="ltr" required value={password} onChange={(e) => setPassword(e.target.value)} />

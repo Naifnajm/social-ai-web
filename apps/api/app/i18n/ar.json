@@ -1,1 +1,15 @@
-{}
+{
+  "Wrong e-mail, username or password.": "بيانات الدخول غير صحيحة. تحقّق من البريد أو اسم المستخدم وكلمة المرور.",
+  "A username is 3 to 30 characters: English letters, digits, dot, dash or underscore.": "اسم المستخدم من 3 إلى 30 خانة: حروف إنجليزية وأرقام ونقطة وشرطة وشرطة سفلية.",
+  "This username is taken. Choose another one.": "اسم المستخدم محجوز. اختر اسماً آخر.",
+  "An account with this e-mail already exists. Sign in instead.": "يوجد حساب بهذا البريد الإلكتروني. سجّل الدخول بدلاً من إنشاء حساب.",
+  "Platform administrators only.": "هذه الصفحة لمديري المنصة فقط.",
+  "Please sign in.": "سجّل الدخول أولاً.",
+  "The current password is wrong.": "كلمة المرور الحالية غير صحيحة.",
+  "This link has expired. Ask for a new one.": "انتهت صلاحية هذا الرابط. اطلب رابطاً جديداً.",
+  "This workspace is suspended.": "مساحة العمل هذه موقوفة.",
+  "You are not a member of any workspace.": "لست عضواً في أي مساحة عمل.",
+  "You don't have the rights to do this.": "لا تملك صلاحية تنفيذ هذا الإجراء.",
+  "Your session has expired. Please sign in again.": "انتهت جلستك. سجّل الدخول من جديد.",
+  "Reset your password": "إعادة تعيين كلمة المرور"
+}

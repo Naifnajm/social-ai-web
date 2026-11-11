@@ -12,7 +12,7 @@ export type Role = "viewer" | "editor" | "approver" | "admin" | "owner";
 const RANK: Record<Role, number> = { viewer: 0, editor: 1, approver: 2, admin: 3, owner: 4 };
 
 export type Me = {
-  user: { id: number; email: string; name: string; locale: string; timezone: string; avatar_url?: string | null; is_superadmin: boolean };
+  user: { id: number; email: string; username?: string | null; name: string; locale: string; timezone: string; avatar_url?: string | null; is_superadmin: boolean };
   workspaces: { workspace_id: number; workspace_name: string; role: Role }[];
   current_workspace_id: number | null;
 };

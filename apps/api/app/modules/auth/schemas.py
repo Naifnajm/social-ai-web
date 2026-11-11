@@ -11,7 +11,7 @@ class SignupIn(BaseModel):
 
 
 class LoginIn(BaseModel):
-    email: EmailStr
+    email: str = Field(min_length=1, max_length=254)  # the e-mail, or the username
     password: str
 
 
@@ -36,6 +36,7 @@ class UserOut(BaseModel):
 
     id: int
     email: str
+    username: str | None = None
     name: str
     locale: str
     timezone: str
@@ -55,6 +56,7 @@ class SessionOut(TokensOut):
 
 class MeUpdate(BaseModel):
     name: str | None = Field(default=None, max_length=120)
+    username: str | None = Field(default=None, max_length=30)  # "" clears it
     locale: str | None = None
     timezone: str | None = None
     avatar_url: str | None = None

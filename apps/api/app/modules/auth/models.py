@@ -10,6 +10,7 @@ class User(TimestampMixin, Base):
     __tablename__ = "users"
 
     email: Mapped[str] = mapped_column(String(254), unique=True, index=True)
+    username: Mapped[str | None] = mapped_column(String(30), unique=True, index=True)  # optional sign-in name, lower case
     name: Mapped[str] = mapped_column(String(120))
     password_hash: Mapped[str | None] = mapped_column(String(100))
     locale: Mapped[str] = mapped_column(String(5), default="ar")

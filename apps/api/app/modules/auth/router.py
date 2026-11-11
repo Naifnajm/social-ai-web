@@ -50,6 +50,30 @@ def _find_user(db: Session, email: str) -> User | None:
     return db.scalar(select(User).where(func.lower(User.email) == email.lower()))
 
 
+USERNAME = re.compile(r"^[a-z0-9][a-z0-9._-]{2,29}$")
+
+
+def _find_login(db: Session, identifier: str) -> User | None:
+    """The user signing in with an e-mail or, when there is no "@", a username."""
+    identifier = identifier.strip().lower()
+    if "@" in identifier:
+        return _find_user(db, identifier)
+    return db.scalar(select(User).where(User.username == identifier))
+
+
+def _clean_username(db: Session, value: str, user: User) -> str | None:
+    value = value.strip().lower()
+    if not value:
+        return None
+    if not USERNAME.match(value):
+        raise AppError(_("A username is 3 to 30 characters: English letters, digits, dot, dash or underscore."),
+                       code="bad_username")
+    taken = db.scalar(select(User.id).where(User.username == value, User.id != user.id))
+    if taken:
+        raise AppError(_("This username is taken. Choose another one."), code="username_taken")
+    return value
+
+
 @router.post("/signup", response_model=SessionOut, status_code=201)
 def signup(data: SignupIn, response: Response, db: Session = Depends(get_db)):
     set_locale(data.locale)
@@ -69,9 +93,9 @@ def signup(data: SignupIn, response: Response, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=SessionOut)
 def login(data: LoginIn, response: Response, db: Session = Depends(get_db)):
-    user = _find_user(db, data.email)
+    user = _find_login(db, data.email)
     if not user or not user.is_active or not verify_password(data.password, user.password_hash):
-        raise Unauthorized(_("Wrong e-mail or password."), code="bad_credentials")
+        raise Unauthorized(_("Wrong e-mail, username or password."), code="bad_credentials")
     user.last_login_at = datetime.now(timezone.utc)
     set_locale(user.locale)
     return _session(db, user, response)
@@ -109,6 +133,8 @@ def update_me(data: MeUpdate, user: User = Depends(current_user), db: Session = 
     for key, value in data.model_dump(exclude_unset=True).items():
         if key == "locale" and value not in ("ar", "en"):
             continue
+        if key == "username":
+            value = _clean_username(db, value or "", user)
         setattr(user, key, value)
     return me_payload(db, user)
 

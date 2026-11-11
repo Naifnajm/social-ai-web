@@ -1,6 +1,7 @@
 /**
- * The Stravica sparkle (the logo's star) as a chrome 3D object with neon reflections.
+ * The Stravica logo ("Layers": three posts stacked in the publishing queue) as a glossy 3D object.
  * Plain three.js, loaded on demand by <StarCanvas>. Renders only while on screen.
+ * The slabs sit apart in depth and spread further as the hero scrolls away.
  */
 import * as THREE from "three";
 import { motionState } from "./state";
@@ -11,18 +12,27 @@ export interface StarHandle {
   dispose(): void;
 }
 
-/** A sphere pushed into a four-point sparkle: smooth closed surface, no seams, pointed tips. */
-function sparkleGeometry(q = 0.52, thickness = 0.36) {
-  const geo = new THREE.SphereGeometry(1, 220, 110);
-  const pos = geo.attributes.position as THREE.BufferAttribute;
-  const v = new THREE.Vector3();
-  for (let i = 0; i < pos.count; i++) {
-    v.fromBufferAttribute(pos, i);
-    const a = Math.atan2(v.y, v.x);
-    const s = Math.pow(Math.pow(Math.abs(Math.cos(a)), q) + Math.pow(Math.abs(Math.sin(a)), q), -1 / q);
-    pos.setXYZ(i, v.x * s, v.y * s, v.z * thickness * (0.55 + 0.45 * s));
-  }
-  geo.computeVertexNormals();
+/** A rounded square slab (the logo's tile), centred on the origin, with soft bevelled edges. */
+function slabGeometry(size = 1.6, radius = 0.43, depth = 0.16) {
+  const h = size / 2, r = radius;
+  const shape = new THREE.Shape();
+  shape.moveTo(-h + r, -h);
+  shape.lineTo(h - r, -h); shape.quadraticCurveTo(h, -h, h, -h + r);
+  shape.lineTo(h, h - r); shape.quadraticCurveTo(h, h, h - r, h);
+  shape.lineTo(-h + r, h); shape.quadraticCurveTo(-h, h, -h, h - r);
+  shape.lineTo(-h, -h + r); shape.quadraticCurveTo(-h, -h, -h + r, -h);
+  const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05, bevelSegments: 6, curveSegments: 28 });
+  geo.translate(0, 0, -depth / 2);
+  return geo;
+}
+
+/** A pill (the "lines of a post" on the front slab). */
+function pillGeometry(width: number, height: number, depth = 0.05) {
+  const r = height / 2, w = width / 2 - r;
+  const shape = new THREE.Shape();
+  shape.absarc(w, 0, r, -Math.PI / 2, Math.PI / 2, false);
+  shape.absarc(-w, 0, r, Math.PI / 2, -Math.PI / 2, false);
+  const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.015, bevelSegments: 3, curveSegments: 20 });
   return geo;
 }
 
@@ -85,27 +95,36 @@ export function mountStar(canvas: HTMLCanvasElement, opts: { variant: StarVarian
   const envRT = neonEnvironment(renderer, accent);
   scene.environment = envRT.texture;
 
-  const geo = sparkleGeometry();
-  const chrome = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff, metalness: 1, roughness: 0.13, clearcoat: 1, clearcoatRoughness: 0.06,
-    iridescence: 0.85, iridescenceIOR: 1.45, iridescenceThicknessRange: [180, 520],
+  const geo = slabGeometry();
+  const glossy = (color: THREE.ColorRepresentation, emissive = 0) => new THREE.MeshPhysicalMaterial({
+    color, metalness: 0.35, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.08, emissive: new THREE.Color(color), emissiveIntensity: emissive,
   });
-  const neon = new THREE.MeshPhysicalMaterial({
-    color: accent, metalness: 0.25, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.1, emissive: accent, emissiveIntensity: 0.45,
+  // The logo's three shades, back to front: deep rose, the accent pink, blush.
+  const blush = new THREE.MeshPhysicalMaterial({
+    color: "#ffd3e4", metalness: 0, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.1, emissive: new THREE.Color("#ff8fbc"), emissiveIntensity: 0.42,
   });
+  const mats = [glossy("#8f0d3f", 0.25), glossy(accent, 0.4), blush];
+  const white = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.35, clearcoat: 1, emissive: 0xffffff, emissiveIntensity: 0.75 });
 
-  // Composition of the logo glyph: one big sparkle, two small ones to its upper side.
+  // Composition of the logo: three tiles stepping down to the right, the front one carrying the lines of a post.
   const rig = new THREE.Group();
   const group = new THREE.Group();
-  const main = new THREE.Mesh(geo, chrome);
-  main.position.set(-0.22, -0.14, 0);
-  const s1 = new THREE.Mesh(geo, neon);
-  s1.scale.setScalar(0.27);
-  s1.position.set(0.98, 0.98, 0.25);
-  const s2 = new THREE.Mesh(geo, chrome);
-  s2.scale.setScalar(0.15);
-  s2.position.set(1.36, 0.36, -0.15);
-  group.add(main, s1, s2);
+  const STEP = 0.4;
+  const layers = mats.map((m, i) => {
+    const mesh = new THREE.Mesh(geo, m);
+    mesh.position.set((i - 1) * STEP, (1 - i) * STEP, 0);
+    return mesh;
+  });
+  const marks = [pillGeometry(0.56, 0.22), pillGeometry(1.0, 0.22)];
+  const dot = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.06, 40), white);
+  dot.rotation.x = Math.PI / 2;
+  dot.position.set(-0.36, 0.3, 0.13);
+  const line1 = new THREE.Mesh(marks[0], white);
+  line1.position.set(0.2, 0.3, 0.1);
+  const line2 = new THREE.Mesh(marks[1], white);
+  line2.position.set(0, -0.14, 0.1);
+  layers[2].add(dot, line1, line2);
+  group.add(...layers);
   rig.add(group);
   scene.add(rig);
 
@@ -127,7 +146,7 @@ export function mountStar(canvas: HTMLCanvasElement, opts: { variant: StarVarian
     visH = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
     const visW = visH * camera.aspect;
     fit = opts.variant === "hero"
-      ? Math.min((visH * 0.7) / 2.4, (visW * (camera.aspect < 0.9 ? 0.98 : 0.86)) / 2.8)
+      ? Math.min((visH * 0.62) / 2.4, (visW * (camera.aspect < 0.9 ? 0.9 : 0.78)) / 2.8)
       : Math.min((visH * 0.95) / 2.4, (visW * 0.7) / 2.8);
     if (opts.reduce) draw(0);
   };
@@ -144,19 +163,22 @@ export function mountStar(canvas: HTMLCanvasElement, opts: { variant: StarVarian
       progress = motionState.hero;
     }
     const e = opts.reduce ? 1 : easeOutBack(intro);
-    const spin = opts.reduce ? 0.5 : t * 0.32;
+    // Face-on with a slow sway (a full spin would show the tiles edge-on half the time).
+    const sway = opts.reduce ? -0.45 : -0.45 + Math.sin(t * 0.55) * 0.38;
     rig.scale.setScalar(fit * Math.max(0.0001, e) * (1 - progress * 0.28));
     rig.rotation.set(
-      -pointer.y * 0.32 + Math.sin(t * 0.7) * 0.06,
-      spin + pointer.x * 0.55 + (1 - e) * Math.PI * 1.4 + progress * Math.PI * 1.6,
-      Math.sin(t * 0.45) * 0.05 + progress * 0.35,
+      -0.2 - pointer.y * 0.3 + Math.sin(t * 0.7) * 0.05,
+      sway + pointer.x * 0.5 + (1 - e) * Math.PI * 1.2 + progress * Math.PI * 0.9,
+      Math.sin(t * 0.45) * 0.04 + progress * 0.25,
     );
     if (opts.variant === "hero") rig.position.set(0, visH * (camera.aspect < 0.9 ? 0.2 : 0.07) + progress * visH * 0.3, 0);
     else rig.position.set(0, -visH * 0.18 + Math.sin(t * 0.8) * 0.05, 0);
-    s1.rotation.z = t * 0.9;
-    s1.position.y = 0.98 + Math.sin(t * 1.4) * 0.06;
-    s2.rotation.z = -t * 1.3;
-    s2.position.y = 0.36 + Math.sin(t * 1.1 + 1) * 0.05;
+    // The tiles sit apart in depth, breathe a little, and spread as the page scrolls.
+    const gap = (opts.reduce ? 0.5 : 0.5 + Math.sin(t * 0.9) * 0.06) * (0.35 + 0.65 * e) + progress * 0.9;
+    layers.forEach((mesh, i) => {
+      mesh.position.z = (i - 1) * gap;
+      mesh.position.y = (1 - i) * STEP + (opts.reduce ? 0 : Math.sin(t * 1.1 + i * 0.9) * 0.035);
+    });
     renderer.render(scene, camera);
   };
 
@@ -202,8 +224,10 @@ export function mountStar(canvas: HTMLCanvasElement, opts: { variant: StarVarian
       document.removeEventListener("visibilitychange", onVis);
       window.removeEventListener("pointermove", onMove);
       geo.dispose();
-      chrome.dispose();
-      neon.dispose();
+      marks.forEach((g) => g.dispose());
+      dot.geometry.dispose();
+      mats.forEach((m) => m.dispose());
+      white.dispose();
       envRT.dispose();
       renderer.dispose();
       renderer.forceContextLoss();

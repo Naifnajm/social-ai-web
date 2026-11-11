@@ -9,6 +9,7 @@ export default function ProfilePage() {
   const t = useTranslations("settings");
   const { me, load } = useSession();
   const [name, setName] = useState(me?.user.name ?? "");
+  const [username, setUsername] = useState(me?.user.username ?? "");
   const [pw, setPw] = useState({ current_password: "", new_password: "" });
   const onError = (err: unknown) => toast.error(err instanceof ApiError ? err.message : String(err));
 
@@ -19,9 +20,10 @@ export default function ProfilePage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t("name")}><Input value={name} onChange={(e) => setName(e.target.value)} /></Field>
           <Field label={t("email")}><Input value={me?.user.email ?? ""} disabled dir="ltr" /></Field>
+          <Field label={t("username")} hint={t("usernameHint")}><Input value={username} dir="ltr" autoCapitalize="none" spellCheck={false} maxLength={30} onChange={(e) => setUsername(e.target.value.toLowerCase())} /></Field>
         </div>
         <div className="mt-4 flex justify-end">
-          <Button variant="primary" onClick={() => api.patch("/auth/me", { name }).then(() => { load(); toast.success(t("saved")); }).catch(onError)}>{t("save")}</Button>
+          <Button variant="primary" onClick={() => api.patch("/auth/me", { name, username }).then(() => { load(); toast.success(t("saved")); }).catch(onError)}>{t("save")}</Button>
         </div>
       </Card>
       <Card>

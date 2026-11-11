@@ -80,3 +80,18 @@ def test_http_call_logs_and_errors(db, mock_http):
         assert exc.status == 401
     log = db.query(ApiLog).order_by(ApiLog.id.desc()).first()
     assert log.status_code == 401 and "SECRET" not in log.endpoint
+
+
+def test_sign_in_with_a_username(client, auth):
+    """A user can pick a username in the profile and sign in with it instead of the e-mail."""
+    r = client.patch("/api/auth/me", json={"username": "Rif.Admin"}, headers=auth.headers)
+    assert r.status_code == 200 and r.json()["user"]["username"] == "rif.admin"
+    assert client.patch("/api/auth/me", json={"username": "a b"}, headers=auth.headers).json()["code"] == "bad_username"
+    email = auth.email
+    for identifier in ("rif.admin", "RIF.ADMIN", email):
+        ok = client.post("/api/auth/login", json={"email": identifier, "password": "secret123"})
+        assert ok.status_code == 200, ok.text
+    bad = client.post("/api/auth/login", json={"email": "rif.admin", "password": "wrong-password"},
+                      headers={"Accept-Language": "ar"})
+    assert bad.status_code == 401 and bad.json()["code"] == "bad_credentials" and "اسم المستخدم" in bad.json()["detail"]
+    assert client.patch("/api/auth/me", json={"username": ""}, headers=auth.headers).json()["user"]["username"] is None

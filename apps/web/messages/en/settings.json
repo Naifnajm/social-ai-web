@@ -51,5 +51,7 @@
  "currentPassword": "Current password",
  "newPassword": "New password",
  "changePassword": "Change password",
- "passwordChanged": "Password changed. Please sign in again."
+ "passwordChanged": "Password changed. Please sign in again.",
+ "username": "Username",
+ "usernameHint": "Optional. Sign in with it instead of your e-mail: English letters and digits, 3 to 30 characters."
 }

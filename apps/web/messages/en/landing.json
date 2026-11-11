@@ -1,6 +1,6 @@
 {
- "metaTitle": "Stravica Social — AI social media management for Gulf brands",
- "metaDescription": "Create with AI, publish everywhere, answer every message and measure sales — in Arabic and English.",
+ "metaTitle": "Stravica Social — all your socials in one place, Arabic-first",
+ "metaDescription": "Write with AI in your brand's voice, publish everywhere, and let the assistant reply to your customers. In Arabic and English.",
  "nav": {
   "features": "Features",
   "pricing": "Pricing",
@@ -9,13 +9,13 @@
   "signup": "Start free",
   "app": "Open the app"
  },
- "badge": "New · Production canvas for AI video",
- "heroTitle": "Your whole social media, run by one smart team.",
- "heroHighlight": "In Arabic first.",
- "heroText": "Write and design with AI in your brand's voice, publish to every network in one click, let the assistant answer comments and DMs, and see which posts bring sales.",
- "ctaPrimary": "Start your {days}-day free trial",
+ "badge": "New · full videos made with AI",
+ "heroTitle": "All your socials. One place.",
+ "heroHighlight": "Arabic-first.",
+ "heroText": "Write with AI in your brand's voice. Publish everywhere in one tap. Let the assistant reply to your customers. You focus on the ideas.",
+ "ctaPrimary": "Try it free for {days} days",
  "ctaSecondary": "See pricing",
- "trust": "No card needed · Cancel anytime · Arabic & English",
+ "trust": "No card · cancel anytime · Arabic & English",
  "preview": {
   "studio": "AI studio",
   "prompt": "Ramadan offer for our new coffee blend, warm tone",
@@ -28,56 +28,56 @@
   "reach": "Reach",
   "sales": "Sales from posts"
  },
- "platformsTitle": "Publish to every network your customers use",
- "featuresTitle": "Everything your marketing team needs",
- "featuresText": "Seven tools that work together — so content, conversations and results live in one place.",
+ "platformsTitle": "Post wherever your audience is",
+ "featuresTitle": "Every tool in one place",
+ "featuresText": "Seven tools that work together, with your content, replies and numbers all in view.",
  "features": {
   "studio": {
-   "title": "AI studio",
-   "text": "Captions, hashtags, images, voice-overs and videos written in your brand's tone — in Gulf Arabic or English."
+   "title": "Write with AI",
+   "text": "Captions, hashtags, images, voice-overs and video. All in your brand's voice, in Gulf Arabic or English."
   },
   "production": {
-   "title": "Production canvas",
-   "text": "Plan a campaign video scene by scene: script, shots, voice and music on one board, rendered with AI."
+   "title": "From idea to video",
+   "text": "Sketch your campaign video scene by scene on one board, and AI produces it."
   },
   "templates": {
-   "title": "Templates & quick publish",
-   "text": "Branded frames for every format and one-click publishing to Instagram, TikTok, Facebook, X, LinkedIn and more."
+   "title": "Templates in your brand",
+   "text": "Your colours, logo and font on every design, in every size. Publish in one tap."
   },
   "inbox": {
-   "title": "Inbox assistant",
-   "text": "All comments and DMs in one inbox. The assistant answers from your knowledge base and hands over when a human is needed."
+   "title": "An assistant that replies for you",
+   "text": "Every comment and DM in one inbox. The assistant answers from your info and hands over what needs a human."
   },
   "planning": {
-   "title": "Planning & approvals",
-   "text": "A shared calendar with campaigns and content pillars, plus approval steps before anything goes live."
+   "title": "Calendar and approvals",
+   "text": "One calendar for the whole team, and nothing goes live without sign-off."
   },
   "analytics": {
-   "title": "Analytics & sales attribution",
-   "text": "Reach, engagement and the best time to post — and tracked links that show which posts bring orders."
+   "title": "Numbers you can read",
+   "text": "Which post reached people, which post sold, and the best time to post."
   },
   "mobile": {
-   "title": "Mobile app",
-   "text": "Approve, reply and publish from your phone, with push notifications when something needs you."
+   "title": "Mobile app · soon",
+   "text": "Approve, reply and publish from your phone. We are building it now; until then the product opens in your phone's browser."
   }
  },
- "stepsTitle": "Up and running in minutes",
+ "stepsTitle": "Ready in five minutes",
  "steps": {
   "1": {
    "title": "Connect your accounts",
-   "text": "Sign in with each network — no passwords shared."
+   "text": "Sign in through each network. We never ask for passwords."
   },
   "2": {
-   "title": "Set your brand kit",
-   "text": "Logo, colours and tone: every AI result follows them."
+   "title": "Introduce your brand",
+   "text": "Your logo, colours and tone, and the AI sticks to them."
   },
   "3": {
-   "title": "Plan, publish, answer",
-   "text": "Invite your team and let the assistant handle the routine."
+   "title": "Plan, publish, reply",
+   "text": "Invite your team and let the assistant take the repetitive work."
   }
  },
- "pricingTitle": "Simple pricing that grows with you",
- "pricingText": "Every plan starts with a {days}-day free trial with all features. Bring your own AI keys at no extra cost, or use the included AI credits.",
+ "pricingTitle": "Clear pricing that grows with you",
+ "pricingText": "Every plan starts with a {days}-day trial of everything. Connect your own AI key at no extra charge.",
  "faqTitle": "Frequently asked questions",
  "faq": {
   "q1": "Do I need a credit card for the trial?",
@@ -93,8 +93,8 @@
   "q6": "Can I pay in Saudi riyals?",
   "a6": "Prices are shown in SAR for convenience and charged by card in USD. Local methods such as mada are coming soon. For invoices and bank transfer, contact our sales team."
  },
- "finalTitle": "Ready to give your team its time back?",
- "finalText": "Start free today — your first scheduled post is five minutes away.",
+ "finalTitle": "Ready to give your team a break?",
+ "finalText": "Start free today. Your first scheduled post is five minutes away.",
  "footer": {
   "rights": "© {year} Stravica. All rights reserved.",
   "madeFor": "Made for brands in the Gulf and beyond."
@@ -105,7 +105,7 @@
   "close": "Close",
   "scroll": "Scroll to explore",
   "home": "Home",
-  "manifesto": "Publish <hl>smarter</hl>, reply <hl>faster</hl>, and measure what actually drives <hl>sales</hl> — for every brand that speaks its customers' language.",
+  "manifesto": "We post <hl>smarter</hl>, reply <hl>faster</hl>, and know which post actually <hl>sells</hl>. So your brand speaks to people in their language.",
   "platformsKicker": "Networks",
   "stepsKicker": "How it works",
   "featuresKicker": "Features",
@@ -116,15 +116,15 @@
   "footerAccount": "Account",
   "titles": {
    "steps": {
-    "a": "Up and running",
-    "b": "in minutes"
+    "a": "Ready",
+    "b": "in five minutes"
    },
    "features": {
-    "a": "Everything your",
-    "b": "marketing team needs"
+    "a": "Every tool",
+    "b": "in one place"
    },
    "pricing": {
-    "a": "Simple pricing",
+    "a": "Clear pricing",
     "b": "that grows with you"
    },
    "faq": {
@@ -132,8 +132,8 @@
     "b": "questions"
    },
    "final": {
-    "a": "Ready to give your team",
-    "b": "its time back?"
+    "a": "Ready to give",
+    "b": "your team a break?"
    }
   }
  }

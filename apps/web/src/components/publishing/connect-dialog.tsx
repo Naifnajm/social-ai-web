@@ -157,7 +157,7 @@ function TokenForm({ platform, onDone }: { platform: string; onDone: () => void 
     onError: (err) => toast.error(errorText(err)),
   });
   const idLabel = platform === "telegram" ? t("channel") : platform === "linkedin" ? t("authorUrn") : t("accountId");
-  const needsId = ["telegram", "facebook", "instagram"].includes(platform);
+  const needsId = ["telegram", "facebook", "instagram", "google_business"].includes(platform);
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">

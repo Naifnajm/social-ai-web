@@ -8,7 +8,7 @@ import { ApiError } from "@/lib/api";
 
 export const PLATFORM_LABELS: Record<string, string> = {
   facebook: "Facebook", instagram: "Instagram", linkedin: "LinkedIn", x: "X", tiktok: "TikTok", threads: "Threads",
-  telegram: "Telegram", whatsapp: "WhatsApp",
+  telegram: "Telegram", whatsapp: "WhatsApp", youtube: "YouTube", pinterest: "Pinterest", google_business: "Google Business Profile",
 };
 
 export const SWATCHES = ["#0a0a0a", "#52525b", "#2563eb", "#0891b2", "#059669", "#65a30d", "#ca8a04", "#ea580c", "#dc2626", "#db2777", "#7c3aed", "#4f46e5"];

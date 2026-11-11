@@ -130,11 +130,12 @@ function AccountsSettings() {
 function EditAccount({ account, onClose }: { account: Account; onClose: () => void }) {
   const t = useTranslations("publishing.accounts");
   const c = useTranslations("publishing.connect");
-  const [form, setForm] = useState({ name: account.name, access_token: "", privacy_level: account.privacy_level || "SELF_ONLY" });
+  const [form, setForm] = useState({ name: account.name, access_token: "", privacy_level: account.privacy_level || "SELF_ONLY", board_id: account.board_id || "" });
   const save = useMutation({
     mutationFn: () => api.patch(`/accounts/${account.id}`, {
       name: form.name, ...(form.access_token ? { access_token: form.access_token } : {}),
       ...(account.platform === "tiktok" ? { privacy_level: form.privacy_level } : {}),
+      ...(account.platform === "pinterest" && form.board_id ? { board_id: form.board_id } : {}),
     }),
     onSuccess: () => { toast.success(t("saved")); onClose(); },
     onError: (err) => toast.error(errorText(err)),
@@ -151,6 +152,13 @@ function EditAccount({ account, onClose }: { account: Account; onClose: () => vo
           <Field label={c("privacy")} hint={c("privacyHint")}>
             <Select value={form.privacy_level} onChange={(e) => setForm({ ...form, privacy_level: e.target.value })}>
               {["SELF_ONLY", "MUTUAL_FOLLOW_FRIENDS", "FOLLOWER_OF_CREATOR", "PUBLIC_TO_EVERYONE"].map((p) => <option key={p} value={p}>{c(`privacyLevels.${p}`)}</option>)}
+            </Select>
+          </Field>
+        )}
+        {account.platform === "pinterest" && (account.boards?.length ?? 0) > 0 && (
+          <Field label={c("board")} hint={c("boardHint")}>
+            <Select value={form.board_id} onChange={(e) => setForm({ ...form, board_id: e.target.value })}>
+              {(account.boards ?? []).map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
             </Select>
           </Field>
         )}

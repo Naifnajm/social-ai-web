@@ -44,7 +44,9 @@
   },
   "connectAndTest": "Connect and test",
   "connected": "“{name}” is connected.",
-  "failed": "Connection failed."
+  "failed": "Connection failed.",
+  "board": "Board",
+  "boardHint": "New pins go to this board."
  },
  "accounts": {
   "title": "Social accounts",

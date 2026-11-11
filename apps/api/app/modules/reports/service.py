@@ -24,7 +24,9 @@ from app.core.models import Media
 from app.core.storage import read_media
 from app.modules.links import service as links
 from app.modules.planning import service as planning
+from app.modules.social.analytics import RHYTHM
 from app.modules.social.models import AccountStat, Post, PostMedia, PostTarget, SocialAccount
+from app.modules.social.platforms import PLATFORM_LABELS
 from app.modules.workspaces.models import Workspace
 
 from .models import ReportSchedule
@@ -32,10 +34,6 @@ from .models import ReportSchedule
 _logger = logging.getLogger(__name__)
 UTC = timezone.utc
 TEMPLATES = Path(__file__).resolve().parent / "templates"
-PLATFORM_LABELS = {"facebook": "Facebook", "instagram": "Instagram", "linkedin": "LinkedIn", "x": "X",
-                   "tiktok": "TikTok", "threads": "Threads", "telegram": "Telegram", "whatsapp": "WhatsApp"}
-RHYTHM = {"facebook": (3, 5), "instagram": (4, 7), "linkedin": (2, 5), "x": (7, 21), "tiktok": (3, 7),
-          "threads": (5, 14), "telegram": (3, 7)}
 MONTHS_AR = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر",
              "ديسمبر"]
 PERIODS = ("last_7", "last_30", "prev_month")

@@ -31,10 +31,14 @@ BENCHMARK_SLOTS = {
     "tiktok": [(1, 19), (3, 19), (4, 20), (5, 11), (6, 20)],
     "threads": [(1, 8), (2, 9), (3, 19), (0, 12), (4, 18)],
     "telegram": [(0, 9), (2, 9), (4, 19), (1, 20), (3, 9)],
+    "youtube": [(3, 15), (4, 15), (5, 10), (6, 10), (2, 15)],
+    "pinterest": [(4, 20), (5, 20), (6, 20), (1, 21), (2, 21)],
+    "google_business": [(0, 10), (2, 10), (3, 12), (4, 11), (1, 10)],
 }
 # Healthy posting rhythm per week (min, max).
 RHYTHM = {"facebook": (3, 5), "instagram": (4, 7), "linkedin": (2, 5), "x": (7, 21),
-          "tiktok": (3, 7), "threads": (5, 14), "telegram": (3, 7)}
+          "tiktok": (3, 7), "threads": (5, 14), "telegram": (3, 7), "youtube": (1, 3), "pinterest": (5, 15),
+          "google_business": (1, 3)}
 MIN_OWN_DATA = 8
 METRICS = ("impressions", "reach", "likes", "comments", "shares", "saves", "clicks", "video_views", "engagements")
 RAW_METRICS = ("impressions", "reach", "likes", "comments", "shares", "saves", "clicks", "video_views")

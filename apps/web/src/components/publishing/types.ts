@@ -1,5 +1,5 @@
 /** Types of the publishing API (accounts, posts, studio, performance). */
-export type Platform = "facebook" | "instagram" | "linkedin" | "x" | "tiktok" | "threads" | "telegram" | "whatsapp";
+export type Platform = "facebook" | "instagram" | "linkedin" | "x" | "tiktok" | "threads" | "telegram" | "youtube" | "pinterest" | "google_business" | "whatsapp";
 export type PostState = "draft" | "to_approve" | "scheduled" | "publishing" | "posted" | "partial" | "failed";
 export type PublishAs = "feed" | "story" | "feed_story";
 export type SubmitAction = "draft" | "publish" | "schedule" | "best_time";
@@ -26,6 +26,8 @@ export type Account = {
   connected_with: "oauth" | "token";
   oauth_app?: "workspace" | "platform" | null;
   privacy_level?: string | null;
+  board_id?: string | null;
+  boards?: { id: string; name: string }[] | null;
   created_at: string;
 };
 
@@ -154,7 +156,8 @@ export type Dashboard = {
   extra: Record<string, unknown>;
 };
 
-export const PUBLISH_PLATFORMS: Platform[] = ["facebook", "instagram", "linkedin", "x", "tiktok", "threads", "telegram"];
+export const PUBLISH_PLATFORMS: Platform[] = ["facebook", "instagram", "linkedin", "x", "tiktok", "threads", "telegram", "youtube", "pinterest", "google_business"];
 export const PLATFORM_LABELS: Record<string, string> = {
   facebook: "Facebook", instagram: "Instagram", linkedin: "LinkedIn", x: "X", tiktok: "TikTok", threads: "Threads", telegram: "Telegram", whatsapp: "WhatsApp",
+  youtube: "YouTube", pinterest: "Pinterest", google_business: "Google Business Profile",
 };

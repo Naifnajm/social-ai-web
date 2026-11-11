@@ -11,6 +11,7 @@ from app.core.i18n import _
 from app.modules.planning.models import Campaign
 from app.modules.planning.service import workspace_tz
 from app.modules.social.models import Post
+from app.modules.social.platforms import PLATFORM_LABELS
 from app.modules.workspaces.models import Role
 from app.modules.workspaces.settings import get_setting, set_setting
 
@@ -20,8 +21,6 @@ from .schemas import (ConversionIn, ConversionOut, LinkIn, LinkOut, LinkSettings
                       PostLinksOut, ResultRow, SecretOut, SummaryOut, TopPost, Totals)
 
 router = APIRouter(prefix="/links", tags=["links"])
-PLATFORM_LABELS = {"facebook": "Facebook", "instagram": "Instagram", "linkedin": "LinkedIn", "x": "X",
-                   "tiktok": "TikTok", "threads": "Threads", "telegram": "Telegram", "whatsapp": "WhatsApp"}
 
 
 def _names(ctx: Ctx, post_ids: set, campaign_ids: set) -> tuple[dict, dict]:

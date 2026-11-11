@@ -17,6 +17,7 @@ from .models import PUBLISH_PLATFORMS, OAuthSession, SocialAccount
 from .platforms import PLATFORM_LABELS
 from .schemas import (AccountCreate, AccountOut, AccountUpdate, ConnectionResult, OAuthAppIn, OAuthSetupOut,
                       OAuthStartIn, OAuthStartOut, PlatformOption, SyncResult)
+from .platforms.pinterest import board_of
 from .platforms.tiktok import PRIVACY_LEVELS
 
 router = APIRouter(prefix="/accounts", tags=["accounts"])
@@ -37,6 +38,8 @@ def account_out(account: SocialAccount) -> AccountOut:
         connected_with="oauth" if oauth_app else "token",
         oauth_app=oauth_app if oauth_app in ("workspace", "platform") else None,
         privacy_level=extra.get("privacy_level") if account.platform == "tiktok" else None,
+        board_id=board_of(extra) if account.platform == "pinterest" else None,
+        boards=extra.get("boards") if account.platform == "pinterest" else None,
         created_at=account.created_at,
     )
 
@@ -55,8 +58,7 @@ def list_accounts(include_inactive: bool = False, ctx: Ctx = Depends(workspace_c
     if not include_inactive:
         query = query.where(SocialAccount.active.is_(True))
     rows = ctx.db.scalars(query).all()
-    order = {p: i for i, p in enumerate(("facebook", "instagram", "linkedin", "x", "tiktok", "threads", "telegram",
-                                         "whatsapp"))}
+    order = {p: i for i, p in enumerate((*PUBLISH_PLATFORMS, "whatsapp"))}
     return [account_out(a) for a in sorted(rows, key=lambda a: (order.get(a.platform, 99), a.name.lower()))]
 
 
@@ -81,7 +83,7 @@ def connect_with_token(body: AccountCreate, ctx: Ctx = Depends(workspace_ctx(Rol
     """Manual connection: paste a token (and the page / channel id). The connection is tested right away."""
     if body.platform == "telegram" and not (body.external_id or "").strip():
         raise AppError(_("Enter the channel (@name or -100…)."), code="missing_external_id")
-    if body.platform in ("facebook", "instagram") and not (body.external_id or "").strip():
+    if body.platform in ("facebook", "instagram", "google_business") and not (body.external_id or "").strip():
         raise AppError(_("Enter the account or page ID."), code="missing_external_id")
     account = service.find_existing(ctx.db, ctx.workspace.id, body.platform, (body.external_id or "").strip() or None)
     if account is None:
@@ -191,6 +193,11 @@ def update_account(account_id: int, body: AccountUpdate, ctx: Ctx = Depends(work
         if data["privacy_level"] not in PRIVACY_LEVELS:
             raise AppError(_("Unknown TikTok privacy level."), code="bad_privacy")
         account.extra = dict(account.extra or {}, privacy_level=data["privacy_level"])
+    if data.get("board_id") and account.platform == "pinterest":
+        if data["board_id"] not in {b.get("id") for b in (account.extra or {}).get("boards") or []}:
+            raise AppError(_("This board is not in the account. Test the connection to read the boards again."),
+                           code="bad_board")
+        account.extra = dict(account.extra or {}, board_id=data["board_id"])
     if data.get("active") is not None:
         if data["active"] and not account.active:
             limits.check(ctx.db, ctx.workspace.id, "social_accounts")

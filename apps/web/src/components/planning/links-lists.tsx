@@ -11,7 +11,7 @@ import { useSession } from "@/lib/session";
 import type { Campaign, Conversion, TrackedLink } from "./types";
 import { CopyField, onError, useFormat } from "./ui";
 
-const SOURCES = ["instagram", "facebook", "tiktok", "x", "linkedin", "threads", "telegram", "bio", "whatsapp", "qr"];
+const SOURCES = ["instagram", "facebook", "tiktok", "x", "linkedin", "threads", "telegram", "youtube", "pinterest", "google_business", "bio", "whatsapp", "qr"];
 
 export function LinksTab() {
   const t = useTranslations("links");

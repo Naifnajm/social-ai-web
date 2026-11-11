@@ -34,6 +34,9 @@ PLATFORM_LIMITS = {
     "tiktok": 4000,
     "telegram": 4096,
     "whatsapp": 4096,
+    "youtube": 5000,
+    "pinterest": 800,
+    "google_business": 1500,
 }
 
 PLATFORM_STYLE = {
@@ -45,6 +48,12 @@ PLATFORM_STYLE = {
     "threads": "casual and conversational, at most 480 characters",
     "telegram": "clear announcement style, may use line breaks and emojis, no hashtags needed",
     "whatsapp": "short and personal, like a message to a customer, no hashtags",
+    "youtube": "first line is the video title (max 90 chars, no clickbait), then a description that says what the "
+               "video shows, with 3-5 hashtags at the end",
+    "pinterest": "first line is a short searchable title (max 90 chars), then one or two sentences with the "
+                 "keywords people search for, at most 3 hashtags",
+    "google_business": "a short update for people who found the business on Google Maps: what is new, when, and "
+                       "what to do next; plain sentences, no hashtags, at most 600 characters",
 }
 
 # System presets for other uses of the text endpoint (replies, ideas, hashtags…)

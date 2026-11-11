@@ -5,7 +5,8 @@ App credentials come from two places:
   encrypted), used first when present;
 * the platform-wide app of the SaaS operator, from environment variables (``SAI_META_APP_ID`` /
   ``SAI_META_APP_SECRET``, ``SAI_THREADS_APP_ID`` …, ``SAI_LINKEDIN_CLIENT_ID`` …, ``SAI_X_CLIENT_ID`` …,
-  ``SAI_TIKTOK_CLIENT_KEY`` …) — one app for all customers.
+  ``SAI_TIKTOK_CLIENT_KEY`` …, ``SAI_GOOGLE_CLIENT_ID`` … for YouTube and Google Business Profile,
+  ``SAI_PINTEREST_APP_ID`` …) — one app for all customers.
 
 The account remembers which app issued its token (``extra.oauth_app``) so refreshes use the same app.
 """
@@ -25,6 +26,9 @@ from app.core.http import ApiError, call
 from app.modules.workspaces.settings import get_setting, set_setting
 
 GRAPH = "https://graph.facebook.com"
+GOOGLE_AUTHORIZE = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN = "https://oauth2.googleapis.com/token"
+PINTEREST_TOKEN = "https://api.pinterest.com/v5/oauth/token"
 CALLBACK_PATH = "/oauth/callback"
 
 
@@ -43,6 +47,10 @@ class PlatformApps(BaseSettings):
     x_client_secret: str = ""
     tiktok_client_key: str = ""
     tiktok_client_secret: str = ""
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    pinterest_app_id: str = ""
+    pinterest_app_secret: str = ""
 
 
 @lru_cache
@@ -80,9 +88,27 @@ PLATFORMS = {
         "authorize": "https://www.tiktok.com/v2/auth/authorize/",
         "scopes": "user.info.basic,user.info.stats,video.publish,video.list",
     },
+    "youtube": {
+        "env": ("google_client_id", "google_client_secret"),
+        "authorize": GOOGLE_AUTHORIZE,
+        "scopes": "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube.readonly",
+    },
+    "google_business": {
+        "env": ("google_client_id", "google_client_secret"),
+        "authorize": GOOGLE_AUTHORIZE,
+        "scopes": "https://www.googleapis.com/auth/business.manage",
+    },
+    "pinterest": {
+        "env": ("pinterest_app_id", "pinterest_app_secret"),
+        "authorize": "https://www.pinterest.com/oauth/",
+        "scopes": "boards:read,boards:write,pins:read,pins:write,user_accounts:read",
+    },
 }
 # Instagram accounts are discovered through the Facebook (Meta) login.
 OAUTH_PLATFORM = {"instagram": "facebook"}
+# YouTube and Google Business Profile are two logins (different permissions) of one Google developer app.
+APP_KEY = {"youtube": "google", "google_business": "google"}
+GOOGLE_PLATFORMS = ("youtube", "google_business")
 
 
 def oauth_key(platform: str) -> str:
@@ -97,7 +123,8 @@ def redirect_uri() -> str:
 # Credentials
 # ---------------------------------------------------------------------------
 def _setting_key(platform: str) -> str:
-    return f"social.app.{oauth_key(platform)}"
+    key = oauth_key(platform)
+    return f"social.app.{APP_KEY.get(key, key)}"
 
 
 def workspace_credentials(db: Session, workspace_id: int, platform: str) -> tuple[str, str]:
@@ -186,6 +213,9 @@ def authorize_url(db: Session, workspace_id: int, platform: str, state: str, ver
                   "response_type": "code"}
         if platform == "x":
             params.update(code_challenge=challenge(verifier), code_challenge_method="S256")
+        if platform in GOOGLE_PLATFORMS:
+            # offline + consent: Google only returns a refresh token when the consent screen is shown
+            params.update(access_type="offline", prompt="consent")
     return f"{url}?{urlencode(params)}"
 
 
@@ -219,7 +249,8 @@ def exchange(db: Session, workspace_id: int, platform: str, code: str, verifier:
     if not client_id:
         raise ApiError("Add the app credentials for this platform first.")
     handler = {"facebook": _exchange_meta, "threads": _exchange_threads, "linkedin": _exchange_linkedin,
-               "x": _exchange_x, "tiktok": _exchange_tiktok}[platform]
+               "x": _exchange_x, "tiktok": _exchange_tiktok, "youtube": _exchange_youtube,
+               "google_business": _exchange_google_business, "pinterest": _exchange_pinterest}[platform]
     accounts = handler(db, workspace_id, client_id, secret, code, verifier or "")
     for account in accounts:
         account["extra"] = dict(account.get("extra") or {}, oauth_app=used)
@@ -347,6 +378,85 @@ def _exchange_tiktok(db, workspace_id, client_id, secret, code, verifier):
     }]
 
 
+def _google_token(http, client_id, secret, code):
+    token = http("POST", GOOGLE_TOKEN, "OAuth: exchange code",
+                 data={"grant_type": "authorization_code", "code": code, "redirect_uri": redirect_uri(),
+                       "client_id": client_id, "client_secret": secret})
+    if not token.get("access_token"):
+        raise ApiError("Google did not return an access token.")
+    return token
+
+
+def _exchange_youtube(db, workspace_id, client_id, secret, code, verifier):
+    http = _Caller(workspace_id, "YouTube")
+    token = _google_token(http, client_id, secret, code)
+    access = token["access_token"]
+    data = http("GET", "https://www.googleapis.com/youtube/v3/channels", "OAuth: channel",
+                headers={"Authorization": f"Bearer {access}"}, params={"part": "snippet", "mine": "true"})
+    channels = data.get("items") or []
+    if not channels:
+        raise ApiError("This Google account has no YouTube channel. Create the channel on YouTube first.")
+    accounts = []
+    for channel in channels:
+        snippet = channel.get("snippet") or {}
+        accounts.append({
+            "platform": "youtube", "name": snippet.get("title"),
+            "username": (snippet.get("customUrl") or snippet.get("title") or "").lstrip("@"),
+            "external_id": channel["id"], "access_token": access, "refresh_token": token.get("refresh_token"),
+            "token_expires_at": _expiry(token.get("expires_in")),
+            "avatar_url": ((snippet.get("thumbnails") or {}).get("default") or {}).get("url"),
+            "extra": {"privacy_status": "public"},
+        })
+    return accounts
+
+
+def _exchange_google_business(db, workspace_id, client_id, secret, code, verifier):
+    """One account per business location the Google user manages."""
+    http = _Caller(workspace_id, "Google Business Profile")
+    token = _google_token(http, client_id, secret, code)
+    access = token["access_token"]
+    headers = {"Authorization": f"Bearer {access}"}
+    listed = http("GET", "https://mybusinessaccountmanagement.googleapis.com/v1/accounts", "OAuth: list accounts",
+                  headers=headers)
+    accounts = []
+    for owner in listed.get("accounts") or []:
+        data = http("GET", f"https://mybusinessbusinessinformation.googleapis.com/v1/{owner['name']}/locations",
+                    "OAuth: list locations", headers=headers, params={"readMask": "name,title", "pageSize": 100})
+        for location in data.get("locations") or []:
+            accounts.append({
+                "platform": "google_business", "name": location.get("title") or location["name"],
+                "username": location.get("title"), "external_id": f"{owner['name']}/{location['name']}",
+                "access_token": access, "refresh_token": token.get("refresh_token"),
+                "token_expires_at": _expiry(token.get("expires_in")),
+            })
+    if not accounts:
+        raise ApiError("This Google account manages no business location. Add or claim the business on Google "
+                       "first.")
+    return accounts
+
+
+def _exchange_pinterest(db, workspace_id, client_id, secret, code, verifier):
+    http = _Caller(workspace_id, "Pinterest")
+    token = http("POST", PINTEREST_TOKEN, "OAuth: exchange code", headers={"Authorization": _basic(client_id, secret)},
+                 data={"grant_type": "authorization_code", "code": code, "redirect_uri": redirect_uri()})
+    access = token["access_token"]
+    headers = {"Authorization": f"Bearer {access}"}
+    me = http("GET", "https://api.pinterest.com/v5/user_account", "OAuth: profile", headers=headers)
+    listed = http("GET", "https://api.pinterest.com/v5/boards", "OAuth: list boards", headers=headers,
+                  params={"page_size": 100})
+    boards = [{"id": str(b["id"]), "name": b.get("name") or str(b["id"])} for b in listed.get("items") or []
+              if b.get("id")]
+    if not boards:
+        raise ApiError("This Pinterest account has no board. Create a board on Pinterest first.")
+    return [{
+        "platform": "pinterest", "name": me.get("business_name") or me.get("username"),
+        "username": me.get("username"), "external_id": str(me.get("id") or me.get("username")),
+        "access_token": access, "refresh_token": token.get("refresh_token"),
+        "token_expires_at": _expiry(token.get("expires_in")), "avatar_url": me.get("profile_image"),
+        "extra": {"boards": boards},  # the chosen board (extra.board_id) is kept when reconnecting
+    }]
+
+
 # ---------------------------------------------------------------------------
 # Token refresh
 # ---------------------------------------------------------------------------
@@ -377,6 +487,13 @@ def refresh(db: Session, account) -> dict:
         data = http("POST", "https://open.tiktokapis.com/v2/oauth/token/", "Refresh token",
                     data={"client_key": client_id, "client_secret": secret, "grant_type": "refresh_token",
                           "refresh_token": rt})
+    elif platform in GOOGLE_PLATFORMS:
+        data = http("POST", GOOGLE_TOKEN, "Refresh token",
+                    data={"grant_type": "refresh_token", "refresh_token": rt, "client_id": client_id,
+                          "client_secret": secret})
+    elif platform == "pinterest":
+        data = http("POST", PINTEREST_TOKEN, "Refresh token", headers={"Authorization": _basic(client_id, secret)},
+                    data={"grant_type": "refresh_token", "refresh_token": rt})
     else:
         raise ApiError("Automatic token renewal is not available for this platform.")
     if not data.get("access_token"):
@@ -439,6 +556,40 @@ SETUP_GUIDES = {
             "Copy the Client key and Client secret here.",
         ],
     },
+    "youtube": {
+        "brand": "Google", "portal_url": "https://console.cloud.google.com/apis/credentials",
+        "id_label": "Client ID", "secret_label": "Client secret",
+        "steps": [
+            "Open console.cloud.google.com, create a project and enable “YouTube Data API v3”.",
+            "In “OAuth consent screen”, fill in the app details and add the YouTube upload permission.",
+            "In Credentials › Create credentials › OAuth client ID, choose “Web application”.",
+            "Paste the redirect URL below under “Authorized redirect URIs”, then copy the Client ID and secret here.",
+        ],
+        "note": "The same Google app also connects Google Business Profile. A new Google project can upload "
+                "about 100 videos a day.",
+    },
+    "google_business": {
+        "brand": "Google", "portal_url": "https://console.cloud.google.com/apis/credentials",
+        "id_label": "Client ID", "secret_label": "Client secret",
+        "steps": [
+            "Ask Google for access to the Business Profile APIs (a request form; approval can take days).",
+            "In console.cloud.google.com, enable “My Business Account Management API”, “My Business Business "
+            "Information API” and “Google My Business API”.",
+            "In Credentials › Create credentials › OAuth client ID, choose “Web application”.",
+            "Paste the redirect URL below under “Authorized redirect URIs”, then copy the Client ID and secret here.",
+        ],
+        "note": "The same Google app also connects YouTube. Each business location becomes one account here.",
+    },
+    "pinterest": {
+        "brand": "Pinterest", "portal_url": "https://developers.pinterest.com/apps/",
+        "id_label": "App ID", "secret_label": "App secret key",
+        "steps": [
+            "Open developers.pinterest.com › My apps › Connect app (the account must be a business account).",
+            "Paste the redirect URL below under “Redirect URIs” and save.",
+            "Copy the App ID and the App secret key here.",
+        ],
+        "note": "Until Pinterest approves “Standard” access for the app, pins it creates are visible to you only.",
+    },
 }
 
 # How to connect with a token (manual path)
@@ -450,4 +601,7 @@ MANUAL_HELP = {
     "tiktok": "An access token with video.publish. Media must be served from a domain verified in TikTok.",
     "threads": "Threads user ID + a long-lived Threads access token.",
     "telegram": "Bot token from @BotFather + the channel (@name or -100…). Add the bot as channel admin.",
+    "youtube": "Channel ID + a Google access token with youtube.upload (expires after an hour: prefer the login).",
+    "pinterest": "A Pinterest access token with pins:write and boards:read; the first board is used.",
+    "google_business": "Location (accounts/123/locations/456) + a Google access token with business.manage.",
 }

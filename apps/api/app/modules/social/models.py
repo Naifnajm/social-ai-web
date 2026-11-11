@@ -12,8 +12,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.crypto import EncryptedString
 from app.core.db import Base, TimestampMixin, WorkspaceMixin
 
-PLATFORMS = ("facebook", "instagram", "linkedin", "x", "tiktok", "threads", "telegram", "whatsapp")
-PUBLISH_PLATFORMS = ("facebook", "instagram", "linkedin", "x", "tiktok", "threads", "telegram")  # not whatsapp
+PUBLISH_PLATFORMS = ("facebook", "instagram", "linkedin", "x", "tiktok", "threads", "telegram", "youtube",
+                     "pinterest", "google_business")
+PLATFORMS = (*PUBLISH_PLATFORMS, "whatsapp")  # WhatsApp is inbox only
 POST_STATES = ("draft", "to_approve", "scheduled", "publishing", "posted", "partial", "failed")
 
 

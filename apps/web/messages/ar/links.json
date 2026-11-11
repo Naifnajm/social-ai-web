@@ -62,7 +62,10 @@
   "telegram": "Telegram",
   "bio": "بايو الحساب",
   "whatsapp": "WhatsApp",
-  "qr": "رمز QR"
+  "qr": "رمز QR",
+  "youtube": "YouTube",
+  "pinterest": "Pinterest",
+  "google_business": "Google Business Profile"
  },
  "campaign": "الحملة",
  "none": "بدون",

@@ -36,7 +36,7 @@ URL_RE = re.compile(r"""https?://[^\s<>"'`]+""", re.IGNORECASE)
 TRAILING = ").,!?;:'\"»”’…"
 CODE_ALPHABET = string.ascii_letters + string.digits
 MAX_CHARS = {"x": 280, "threads": 500, "instagram": 2200, "tiktok": 2200, "linkedin": 3000, "telegram": 4096,
-             "facebook": 63206}
+             "facebook": 63206, "youtube": 5000, "pinterest": 800, "google_business": 1500}
 BOT_RE = re.compile(
     r"bot|crawl|spider|slurp|preview|facebookexternalhit|facebot|embedly|quora link|outbrain|pinterest|"
     r"vkshare|w3c_validator|whatsapp|telegram|skypeuripreview|discord|slack|curl|wget|python-|httpx|"

@@ -62,7 +62,10 @@
   "telegram": "Telegram",
   "bio": "Profile bio",
   "whatsapp": "WhatsApp",
-  "qr": "QR code"
+  "qr": "QR code",
+  "youtube": "YouTube",
+  "pinterest": "Pinterest",
+  "google_business": "Google Business Profile"
  },
  "campaign": "Campaign",
  "none": "None",

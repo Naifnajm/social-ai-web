@@ -25,6 +25,7 @@ if TYPE_CHECKING:  # pragma: no cover
 PLATFORM_LABELS = {
     "facebook": "Facebook", "instagram": "Instagram", "linkedin": "LinkedIn", "x": "X", "tiktok": "TikTok",
     "threads": "Threads", "telegram": "Telegram", "whatsapp": "WhatsApp",
+    "youtube": "YouTube", "pinterest": "Pinterest", "google_business": "Google Business Profile",
 }
 
 
@@ -38,6 +39,7 @@ class BasePublisher:
     max_images = 10
     requires_media = False
     supports_text_only = True
+    supports_images = True
     supports_video = True
     supports_audio = False
     supports_story = False
@@ -92,13 +94,18 @@ class BasePublisher:
         if audios and not cls.supports_audio:
             out.append(("{network} does not accept audio posts. Use the voice-over in a video, or post it on "
                         "Telegram.", {"network": label}))
+        if images and not cls.supports_images:
+            out.append(("{network} publishes videos only.", {"network": label}))
         if cls.requires_media and not media:
-            out.append(("{network} needs an image or a video.", {"network": label}))
+            needs = ("{network} needs an image or a video." if cls.supports_images and cls.supports_video
+                     else "{network} needs a video." if cls.supports_video else "{network} needs an image.")
+            out.append((needs, {"network": label}))
         if cls.max_chars and len(text or "") > cls.max_chars:
             out.append(("Text is too long for {network} ({length} / {max} characters).",
                         {"network": label, "length": len(text), "max": cls.max_chars}))
-        if len(images) > cls.max_images:
-            out.append(("{network} accepts at most {count} images.", {"network": label, "count": cls.max_images}))
+        if cls.supports_images and len(images) > cls.max_images:
+            out.append(("{network} accepts one image per post." if cls.max_images == 1
+                        else "{network} accepts at most {count} images.", {"network": label, "count": cls.max_images}))
         if len(videos) > 1 or len(audios) > 1:
             out.append(("{network} accepts one video or one audio file per post.", {"network": label}))
         if (videos or audios) and len(media) > 1:

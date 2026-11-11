@@ -6,8 +6,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.modules.files.router import MediaOut
 
-Platform = Literal["facebook", "instagram", "linkedin", "x", "tiktok", "threads", "telegram"]
-OAuthPlatform = Literal["facebook", "instagram", "linkedin", "x", "tiktok", "threads"]
+Platform = Literal["facebook", "instagram", "linkedin", "x", "tiktok", "threads", "telegram", "youtube", "pinterest",
+                   "google_business"]
+OAuthPlatform = Literal["facebook", "instagram", "linkedin", "x", "tiktok", "threads", "youtube", "pinterest",
+                        "google_business"]
 PublishAs = Literal["feed", "story", "feed_story"]
 SubmitAction = Literal["draft", "publish", "schedule", "best_time"]
 
@@ -35,6 +37,8 @@ class AccountOut(BaseModel):
     connected_with: Literal["oauth", "token"] = "token"
     oauth_app: Literal["workspace", "platform"] | None = None
     privacy_level: str | None = None
+    board_id: str | None = None           # Pinterest: where pins go
+    boards: list[dict] | None = None      # Pinterest: [{"id", "name"}] to choose from
     created_at: datetime
 
 
@@ -55,6 +59,7 @@ class AccountUpdate(BaseModel):
     external_id: str | None = Field(default=None, max_length=200)
     access_token: str | None = Field(default=None, max_length=4000)
     privacy_level: str | None = None
+    board_id: str | None = Field(default=None, max_length=64)
     active: bool | None = None
 
 

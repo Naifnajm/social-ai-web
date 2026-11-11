@@ -47,6 +47,10 @@ def account(db, workspace_id, platform, name=None, **values) -> SocialAccount:
                 "telegram": {"external_id": "@brand", "access_token": "123:ABC"},
                 "threads": {"external_id": "th1", "access_token": "thtok"},
                 "tiktok": {"external_id": "tt1", "access_token": "tttok"},
+                "youtube": {"external_id": "UCchannel", "access_token": "yttok"},
+                "pinterest": {"external_id": "pin-user", "access_token": "pintok",
+                              "extra": {"boards": [{"id": "b1", "name": "Menu"}, {"id": "b2", "name": "Offers"}]}},
+                "google_business": {"external_id": "accounts/1/locations/2", "access_token": "gbtok"},
                 "whatsapp": {"external_id": "+31600000000", "access_token": "wa"}}[platform]
     row = SocialAccount(workspace_id=workspace_id, platform=platform, name=name or platform.title(),
                         state="connected", **{**defaults, **values})

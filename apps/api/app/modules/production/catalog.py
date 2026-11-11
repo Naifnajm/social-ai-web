@@ -51,8 +51,10 @@ HASH_FIELDS = ("kind", "text_value", "aspect", "style", "seconds", "audio_mode",
 NETWORK_FORMATS = {
     "instagram": ("4:5", "1:1", "9:16"), "facebook": ("4:5", "1:1", "16:9", "9:16"), "threads": ("4:5", "1:1"),
     "tiktok": ("9:16",), "x": ("16:9", "1:1"), "linkedin": ("1:1", "4:5", "16:9"), "telegram": ("16:9", "1:1", "4:5"),
+    "pinterest": ("9:16", "4:5", "1:1"), "google_business": ("4:5", "1:1", "16:9"),
 }
-NETWORK_VIDEO_FORMATS = {"instagram": ("9:16", "4:5"), "facebook": ("9:16", "4:5", "16:9"), "tiktok": ("9:16",)}
+NETWORK_VIDEO_FORMATS = {"instagram": ("9:16", "4:5"), "facebook": ("9:16", "4:5", "16:9"), "tiktok": ("9:16",),
+                         "youtube": ("16:9", "9:16")}
 
 
 def kind_label(kind: str) -> str:

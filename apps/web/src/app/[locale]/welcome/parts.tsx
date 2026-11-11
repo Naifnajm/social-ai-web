@@ -193,19 +193,7 @@ export function StarCanvas({ variant, reduce, className }: { variant: StarVarian
 }
 
 function StarFallback() {
-  return (
-    <svg viewBox="0 0 24 24" className="lx-star-fallback">
-      <defs>
-        <linearGradient id="lxg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#fff" />
-          <stop offset=".55" stopColor="#b9b3c4" />
-          <stop offset="1" stopColor={ACCENT} />
-        </linearGradient>
-      </defs>
-      <path fill="url(#lxg)" d="M10 2c.4 4.6 2.4 6.6 7 7-4.6.4-6.6 2.4-7 7-.4-4.6-2.4-6.6-7-7 4.6-.4 6.6-2.4 7-7Z" />
-      <path fill={ACCENT} d="M18.5 1.5c.2 1.8 1 2.6 2.8 2.8-1.8.2-2.6 1-2.8 2.8-.2-1.8-1-2.6-2.8-2.8 1.8-.2 2.6-1 2.8-2.8Z" />
-    </svg>
-  );
+  return <span className="lx-star-fallback flex items-center justify-center"><BrandMark size={260} /></span>;
 }
 
 /* ---------------------------------------------------------------------------------------------

@@ -50,10 +50,13 @@ function useReducedMotion() {
   );
 }
 
+/** The logo's three tiles in one colour: the separator between marquee items. */
 function Spark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden className={cx("lx-mq-sep", className)} fill="currentColor">
-      <path d="M12 0c.6 6.6 5.4 11.4 12 12-6.6.6-11.4 5.4-12 12-.6-6.6-5.4-11.4-12-12C6.6 11.4 11.4 6.6 12 0Z" />
+      <rect x="1" y="1" width="14" height="14" rx="4.2" opacity=".35" />
+      <rect x="5" y="5" width="14" height="14" rx="4.2" opacity=".6" />
+      <rect x="9" y="9" width="14" height="14" rx="4.2" />
     </svg>
   );
 }

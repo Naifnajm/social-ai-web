@@ -16,7 +16,7 @@ type Stats = {
   mrr_usd: number; arr_usd: number; by_plan: Record<string, number>;
 };
 
-const PLANS = ["trial", "starter", "pro", "business", "enterprise"];
+const PLANS = ["trial", "free", "starter", "pro", "business", "enterprise"];
 const STATUSES = ["trialing", "active", "past_due", "canceled", "suspended"];
 
 function Tile({ icon, label, value, hint }: { icon: string; label: string; value: string; hint?: ReactNode }) {

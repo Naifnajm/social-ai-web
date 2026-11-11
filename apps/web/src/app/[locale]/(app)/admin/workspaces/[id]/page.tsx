@@ -20,7 +20,7 @@ type Detail = {
   provider_customer_id: string | null; provider_subscription_id: string | null;
 };
 
-const PLANS = ["trial", "starter", "pro", "business", "enterprise"];
+const PLANS = ["trial", "free", "starter", "pro", "business", "enterprise"];
 const SUB_STATUSES = ["trialing", "active", "past_due", "canceled"];
 
 function Info({ label, children }: { label: string; children: ReactNode }) {

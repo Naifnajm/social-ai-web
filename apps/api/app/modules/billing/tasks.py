@@ -31,9 +31,9 @@ def run_reminders(db) -> int:
     soon = utcnow() + timedelta(days=billing_settings().billing_trial_reminder_days)
     for sub in db.scalars(select(Subscription).where(Subscription.status.in_(("trialing", "past_due")))).all():
         state = billing_state(db, sub.workspace_id)
-        if sub.status == "trialing" and state.blocked == "trial_ended":
+        if sub.status == "trialing" and state.plan.code == "free":
             count += _remind(db, sub, "trial_ended", kind="billing.trial_ended", title=_("Your free trial has ended"),
-                             body=_("Choose a plan to keep publishing. Your content and settings are kept."))
+                             body=_("You are now on the free plan. Choose a plan for more accounts, posts and AI."))
         elif sub.status == "trialing" and state.trial_ends_at and state.trial_ends_at <= soon:
             count += _remind(db, sub, "trial_soon", kind="billing.trial_ending",
                              title=_("Your free trial ends in {days} days", days=state.trial_days_left or 0),

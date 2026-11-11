@@ -29,6 +29,7 @@ FEATURES = (
     "custom_branding",   # white-label reports, custom domain
 )
 
+_FREE = ("ai_studio", "templates", "quick_publish", "planning")
 _STARTER = ("ai_studio", "templates", "quick_publish", "planning", "inbox", "analytics")
 _PRO = _STARTER + ("approvals", "inbox_assistant", "reports", "link_tracking", "evergreen")
 _BUSINESS = _PRO + ("production", "priority_support")
@@ -57,7 +58,7 @@ class Plan:
 
     @property
     def is_paid(self) -> bool:
-        return self.price_month is not None and self.code not in ("trial",)
+        return bool(self.price_month) and self.code not in ("trial",)
 
     def monthly_value(self, interval: str = "month") -> float:
         """Monthly recurring revenue of one subscription (USD)."""
@@ -70,6 +71,11 @@ PLANS: dict[str, Plan] = {
     "trial": Plan(
         "trial", "Free trial", 0, 0, public=False, rank=0, features=_BUSINESS,
         limits={"social_accounts": 10, "members": 5, "posts_month": 300, "ai_credits": 2.0, "storage_gb": 2},
+    ),
+    # What a workspace keeps for good when its trial ends without a subscription. AI only with its own key.
+    "free": Plan(
+        "free", "Free", 0, 0, rank=0, features=_FREE,
+        limits={"social_accounts": 3, "members": 1, "posts_month": 30, "ai_credits": 0.0, "storage_gb": 1},
     ),
     "starter": Plan(
         "starter", "Starter", 19, 190, rank=1, features=_STARTER,

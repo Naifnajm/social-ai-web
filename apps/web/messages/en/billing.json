@@ -4,13 +4,15 @@
   "starter": "Starter",
   "pro": "Pro",
   "business": "Business",
-  "enterprise": "Enterprise"
+  "enterprise": "Enterprise",
+  "free": "Free"
  },
  "planTagline": {
   "starter": "For a single brand getting organised.",
   "pro": "For growing brands and small agencies.",
   "business": "For teams with many brands and video production.",
-  "enterprise": "Custom limits, contracts and support."
+  "enterprise": "Custom limits, contracts and support.",
+  "free": "Start at no cost."
  },
  "status": {
   "trialing": "Trial",
@@ -153,5 +155,7 @@
    "invite_teammate": "Writers, designers and approvers.",
    "first_post": "Write with AI and publish everywhere at once."
   }
- }
+ },
+ "freeTitle": "And after the trial? It stays free.",
+ "freeText": "{accounts} accounts and {posts} posts a month with no card, and AI with your own key. Upgrade when you need more."
 }

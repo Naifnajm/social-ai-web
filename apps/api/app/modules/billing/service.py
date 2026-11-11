@@ -1,7 +1,7 @@
 """Subscription lifecycle: trial start, plan changes, payment failures and the effective state of a workspace.
 
 Effective state (``billing_state``):
-* ``trialing`` until ``trial_ends_at`` → then blocked (``trial_ended``) until a plan is bought;
+* ``trialing`` until ``trial_ends_at`` → then the free plan (small limits) until a plan is bought;
 * ``active`` → everything within the plan limits;
 * ``past_due`` (payment failed) → still working during the grace period, then blocked (``payment_overdue``);
 * ``canceled`` → working until the paid period ends, then blocked (``canceled``);
@@ -121,7 +121,10 @@ def billing_state(db: Session, workspace_id: int) -> BillingState:
             since = _aware(sub.past_due_since) or now
             state.grace_ends_at = since + timedelta(days=grace_days(db))
     if state.status == "trialing" and state.trial_ends_at and state.trial_ends_at <= now:
-        state.blocked = "trial_ended"
+        # The trial is over and nobody subscribed: the workspace keeps working on the free plan's limits.
+        state.plan = get_plan("free")
+        state.limits = effective_limits(state.plan, sub.limit_overrides if sub else None)
+        state.status = "active"
     elif state.status == "past_due" and state.grace_ends_at and state.grace_ends_at <= now:
         state.blocked = "payment_overdue"
     elif state.status == "canceled" and not (state.current_period_end and state.current_period_end > now):

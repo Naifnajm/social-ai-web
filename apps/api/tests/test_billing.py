@@ -72,7 +72,7 @@ def test_public_plans(client):
     assert r.status_code == 200
     data = r.json()
     codes = [p["code"] for p in data["plans"]]
-    assert codes == ["starter", "pro", "business", "enterprise"]
+    assert codes == ["free", "starter", "pro", "business", "enterprise"]
     pro = next(p for p in data["plans"] if p["code"] == "pro")
     assert pro["price_month"] == 49 and pro["price_month_sar"] == round(49 * 3.75)
     assert pro["highlight"] and pro["self_service"]
@@ -232,18 +232,20 @@ def test_features_per_plan(db, auth):
     limits.require(db, ws, "production")
 
 
-def test_trial_end_makes_workspace_read_only(client, db, auth):
+def test_trial_end_falls_back_to_the_free_plan(client, db, auth):
     sub = _sub(db, auth.workspace_id)
     sub.trial_ends_at = service.utcnow() - timedelta(minutes=1)
     db.flush()
-    with pytest.raises(LimitReached) as exc:
-        limits.check(db, auth.workspace_id, "social_accounts")
-    assert exc.value.extra["reason"] == "trial_ended" and exc.value.extra["upgrade"] == "pro"
+    state = service.billing_state(db, auth.workspace_id)
+    assert state.plan.code == "free" and state.status == "active" and not state.blocked and not state.plan.is_paid
+    summary = client.get("/api/billing/summary", headers=auth.headers).json()
+    assert summary["blocked"] is None and summary["plan"] == "free"
+    # the free plan has one member: inviting a second one asks for an upgrade, reads keep working
     r = client.post("/api/workspace/invitations", json={"email": "z@example.com"}, headers=auth.headers)
-    assert r.status_code == 402 and r.json()["reason"] == "trial_ended"
-    # reads keep working
-    assert client.get("/api/billing/summary", headers=auth.headers).json()["blocked"] == "trial_ended"
+    assert r.status_code == 402 and r.json()["reason"] == "limit" and r.json()["upgrade"] == "starter"
     assert client.get("/api/workspace/members", headers=auth.headers).status_code == 200
+    # a paid feature is refused, a free one is not
+    assert not limits.feature(db, auth.workspace_id, "inbox") and limits.feature(db, auth.workspace_id, "planning")
     # reminders: one "trial ended" notification for the owner, sent once
     assert run_reminders(db) == 1
     assert run_reminders(db) == 0

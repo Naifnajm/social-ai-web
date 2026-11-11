@@ -127,15 +127,26 @@ export function PricingTable({ tone, action, currentPlan, initialInterval = "mon
   if (isLoading || !data) {
     return <div className="flex justify-center py-16"><Spinner size={26} className={tone === "dark" ? "text-white/60" : ""} /></div>;
   }
+  // The free plan is a line under the cards, not a fifth card: it is what a trial becomes, not something to pick.
+  const paid = data.plans.filter((plan) => plan.code !== "free");
+  const free = data.plans.find((plan) => plan.code === "free");
   return (
     <div>
       <PricingToggles interval={interval} setInterval={setInterval} currency={currency} setCurrency={setCurrency} tone={tone} />
       <div className={cx("mt-8 grid grid-cols-1 pt-3", compact ? "gap-3.5 sm:grid-cols-2 min-[60rem]:grid-cols-4" : "gap-5 md:grid-cols-2", !compact && (tone === "dark" ? "xl:grid-cols-4" : "2xl:grid-cols-4"))}>
-        {data.plans.map((plan, index) => (
-          <PlanCard key={plan.code} plan={plan} previous={index ? data.plans[index - 1] : undefined} interval={interval}
+        {paid.map((plan, index) => (
+          <PlanCard key={plan.code} plan={plan} previous={index ? paid[index - 1] : undefined} interval={interval}
             currency={currency} tone={tone} action={action(plan, interval)} current={plan.code === currentPlan} compact={compact} />
         ))}
       </div>
+      {free && (
+        <div className={cx("mt-4 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-[20px] px-5 py-4 text-sm",
+          tone === "dark" ? "bg-white/[.04] text-white ring-1 ring-white/10" : "glass")}>
+          <span><b>{t("freeTitle")}</b> <span className={tone === "dark" ? "text-white/60" : "text-muted"}>{t("freeText", {
+            accounts: free.limits.social_accounts ?? 0, posts: free.limits.posts_month ?? 0 })}</span></span>
+          {currentPlan === "free" && <span className="rounded-full bg-ok-bg px-2 py-0.5 text-[11px] font-semibold text-ok">{t("currentPlan")}</span>}
+        </div>
+      )}
       {currency === "SAR" && <p className={cx("mt-5 text-center text-xs", tone === "dark" ? "text-white/40" : "text-muted")}>{t("vatNote")}</p>}
     </div>
   );

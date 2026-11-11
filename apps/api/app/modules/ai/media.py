@@ -87,7 +87,7 @@ def start_job(db: Session, workspace_id: int, kind: str, prompt: str, *, provide
     provider, model, model_name = prov.resolve(db, workspace_id, kind, model_id=model_id, provider_id=provider_id)
     quote = prov.estimate_task(db, workspace_id, kind, prompt=prompt, seconds=seconds, audio_mode=audio_mode,
                                model_id=model.id if model else None, provider_id=provider.id)
-    prov.check_spend(db, provider, quote["cost"])
+    prov.check_spend(db, provider, quote["cost"], user_id)
 
     job = MediaJob(workspace_id=workspace_id, kind=kind, prompt=prompt, provider_id=provider.id,
                    model_id=model.id if model else None, model_name=model_name or None, aspect=aspect,
@@ -123,7 +123,7 @@ def transcribe(db: Session, workspace_id: int, media_id: int, language: str | No
     provider, model, model_name = prov.resolve(db, workspace_id, catalog.STT, model_id=model_id,
                                                provider_id=provider_id)
     if model and media.duration:
-        prov.check_spend(db, provider, media.duration / 60.0 * (model.price or 0))
+        prov.check_spend(db, provider, media.duration / 60.0 * (model.price or 0), user_id)
     else:
         prov.check_spend(db, provider, 0.0)
     content, mimetype = read_media(media), media.mimetype

@@ -29,9 +29,10 @@ def month_start(now: datetime | None = None) -> datetime:
 
 
 # ------------------------------------------------------------------ lookups
-def get_provider(db: Session, workspace_id: int, provider_id: int) -> AIProvider:
+def get_provider(db: Session, workspace_id: int, provider_id: int, managed_ok: bool = False) -> AIProvider:
+    """A provider of the workspace. The platform's managed ones are not editable: hidden unless ``managed_ok``."""
     provider = db.get(AIProvider, provider_id)
-    if not provider or provider.workspace_id != workspace_id:
+    if not provider or provider.workspace_id != workspace_id or (provider.managed and not managed_ok):
         raise NotFound(_("AI provider not found."), code="not_found")
     return provider
 
@@ -43,8 +44,11 @@ def get_model(db: Session, workspace_id: int, model_id: int) -> AIModel:
     return model
 
 
-def list_providers(db: Session, workspace_id: int, capability: str | None = None, active_only: bool = False):
-    query = select(AIProvider).where(AIProvider.workspace_id == workspace_id).order_by(
+def list_providers(db: Session, workspace_id: int, capability: str | None = None, active_only: bool = False,
+                   managed: bool = False):
+    """The workspace's own providers (``managed=True``: the platform-paid ones instead)."""
+    query = select(AIProvider).where(AIProvider.workspace_id == workspace_id,
+                                     AIProvider.managed.is_(managed)).order_by(
         AIProvider.is_default.desc(), AIProvider.sequence, AIProvider.id)
     if active_only:
         query = query.where(AIProvider.active.is_(True))
@@ -195,18 +199,61 @@ CAPABILITY_ERROR = {
 }
 
 
+def platform_provider(db: Session, workspace_id: int, capability: str) -> AIProvider | None:
+    """The platform-paid provider of this workspace for ``capability`` (created on first use), or None.
+
+    The platform keeps one key per provider type in the admin settings. A workspace without its own provider
+    gets a managed row that carries that key and the catalog price list; its usage counts as AI credits.
+    """
+    from app.modules.billing import platform
+    preferred = platform.get_setting(db, "ai.default_provider")
+    types = sorted(platform.AI_PROVIDERS, key=lambda t: t != preferred)
+    for provider_type in types:
+        key = platform.ai_key(db, provider_type)
+        if not key or not catalog.can(provider_type, capability):
+            continue
+        provider = db.scalar(select(AIProvider).where(AIProvider.workspace_id == workspace_id,
+                                                      AIProvider.managed.is_(True),
+                                                      AIProvider.provider_type == provider_type))
+        if provider is None:
+            data = catalog_defaults(provider_type)
+            data.update(provider_type=provider_type, name=f"Stravica AI · {catalog.info(provider_type)['label']}",
+                        api_key=key, managed=True, active=True, state="ok", base_url=None)
+            provider = AIProvider(workspace_id=workspace_id, **data)
+            db.add(provider)
+            db.flush()
+            seed_models(db, provider)
+        if provider_type == preferred:
+            for field, setting in (("text_model", "ai.default_text_model"), ("image_model", "ai.default_image_model")):
+                wanted = platform.get_setting(db, setting)
+                if wanted and getattr(provider, field) != wanted:
+                    setattr(provider, field, wanted)
+        if provider.api_key != key:
+            provider.api_key = key
+        provider.active = True
+        return provider
+    return None
+
+
 def provider_for(db: Session, workspace_id: int, capability: str, provider_id: int | None = None) -> AIProvider:
-    """The provider asked for (if it can do it), else the default / first active one that can."""
+    """The provider asked for (if it can do it), else the workspace's default / first one, else the platform's."""
     if provider_id:
-        provider = get_provider(db, workspace_id, provider_id)
-        if provider.active and catalog.can(provider.provider_type, capability):
+        provider = get_provider(db, workspace_id, provider_id, managed_ok=True)
+        if provider.managed:
+            fresh = platform_provider(db, workspace_id, capability)
+            if fresh is not None:
+                return fresh
+        elif provider.active and catalog.can(provider.provider_type, capability):
             return provider
     if capability == catalog.TEXT:
         default = default_text_provider(db, workspace_id)
-        if default:
+        if default and not default.managed:
             return default
     providers = list_providers(db, workspace_id, capability, active_only=True)
     if not providers:
+        managed = platform_provider(db, workspace_id, capability)
+        if managed is not None:
+            return managed
         names = ", ".join(meta["label"] for meta in catalog.CATALOG.values() if capability in meta["caps"])
         code = "no_ai_provider" if capability == catalog.TEXT else "no_media_provider"
         if capability == catalog.TEXT:
@@ -268,8 +315,13 @@ def wallet(db: Session, provider: AIProvider, spent_month: float | None = None) 
             "budget": None}
 
 
-def check_spend(db: Session, provider: AIProvider, cost: float) -> None:
-    """Refuse a task that would exceed the provider's monthly budget; ask billing for platform credits."""
+def check_spend(db: Session, provider: AIProvider, cost: float, user_id: int | None = None) -> None:
+    """Refuse a task that would exceed the provider's monthly budget, the plan's AI credits or the member's limit."""
+    if provider.managed:
+        # The platform pays: the real cost must fit what is left of the plan's AI credits this month.
+        limits.check(db, provider.workspace_id, "ai_credits", amount=max(float(cost or 0), 0.0001))
+        limits.check_member_ai(db, provider.workspace_id, user_id, float(cost or 0))
+        return
     if provider.monthly_budget:
         used = spent(db, provider.workspace_id, provider.id, month_start())
         if used >= provider.monthly_budget - 1e-9 or used + (cost or 0) > provider.monthly_budget + 1e-9:
@@ -279,7 +331,7 @@ def check_spend(db: Session, provider: AIProvider, cost: float) -> None:
                   spent=pricing.fmt(round(used, 2)), budget=pricing.fmt(provider.monthly_budget)),
                 code="ai_budget_exceeded", status_code=402)
     # The workspace's own keys (bring-your-own-key) never consume the plan's AI credits; the check still blocks
-    # workspaces whose trial ended or whose payment is overdue. Platform-paid AI must pass its real cost here.
+    # workspaces whose trial ended or whose payment is overdue.
     limits.check(db, provider.workspace_id, "ai_credits", amount=0)
 
 

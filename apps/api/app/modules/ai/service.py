@@ -37,7 +37,10 @@ class Usage:
 
 def has_provider(db: Session, workspace_id: int, capability: str = "text") -> bool:
     """True when an active provider of the workspace can do ``capability`` (text, image, video, audio, stt)."""
-    return bool(prov.list_providers(db, workspace_id, capability, active_only=True))
+    if prov.list_providers(db, workspace_id, capability, active_only=True):
+        return True
+    from app.modules.billing import platform
+    return any(platform.ai_key(db, t) and catalog.can(t, capability) for t in platform.AI_PROVIDERS)
 
 
 def generate_text(db: Session, workspace_id: int, system: str, user: str, *, model_id: int | None = None,
@@ -59,7 +62,7 @@ def generate_text_with_usage(db: Session, workspace_id: int, system: str, user: 
                                                provider_id=provider_id)
     estimated = pricing.estimate(model, (system or "") + (user or ""), 0, max_tokens or provider.max_tokens)[0] \
         if model else 0.0
-    prov.check_spend(db, provider, estimated)
+    prov.check_spend(db, provider, estimated, user_id)
     client = get_client(provider, model=model_name or None, max_tokens=max_tokens)
     text = client.generate(system or "", user or "")
     tokens_in, tokens_out = client.last_usage

@@ -51,6 +51,13 @@ class CurrentOut(BaseModel):
     role: str
 
 
+def _member_out(ctx: Ctx, m) -> "MemberOut":
+    from app.modules.billing import limits
+    return MemberOut(id=m.id, user_id=m.user_id, name=m.user.name, email=m.user.email, role=m.role,
+                     avatar_url=m.user.avatar_url, ai_monthly_limit=m.ai_monthly_limit,
+                     ai_spent_month=limits.ai_spend_month(ctx.db, ctx.workspace.id, m.user_id))
+
+
 class MemberOut(BaseModel):
     id: int
     user_id: int
@@ -58,10 +65,13 @@ class MemberOut(BaseModel):
     email: str
     role: str
     avatar_url: str | None = None
+    ai_monthly_limit: float | None = None   # $ of platform-paid AI per month; None = no personal limit
+    ai_spent_month: float = 0.0
 
 
 class MemberUpdate(BaseModel):
     role: Role
+    ai_monthly_limit: float | None = Field(default=None, ge=0, le=100000)   # sent explicitly as null to clear
 
 
 class InviteIn(BaseModel):
@@ -100,8 +110,7 @@ def update_current(data: WorkspaceUpdate, ctx: Ctx = Depends(workspace_ctx(Role.
 def members(ctx: Ctx = Depends(workspace_ctx())):
     rows = ctx.db.scalars(select(Membership).where(Membership.workspace_id == ctx.workspace.id)
                           .order_by(Membership.id)).all()
-    return [MemberOut(id=m.id, user_id=m.user_id, name=m.user.name, email=m.user.email, role=m.role,
-                      avatar_url=m.user.avatar_url) for m in rows]
+    return [_member_out(ctx, m) for m in rows]
 
 
 def _membership(ctx: Ctx, member_id: int) -> Membership:
@@ -119,8 +128,9 @@ def update_member(member_id: int, data: MemberUpdate, ctx: Ctx = Depends(workspa
     if membership.role == Role.owner and data.role != Role.owner and owners_count(ctx.db, ctx.workspace.id) <= 1:
         raise AppError(_("A workspace needs at least one owner."), code="last_owner")
     membership.role = data.role
-    return MemberOut(id=membership.id, user_id=membership.user_id, name=membership.user.name,
-                     email=membership.user.email, role=membership.role, avatar_url=membership.user.avatar_url)
+    if "ai_monthly_limit" in data.model_fields_set:
+        membership.ai_monthly_limit = data.ai_monthly_limit
+    return _member_out(ctx, membership)
 
 
 @router.delete("/workspace/members/{member_id}", status_code=204)

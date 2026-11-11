@@ -29,7 +29,7 @@ from datetime import datetime, timezone
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.core.errors import LimitReached
+from app.core.errors import AppError, LimitReached
 from app.core.i18n import _, lazy
 
 from .plans import FEATURES, RESOURCES, upgrade_for
@@ -108,12 +108,37 @@ def count_posts_month(db: Session, workspace_id: int) -> int:
         Post.workspace_id == workspace_id, Post.state != "draft", when >= month_start())) or 0
 
 
-def ai_spend_month(db: Session, workspace_id: int) -> float:
+def _platform_paid():
+    """Filter for AIUsage rows the platform paid for: no provider, or a provider the platform manages."""
+    from app.modules.ai.models import AIProvider, AIUsage
+    managed = select(AIProvider.id).where(AIProvider.managed.is_(True))
+    return AIUsage.provider_id.is_(None) | AIUsage.provider_id.in_(managed)
+
+
+def ai_spend_month(db: Session, workspace_id: int, user_id: int | None = None) -> float:
+    """$ of platform-paid AI this month in the workspace (of one member when ``user_id`` is given)."""
     from app.modules.ai.models import AIUsage
-    total = db.scalar(select(func.coalesce(func.sum(AIUsage.cost), 0.0)).where(
-        AIUsage.workspace_id == workspace_id, AIUsage.provider_id.is_(None),
-        AIUsage.created_at >= month_start()))
-    return round(float(total or 0.0), 4)
+    query = select(func.coalesce(func.sum(AIUsage.cost), 0.0)).where(
+        AIUsage.workspace_id == workspace_id, _platform_paid(), AIUsage.created_at >= month_start())
+    if user_id is not None:
+        query = query.where(AIUsage.user_id == user_id)
+    return round(float(db.scalar(query) or 0.0), 4)
+
+
+def check_member_ai(db: Session, workspace_id: int, user_id: int | None, amount: float) -> None:
+    """Refuse when the member's own monthly AI limit (set by the workspace admin) would be exceeded."""
+    if not user_id:
+        return
+    from app.modules.workspaces.models import Membership
+    limit = db.scalar(select(Membership.ai_monthly_limit).where(Membership.workspace_id == workspace_id,
+                                                                 Membership.user_id == user_id))
+    if limit is None:
+        return
+    spent = ai_spend_month(db, workspace_id, user_id)
+    if spent >= limit - 1e-9 or spent + amount > limit + 1e-9:
+        raise AppError(_("Your monthly AI limit in this workspace is used up (${spent} of ${limit}). "
+                         "Ask a workspace admin to raise it.", spent=f"{spent:.2f}", limit=f"{limit:.2f}"),
+                       code="member_ai_limit", status_code=402)
 
 
 def storage_bytes(db: Session, workspace_id: int) -> int:

@@ -527,3 +527,58 @@ def test_provider_helpers(db, auth):
         prov.provider_for(db, auth.workspace_id, "audio")
     assert exc.value.code == "no_media_provider" and "ElevenLabs" in exc.value.detail
     assert db.get(AIProvider, provider.id).api_key == "k"
+
+
+def test_platform_keys_serve_workspaces_without_a_provider(db, client, auth, monkeypatch):
+    """No own provider: the platform key is used, the cost counts as AI credits, and member limits apply."""
+    from app.modules.ai import clients, providers as prov, service
+    from app.modules.ai.models import AIProvider
+    from app.modules.billing import limits, platform
+    from app.modules.workspaces.models import Membership
+
+    class FakeClient:
+        last_usage = (1000, 500)
+
+        def __init__(self, model):
+            self.model = model
+
+        def generate(self, system, user):
+            return "مرحبا"
+
+    seen = {}
+
+    def fake_client(provider, model=None, max_tokens=None):
+        seen["key"], seen["managed"] = provider.api_key, provider.managed
+        return FakeClient(model or provider.text_model)
+
+    monkeypatch.setattr(clients, "get_client", fake_client)
+    assert not service.has_provider(db, auth.workspace_id)
+    platform.set_secret(db, "ai.openai_api_key", "sk-platform")
+    platform.set_setting(db, "ai.default_provider", "openai")
+    db.flush()
+    assert service.has_provider(db, auth.workspace_id)
+
+    text, usage = service.generate_text_with_usage(db, auth.workspace_id, "sys", "write a post", user_id=auth.user_id)
+    assert text == "مرحبا" and seen == {"key": "sk-platform", "managed": True}
+    managed = db.scalar(__import__("sqlalchemy").select(AIProvider).where(AIProvider.managed.is_(True)))
+    assert managed.workspace_id == auth.workspace_id and usage.provider_id == managed.id
+    spent = limits.ai_spend_month(db, auth.workspace_id)
+    assert spent > 0 and limits.ai_spend_month(db, auth.workspace_id, auth.user_id) == spent
+    # the workspace cannot see or edit the platform's provider
+    assert prov.list_providers(db, auth.workspace_id) == []
+    assert client.get(f"/api/ai/providers/{managed.id}", headers=auth.headers).status_code == 404
+    # a personal limit below what was spent blocks the next request
+    membership = db.scalar(__import__("sqlalchemy").select(Membership).where(Membership.user_id == auth.user_id))
+    membership.ai_monthly_limit = spent / 2
+    db.flush()
+    import pytest
+    from app.core.errors import AppError
+    with pytest.raises(AppError) as error:
+        service.generate_text(db, auth.workspace_id, "sys", "again", user_id=auth.user_id)
+    assert error.value.code == "member_ai_limit"
+    # a new key in the admin settings reaches the workspace on its next request
+    membership.ai_monthly_limit = None
+    platform.set_secret(db, "ai.openai_api_key", "sk-rotated")
+    db.flush()
+    service.generate_text(db, auth.workspace_id, "sys", "again", user_id=auth.user_id)
+    assert seen["key"] == "sk-rotated"

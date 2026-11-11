@@ -35,6 +35,8 @@ class AIProvider(WorkspaceMixin, Base):
     balance_unit: Mapped[str | None] = mapped_column(String(20))
     balance_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     monthly_budget: Mapped[float | None] = mapped_column(Float)
+    # True: the platform's own key (admin settings). Usage is billed against the plan's AI credits; read-only here.
+    managed: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     sequence: Mapped[int] = mapped_column(Integer, default=10)
     available_models: Mapped[list | None] = mapped_column(JSON)  # ids returned by the last connection test
     tested_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

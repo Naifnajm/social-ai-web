@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import StrEnum
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String, UniqueConstraint
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.db import Base, TimestampMixin, WorkspaceMixin
@@ -44,6 +44,8 @@ class Membership(TimestampMixin, Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     workspace_id: Mapped[int] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
     role: Mapped[str] = mapped_column(String(20), default=Role.editor)
+    # $ of platform-paid AI this member may use per month in this workspace (None: only the plan's limit).
+    ai_monthly_limit: Mapped[float | None] = mapped_column(Float)
 
     user = relationship("User", back_populates="memberships")
     workspace = relationship("Workspace", back_populates="memberships")

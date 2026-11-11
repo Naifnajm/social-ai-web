@@ -115,3 +115,19 @@ def test_isolation(client, auth, files):
     client.post("/api/library/tags/rename", json={"old": "Cats", "new": "Hacked"}, headers=h)
     viewer_page = client.get("/api/library/media", headers=auth.headers).json()
     assert all("Hacked" not in i["tags"] for i in viewer_page["items"])
+
+
+def test_enhance_food_keeps_the_photo_and_fixes_the_light():
+    from PIL import Image, ImageStat
+    from app.modules.files.enhance import enhance_food
+    # a dim photo under yellow light: a dark wooden table with a white plate in the middle
+    dim = Image.new("RGB", (120, 90), (58, 38, 18))
+    dim.paste((150, 128, 78), (30, 20, 90, 70))
+    better = enhance_food(dim)
+    assert better.size == dim.size and better.mode == "RGB"
+    assert sum(ImageStat.Stat(better).mean) > sum(ImageStat.Stat(dim).mean) * 1.3      # brighter
+    cast = lambda pixel: (max(pixel) - min(pixel)) / max(pixel)
+    assert cast(better.getpixel((60, 45))) < cast(dim.getpixel((60, 45))) / 2           # the plate is white again
+    assert better.getpixel((60, 45))[0] > 220                                           # and bright
+    assert list(enhance_food(dim).getdata()) == list(better.getdata())                  # same result every time
+    assert enhance_food(dim, strength=0).size == dim.size

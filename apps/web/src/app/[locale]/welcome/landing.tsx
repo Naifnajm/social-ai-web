@@ -379,14 +379,15 @@ export function Landing() {
           <div className="mt-16 grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {FEATURES.map((f, i) => (
               <div key={f.key} data-reveal="fade" className="lg:even:mt-20">
-                <article className="lx-feature flex h-full min-h-[260px] flex-col p-6 sm:min-h-[400px]">
+                <article className="lx-feature flex h-full flex-col p-5 sm:p-6">
                   <div className="lx-feature-orb" />
                   <div className="relative flex items-center justify-between">
                     <span className="lx-tag" dir="ltr">0{i + 1}</span>
                     <span className="h-2 w-2 rounded-full bg-[var(--accent)] shadow-[0_0_12px_var(--accent)]" />
                   </div>
-                  <div className="relative flex flex-1 items-center justify-center py-5 sm:py-8">
-                    <Icon name={f.icon} size={76} duo className="lx-feature-icon text-[var(--paper)]" />
+                  <div className={cx("lx-shot relative my-5", f.key === "mobile" && "lx-shot-phone")}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={`/landing/shots/${locale}/${f.key}.webp`} alt="" loading="lazy" decoding="async" width={f.key === "mobile" ? 585 : 1176} height={f.key === "mobile" ? 1170 : 960} />
                   </div>
                   <h3 className="lx-display relative text-[22px] !leading-tight">{t(`features.${f.key}.title`)}</h3>
                   <p className="relative mt-2 text-[13.5px] leading-relaxed opacity-60">{t(`features.${f.key}.text`)}</p>
@@ -412,9 +413,10 @@ export function Landing() {
             </div>
             <p data-reveal="fade" className="lx-dim max-w-md text-[15px] leading-relaxed lg:justify-self-end lg:pb-3">{t("pricingText", { days })}</p>
           </div>
-          <div data-reveal="fade" className="relative mt-14">
+          <div data-reveal="fade" className="relative mx-auto mt-12 max-w-[1240px]">
             <PricingTable
               tone="light"
+              compact
               action={(plan) =>
                 plan.self_service ? (
                   <Link href={`/signup?plan=${plan.code}`}

@@ -39,8 +39,8 @@ export function PricingToggles({ interval, setInterval, currency, setCurrency, t
   );
 }
 
-function PlanCard({ plan, previous, interval, currency, tone, action, current }: {
-  plan: Plan; previous?: Plan; interval: Interval; currency: Currency; tone: "dark" | "light"; action: ReactNode; current?: boolean;
+function PlanCard({ plan, previous, interval, currency, tone, action, current, compact }: {
+  plan: Plan; previous?: Plan; interval: Interval; currency: Currency; tone: "dark" | "light"; action: ReactNode; current?: boolean; compact?: boolean;
 }) {
   const t = useTranslations("billing");
   const locale = useLocale();
@@ -52,7 +52,7 @@ function PlanCard({ plan, previous, interval, currency, tone, action, current }:
   return (
     <div
       className={cx(
-        "relative flex flex-col rounded-[24px] p-5 sm:p-6",
+        compact ? "relative flex flex-col rounded-[22px] p-5" : "relative flex flex-col rounded-[24px] p-5 sm:p-6",
         dark
           ? highlight ? "bg-white text-black shadow-[0_30px_80px_-30px_rgba(255,255,255,.35)]" : "bg-white/[.04] text-white ring-1 ring-white/10 backdrop-blur-xl"
           : highlight ? "glass-strong ring-2 ring-ink" : "glass",
@@ -70,12 +70,12 @@ function PlanCard({ plan, previous, interval, currency, tone, action, current }:
       <p className={cx("mt-1 min-h-[40px] text-[13px] leading-relaxed", dark && !highlight ? "text-white/60" : "text-muted")}>{t(`planTagline.${plan.code}`)}</p>
       <div className="mt-4 flex items-baseline gap-1.5">
         {price == null ? (
-          <span className="whitespace-nowrap text-3xl font-bold tracking-tight">{t("custom")}</span>
+          <span className={cx("whitespace-nowrap font-bold tracking-tight", compact ? "text-[26px] leading-[32px]" : "text-3xl")}>{t("custom")}</span>
         ) : (
           <>
             <span className="inline-flex items-baseline gap-1" dir="ltr">
               {currency === "USD" && <span className="text-xl font-semibold">$</span>}
-              <span className="text-4xl font-bold tracking-tight">{price.toLocaleString("en-US")}</span>
+              <span className={cx(compact ? "text-[32px] leading-none" : "text-4xl", "font-bold tracking-tight")}>{price.toLocaleString("en-US")}</span>
               {currency === "SAR" && <span className="text-base font-semibold">{locale === "ar" ? "ر.س" : "SAR"}</span>}
             </span>
             <span className={cx("text-sm", dark && !highlight ? "text-white/60" : "text-muted")}>{t("perMonth")}</span>
@@ -86,7 +86,7 @@ function PlanCard({ plan, previous, interval, currency, tone, action, current }:
         {price != null && (interval === "year" && yearly != null ? t("billedYearly", { amount: formatMoney(yearly, currency, locale) }) : t("billedMonthly"))}
       </p>
       <div className="mt-5">{action}</div>
-      <ul className="mt-6 flex flex-col gap-2.5 text-[13px]">
+      <ul className={cx("flex flex-col text-[13px]", compact ? "mt-5 gap-2" : "mt-6 gap-2.5")}>
         {RESOURCES.map((r) => {
           const limit = plan.limits[r];
           return (
@@ -111,11 +111,13 @@ function PlanCard({ plan, previous, interval, currency, tone, action, current }:
   );
 }
 
-export function PricingTable({ tone, action, currentPlan, initialInterval = "month" }: {
+export function PricingTable({ tone, action, currentPlan, initialInterval = "month", compact }: {
   tone: "dark" | "light";
   action: (plan: Plan, interval: Interval) => ReactNode;
   currentPlan?: string;
   initialInterval?: Interval;
+  /** Four narrow cards side by side from tablet width up (the landing page). */
+  compact?: boolean;
 }) {
   const locale = useLocale();
   const t = useTranslations("billing");
@@ -128,10 +130,10 @@ export function PricingTable({ tone, action, currentPlan, initialInterval = "mon
   return (
     <div>
       <PricingToggles interval={interval} setInterval={setInterval} currency={currency} setCurrency={setCurrency} tone={tone} />
-      <div className={cx("mt-8 grid grid-cols-1 gap-5 pt-3 md:grid-cols-2", tone === "dark" ? "xl:grid-cols-4" : "2xl:grid-cols-4")}>
+      <div className={cx("mt-8 grid grid-cols-1 pt-3", compact ? "gap-3.5 sm:grid-cols-2 min-[60rem]:grid-cols-4" : "gap-5 md:grid-cols-2", !compact && (tone === "dark" ? "xl:grid-cols-4" : "2xl:grid-cols-4"))}>
         {data.plans.map((plan, index) => (
           <PlanCard key={plan.code} plan={plan} previous={index ? data.plans[index - 1] : undefined} interval={interval}
-            currency={currency} tone={tone} action={action(plan, interval)} current={plan.code === currentPlan} />
+            currency={currency} tone={tone} action={action(plan, interval)} current={plan.code === currentPlan} compact={compact} />
         ))}
       </div>
       {currency === "SAR" && <p className={cx("mt-5 text-center text-xs", tone === "dark" ? "text-white/40" : "text-muted")}>{t("vatNote")}</p>}

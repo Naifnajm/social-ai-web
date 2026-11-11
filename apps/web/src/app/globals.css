@@ -7,6 +7,15 @@
    Use logical utilities (ms-*, me-*, ps-*, pe-*, start-*, end-*) so Arabic RTL works.
    ========================================================================== */
 
+/* Arabic text everywhere in the product: Forma DJR Arabic (the landing page's face) for bold, IBM Plex Sans Arabic for the
+   other weights. Arabic code points only, so Latin text keeps the system font. The Forma file is licensed and not in git
+   (public/fonts/licensed/README.md); when it is missing the bold falls back to IBM Plex automatically. */
+@font-face { font-family: "Stravica Arabic"; font-weight: 300; font-style: normal; font-display: swap; src: url("/fonts/plex-arabic/300.woff2") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: "Stravica Arabic"; font-weight: 400; font-style: normal; font-display: swap; src: url("/fonts/plex-arabic/400.woff2") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: "Stravica Arabic"; font-weight: 500; font-style: normal; font-display: swap; src: url("/fonts/plex-arabic/500.woff2") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: "Stravica Arabic"; font-weight: 600; font-style: normal; font-display: swap; src: url("/fonts/plex-arabic/600.woff2") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+@font-face { font-family: "Stravica Arabic"; font-weight: 700 900; font-style: normal; font-display: swap; src: url("/fonts/licensed/FormaDJRArabicText-Bold.woff2") format("woff2"), url("/fonts/plex-arabic/700.woff2") format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC; }
+
 :root {
   --ink: #0a0a0a;
   --ink-2: #27272a;
@@ -48,7 +57,7 @@
   --telegram: #229ed9;
   --whatsapp: #25d366;
 
-  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Arabic", "Inter", "Segoe UI", "Noto Sans",
+  --font: "Stravica Arabic", -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Arabic", "Inter", "Segoe UI", "Noto Sans",
     "Noto Sans Arabic", Tahoma, system-ui, sans-serif;
 }
 

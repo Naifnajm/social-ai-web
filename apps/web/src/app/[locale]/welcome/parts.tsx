@@ -1,7 +1,7 @@
 "use client";
 import gsap from "gsap";
 import { useEffect, useRef, useState, type ElementType, type ReactNode } from "react";
-import { Icon } from "@/components/icon";
+import { BrandMark } from "@/components/brand-mark";
 import { cx } from "@/components/ui";
 import type { StarHandle, StarVariant } from "./star-scene";
 
@@ -249,7 +249,7 @@ export function Cursor({ reduce }: { reduce: boolean }) {
 export function Logo({ className }: { className?: string }) {
   return (
     <span className={cx("lx-logo", className)}>
-      <span className="lx-logo-mark"><Icon name="auto_awesome" size={18} duo /></span>
+      <BrandMark size={36} />
       <span className="lx-logo-word" dir="ltr">Stravica<b>Social</b></span>
     </span>
   );

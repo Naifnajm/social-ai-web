@@ -11,5 +11,7 @@
   "You are not a member of any workspace.": "لست عضواً في أي مساحة عمل.",
   "You don't have the rights to do this.": "لا تملك صلاحية تنفيذ هذا الإجراء.",
   "Your session has expired. Please sign in again.": "انتهت جلستك. سجّل الدخول من جديد.",
-  "Reset your password": "إعادة تعيين كلمة المرور"
+  "Reset your password": "إعادة تعيين كلمة المرور",
+  "Too many attempts. Wait a few minutes and try again.": "محاولات كثيرة. انتظر بضع دقائق ثم حاول من جديد.",
+  "This address is not allowed. Use a public https:// address.": "هذا العنوان غير مسموح. استخدم عنواناً عاماً يبدأ بـ https://"
 }

@@ -1,6 +1,8 @@
 """Signed public media links (social networks download photos/videos from here)."""
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse
+
+from app.core.hardening import UPLOAD_HEADERS
 from sqlalchemy.orm import Session
 
 from app.core.db import get_db
@@ -17,4 +19,4 @@ def public_media(media_id: int, expires: int, signature: str, db: Session = Depe
     if not media or not check_public_signature(media_id, expires, signature):
         raise NotFound("Not found")
     return FileResponse(media_path(media), media_type=media.mimetype, filename=media.filename,
-                        content_disposition_type="inline")
+                        content_disposition_type="inline", headers=UPLOAD_HEADERS)

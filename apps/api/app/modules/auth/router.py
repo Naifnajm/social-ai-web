@@ -14,6 +14,7 @@ from app.core.config import settings
 from app.core.db import get_db
 from app.core.deps import ACCESS_COOKIE, REFRESH_COOKIE, Unauthorized, current_user
 from app.core.errors import AppError
+from app.core.hardening import rate_limit
 from app.core.i18n import _, set_locale
 from app.core.mail import send_mail
 from app.core.security import (create_access_token, create_purpose_token, create_refresh_token, decode_token,
@@ -74,7 +75,8 @@ def _clean_username(db: Session, value: str, user: User) -> str | None:
     return value
 
 
-@router.post("/signup", response_model=SessionOut, status_code=201)
+@router.post("/signup", response_model=SessionOut, status_code=201,
+             dependencies=[Depends(rate_limit("signup", 5, 3600))])
 def signup(data: SignupIn, response: Response, db: Session = Depends(get_db)):
     set_locale(data.locale)
     if _find_user(db, data.email):
@@ -91,7 +93,7 @@ def signup(data: SignupIn, response: Response, db: Session = Depends(get_db)):
     return _session(db, user, response)
 
 
-@router.post("/login", response_model=SessionOut)
+@router.post("/login", response_model=SessionOut, dependencies=[Depends(rate_limit("login", 10, 300))])
 def login(data: LoginIn, response: Response, db: Session = Depends(get_db)):
     user = _find_login(db, data.email)
     if not user or not user.is_active or not verify_password(data.password, user.password_hash):
@@ -147,7 +149,7 @@ def change_password(data: PasswordChange, user: User = Depends(current_user)):
     user.token_version += 1
 
 
-@router.post("/password/forgot", status_code=204)
+@router.post("/password/forgot", status_code=204, dependencies=[Depends(rate_limit("forgot", 5, 3600))])
 def forgot_password(data: ForgotIn, db: Session = Depends(get_db)):
     user = _find_user(db, data.email)
     if not user or not user.is_active:
@@ -160,7 +162,7 @@ def forgot_password(data: ForgotIn, db: Session = Depends(get_db)):
               f'<p><a href="{link}">{link}</a></p>', text=link)
 
 
-@router.post("/password/reset", response_model=SessionOut)
+@router.post("/password/reset", response_model=SessionOut, dependencies=[Depends(rate_limit("reset", 10, 3600))])
 def reset_password(data: ResetIn, response: Response, db: Session = Depends(get_db)):
     payload = decode_token(data.token, "reset")
     match = re.fullmatch(r"(\d+):(\d+)", payload["sub"]) if payload else None

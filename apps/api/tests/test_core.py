@@ -95,3 +95,36 @@ def test_sign_in_with_a_username(client, auth):
                       headers={"Accept-Language": "ar"})
     assert bad.status_code == 401 and bad.json()["code"] == "bad_credentials" and "اسم المستخدم" in bad.json()["detail"]
     assert client.patch("/api/auth/me", json={"username": ""}, headers=auth.headers).json()["user"]["username"] is None
+
+
+def test_sign_in_attempts_are_limited(client, monkeypatch):
+    from app.core import hardening
+    monkeypatch.setattr(hardening, "enabled", True)
+    hardening._memory.clear()
+    codes = [client.post("/api/auth/login", json={"email": "nobody@example.com", "password": "x"}).status_code
+             for _ in range(12)]
+    assert codes[:10] == [401] * 10 and codes[10:] == [429, 429]
+    hardening._memory.clear()
+
+
+def test_server_side_urls_must_be_public(monkeypatch):
+    import pytest
+    from app.core import hardening
+    from app.core.errors import AppError
+    monkeypatch.setattr(hardening.settings, "env", "prod")
+    for url in ("http://example.com/v1", "https://localhost/v1", "https://127.0.0.1/v1", "https://10.0.0.5/v1",
+                "https://169.254.169.254/latest/meta-data", "https://[::1]/v1", "ftp://example.com"):
+        with pytest.raises(AppError):
+            hardening.ensure_public_url(url)
+    monkeypatch.setattr(hardening.socket, "getaddrinfo", lambda *a, **k: [(2, 1, 6, "", ("93.184.216.34", 443))])
+    assert hardening.ensure_public_url("https://api.example.com/v1") == "https://api.example.com/v1"
+
+
+def test_uploads_cannot_run_script_and_api_sets_headers(client, auth):
+    svg = b'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'
+    r = client.post("/api/media", files={"file": ("logo.svg", svg, "image/svg+xml")}, headers=auth.headers)
+    if r.status_code in (200, 201):  # SVG uploads are accepted: opening one must stay inert
+        got = client.get(f"/api/media/{r.json()["id"]}/file", headers=auth.headers)
+        assert "sandbox" in got.headers["content-security-policy"] and got.headers["x-content-type-options"] == "nosniff"
+    health = client.get("/api/health")
+    assert health.headers["x-frame-options"] == "DENY" and health.headers["x-content-type-options"] == "nosniff"

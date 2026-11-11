@@ -9,6 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError, NotFound
+from app.core.hardening import ensure_public_url
 from app.core.http import ApiError
 from app.core.i18n import _
 from app.modules.billing import limits
@@ -101,6 +102,8 @@ def create_provider(db: Session, workspace_id: int, values: dict) -> AIProvider:
         data["base_url"] = None
     if catalog.info(provider_type).get("needs_base_url") and not data.get("base_url"):
         raise AppError(_("Please set the Base URL of this provider."), code="base_url_required")
+    if data.get("base_url"):
+        ensure_public_url(data["base_url"])
     want_default = bool(data.pop("is_default", False))
     provider = AIProvider(workspace_id=workspace_id, **data)
     db.add(provider)
@@ -117,7 +120,7 @@ def update_provider(db: Session, provider: AIProvider, values: dict) -> AIProvid
     want_default = values.pop("is_default", None)
     for key, value in values.items():
         if key == "base_url":
-            value = value or None
+            value = ensure_public_url(value) if value else None
         setattr(provider, key, value)
     if reset:
         provider.state, provider.last_error = "draft", None

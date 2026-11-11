@@ -1,6 +1,8 @@
 """Media files of the workspace: upload, list, download (authenticated)."""
 from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.responses import FileResponse
+
+from app.core.hardening import UPLOAD_HEADERS
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import select
 
@@ -72,7 +74,7 @@ def one(media_id: int, ctx: Ctx = Depends(workspace_ctx())):
 def download(media_id: int, ctx: Ctx = Depends(workspace_ctx())):
     media = get_media(ctx, media_id)
     return FileResponse(media_path(media), media_type=media.mimetype, filename=media.filename,
-                        content_disposition_type="inline")
+                        content_disposition_type="inline", headers=UPLOAD_HEADERS)
 
 
 @router.get("/{media_id}/public-url")

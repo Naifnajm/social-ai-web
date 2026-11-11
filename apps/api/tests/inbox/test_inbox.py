@@ -16,7 +16,7 @@ from app.modules.inbox.bot import parse_bot_answer
 from app.modules.inbox.models import BotTrigger, Contact
 from app.modules.inbox.router import inbox_stats
 from app.modules.inbox.sources import account_state
-from app.modules.inbox.text import normalize_text, utcnow
+from app.modules.inbox.text import normalize_text, picture_expired, utcnow
 from app.modules.social.models import PUBLISH_PLATFORMS, Post, PostTarget
 from app.modules.workspaces.settings import set_setting
 from .helpers import answer
@@ -333,13 +333,38 @@ def test_poll_messenger_conversations(ib):
     assert sources.poll_accounts(ib.db, [ib.fb])["new"] == 3
     ib.run_bot()
     [conv] = ib.convs(ib.fb, kind="dm")
-    assert conv.customer_name == "Huda"
+    assert conv.customer_name == "Huda"  # the thread's name wins over the profile's
+    assert conv.avatar_url == "https://cdn.example.com/sara.jpg"  # polled threads get the picture too
     assert conv.contact.name == "Huda"
     assert [m.body for m in ib.messages(conv, state="sent")] == ["We open at 9.", "Hello! We are open 9-17."]
     # the question answered by the page is not answered again; only the last one is
     assert len(ib.ai_prompts) == 1
     assert "And on Sunday?" in ib.ai_prompts[0]["user"]
     assert "NEW MESSAGE TO ANSWER" in ib.ai_prompts[0]["user"]
+
+
+def test_picture_expired():
+    future, past = int(time.time()) + 10 * 86400, int(time.time()) - 60
+    assert picture_expired(None) and picture_expired("")
+    assert not picture_expired("https://cdn.example.com/sara.jpg")  # no expiry parameter
+    assert not picture_expired("https://platform-lookaside.fbsbx.com/platform/profilepic/?psid=1&ext=%d" % future)
+    assert picture_expired("https://platform-lookaside.fbsbx.com/platform/profilepic/?psid=1&ext=%d" % past)
+    assert picture_expired("https://scontent.xx.fbcdn.net/v/p.jpg?oe=%X" % past)
+    assert not picture_expired("https://scontent.xx.fbcdn.net/v/p.jpg?oe=%X" % future)
+
+
+def test_expired_profile_picture_is_refreshed(ib):
+    ib.deliver(ib.fb_message("Hi", "m_pic1"))
+    [conv] = ib.convs(ib.fb, kind="dm")
+    assert conv.avatar_url == "https://cdn.example.com/sara.jpg"
+    calls = ib.deliver(ib.fb_message("Again", "m_pic2"))  # picture still valid: no second profile call
+    assert not [c for c in calls if c["method"] == "GET" and c["url"].endswith("/PSID1")]
+    conv.avatar_url = "https://platform-lookaside.fbsbx.com/platform/profilepic/?psid=PSID1&ext=%d" % (time.time() - 60)
+    ib.db.flush()
+    calls = ib.deliver(ib.fb_message("Still there?", "m_pic3"))
+    assert [c for c in calls if c["method"] == "GET" and c["url"].endswith("/PSID1")]
+    assert conv.avatar_url == "https://cdn.example.com/sara.jpg"
+    assert conv.customer_name == "Sara Ali"
 
 
 def test_inbox_stats(ib, client):

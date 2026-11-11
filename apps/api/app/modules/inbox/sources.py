@@ -22,7 +22,7 @@ from .bot_config import whatsapp_provider
 from .config import inbox_settings
 from .messaging import get_messenger
 from .models import INBOX_PLATFORMS, AccountInboxState, Conversation, MetaApp
-from .text import digits, parse_dt, utcnow
+from .text import digits, parse_dt, picture_expired, utcnow
 
 _logger = logging.getLogger(__name__)
 
@@ -140,6 +140,15 @@ def meta_entry(db: Session, kind: str | None, entry: dict, allowed_workspaces: s
     return new
 
 
+def needs_profile(db: Session, account: SocialAccount, customer_id: str) -> bool:
+    """True when the customer's DM conversation is new, has no name, or its picture is missing or expired (Meta's
+    picture URLs are signed for about 30 days): then one profile call is made for the incoming message."""
+    conv = db.scalar(select(Conversation).where(
+        Conversation.account_id == account.id, Conversation.kind == "dm",
+        Conversation.external_thread_id == customer_id))
+    return conv is None or not conv.customer_name or picture_expired(conv.avatar_url)
+
+
 def meta_messaging(db: Session, account: SocialAccount, event: dict, from_poll: bool = False) -> int:
     message = event.get("message")
     if not isinstance(message, dict) or message.get("is_deleted"):
@@ -158,14 +167,13 @@ def meta_messaging(db: Session, account: SocialAccount, event: dict, from_poll: 
         return 0
     messenger = get_messenger(account)
     customer = {"user_id": customer_id, "name": event.get("customer_name"), "handle": event.get("customer_handle")}
-    known = db.scalar(select(Conversation.id).where(
-        Conversation.account_id == account.id, Conversation.kind == "dm",
-        Conversation.external_thread_id == customer_id, Conversation.customer_name.is_not(None)))
-    if not echo and not known and not from_poll:
-        profile = messenger.user_profile(customer_id)  # name and picture (needs pages_messaging)
-        customer.update(name=profile.get("name"), handle=profile.get("username"), avatar_url=profile.get("avatar_url"))
     if service.find_message(db, account.id, message.get("mid")):
         return 0
+    if not echo and needs_profile(db, account, customer_id):
+        # name and picture (needs pages_messaging); polled threads already carry the name, the picture comes from here
+        profile = messenger.user_profile(customer_id)
+        customer.update(name=customer["name"] or profile.get("name"), handle=customer["handle"] or profile.get("username"),
+                        avatar_url=profile.get("avatar_url"))
     conv = service.find_or_create(db, account, "dm", customer_id, customer=customer)
     media_ids = []
     for index, item in enumerate((message.get("attachments") or [])[:MAX_ATTACHMENTS]):

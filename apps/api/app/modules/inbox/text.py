@@ -1,7 +1,8 @@
 """Small text and date helpers of the inbox (keyword matching, names, network timestamps)."""
 import re
 import unicodedata
-from datetime import datetime, timezone
+from urllib.parse import parse_qs, urlparse
+from datetime import datetime, timedelta, timezone
 
 _ARABIC_MARKS = re.compile("[ؐ-ًؚ-ٰٟۖ-ۭـ]")
 
@@ -62,3 +63,21 @@ def aware(value: datetime | None) -> datetime | None:
     if value is not None and value.tzinfo is None:
         return value.replace(tzinfo=timezone.utc)
     return value
+
+
+def picture_expired(url: str | None, margin: timedelta = timedelta(days=1)) -> bool:
+    """Meta profile picture URLs are signed and stop working: ``ext`` (lookaside, unix seconds) or ``oe`` (fbcdn,
+    hex) holds the expiry. A missing URL counts as expired; a URL without either parameter never expires."""
+    if not url:
+        return True
+    query = parse_qs(urlparse(url).query)
+    try:
+        if query.get("ext"):
+            expires = int(query["ext"][0])
+        elif query.get("oe"):
+            expires = int(query["oe"][0], 16)
+        else:
+            return False
+    except ValueError:
+        return False
+    return datetime.fromtimestamp(expires, timezone.utc) - margin <= datetime.now(timezone.utc)

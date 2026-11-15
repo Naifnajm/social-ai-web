@@ -1,7 +1,7 @@
 """Radar (social listening): listening queries, the mentions they found and the events detected in them.
 
-Revision ID: f7a5b1c4d6e8
-Revises: e6f4a0b3c5d7
+Revision ID: a8b6c2d5e7f9
+Revises: f7a5b1c4d6e8
 Create Date: 2026-11-15 20:35:06.104577
 
 """
@@ -14,8 +14,8 @@ import app.core.crypto  # noqa: F401  (EncryptedString columns)
 
 
 # revision identifiers, used by Alembic.
-revision: str = "f7a5b1c4d6e8"
-down_revision: Union[str, Sequence[str], None] = 'e6f4a0b3c5d7'
+revision: str = "a8b6c2d5e7f9"
+down_revision: Union[str, Sequence[str], None] = "f7a5b1c4d6e8"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

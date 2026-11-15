@@ -9,7 +9,7 @@ SAR_PER_USD = 3.75
 TRIAL_DAYS = 14
 
 # Resources counted by ``limits.check``.  ``storage_gb`` is checked in bytes through the "storage" resource.
-RESOURCES = ("social_accounts", "members", "posts_month", "ai_credits", "storage_gb")
+RESOURCES = ("social_accounts", "members", "posts_month", "ai_credits", "storage_gb", "listening_queries")
 
 # Features a plan can include (``limits.feature(db, ws_id, name)``). Names not listed here are always allowed.
 FEATURES = (
@@ -25,14 +25,16 @@ FEATURES = (
     "link_tracking",     # short links & sales attribution
     "evergreen",         # automatic reposting of evergreen posts
     "production",        # production canvas (AI video / multi-step boards)
+    "listening",         # radar: social listening, events and advice
+    "listening_x",       # radar source X (paid per post read)
     "priority_support",
     "custom_branding",   # white-label reports, custom domain
 )
 
 _FREE = ("ai_studio", "templates", "quick_publish", "planning")
 _STARTER = ("ai_studio", "templates", "quick_publish", "planning", "inbox", "analytics")
-_PRO = _STARTER + ("approvals", "inbox_assistant", "reports", "link_tracking", "evergreen")
-_BUSINESS = _PRO + ("production", "priority_support")
+_PRO = _STARTER + ("approvals", "inbox_assistant", "reports", "link_tracking", "evergreen", "listening")
+_BUSINESS = _PRO + ("production", "priority_support", "listening_x")
 _ENTERPRISE = FEATURES
 
 
@@ -70,29 +72,34 @@ class Plan:
 PLANS: dict[str, Plan] = {
     "trial": Plan(
         "trial", "Free trial", 0, 0, public=False, rank=0, features=_BUSINESS,
-        limits={"social_accounts": 10, "members": 5, "posts_month": 300, "ai_credits": 2.0, "storage_gb": 2},
+        limits={"social_accounts": 10, "members": 5, "posts_month": 300, "ai_credits": 2.0, "storage_gb": 2,
+                "listening_queries": 1},
     ),
     # What a workspace keeps for good when its trial ends without a subscription. AI only with its own key.
     "free": Plan(
         "free", "Free", 0, 0, rank=0, features=_FREE,
-        limits={"social_accounts": 3, "members": 1, "posts_month": 30, "ai_credits": 0.0, "storage_gb": 1},
+        limits={"social_accounts": 3, "members": 1, "posts_month": 30, "ai_credits": 0.0, "storage_gb": 1,
+                "listening_queries": 0},
     ),
     "starter": Plan(
         "starter", "Starter", 19, 190, rank=1, features=_STARTER,
-        limits={"social_accounts": 5, "members": 2, "posts_month": 150, "ai_credits": 3.0, "storage_gb": 5},
+        limits={"social_accounts": 5, "members": 2, "posts_month": 150, "ai_credits": 3.0, "storage_gb": 5,
+                "listening_queries": 0},
     ),
     "pro": Plan(
         "pro", "Pro", 49, 490, rank=2, features=_PRO, highlight=True,
-        limits={"social_accounts": 15, "members": 6, "posts_month": 1000, "ai_credits": 10.0, "storage_gb": 25},
+        limits={"social_accounts": 15, "members": 6, "posts_month": 1000, "ai_credits": 10.0, "storage_gb": 25,
+                "listening_queries": 3},
     ),
     "business": Plan(
         "business", "Business", 129, 1290, rank=3, features=_BUSINESS,
-        limits={"social_accounts": 40, "members": 20, "posts_month": None, "ai_credits": 30.0, "storage_gb": 100},
+        limits={"social_accounts": 40, "members": 20, "posts_month": None, "ai_credits": 30.0, "storage_gb": 100,
+                "listening_queries": 10},
     ),
     "enterprise": Plan(
         "enterprise", "Enterprise", None, None, rank=4, features=_ENTERPRISE,
         limits={"social_accounts": None, "members": None, "posts_month": None, "ai_credits": 100.0,
-                "storage_gb": 1000},
+                "storage_gb": 1000, "listening_queries": None},
     ),
 }
 

@@ -42,6 +42,7 @@ RESOURCE_LABELS = {
     "posts_month": lazy("posts per month"),
     "ai_credits": lazy("AI credits"),
     "storage_gb": lazy("storage"),
+    "listening_queries": lazy("radar setups"),
 }
 FEATURE_LABELS = {
     "ai_studio": lazy("AI studio"),
@@ -58,6 +59,8 @@ FEATURE_LABELS = {
     "production": lazy("Production"),
     "priority_support": lazy("Priority support"),
     "custom_branding": lazy("Custom branding"),
+    "listening": lazy("Radar (social listening)"),
+    "listening_x": lazy("Radar: X source"),
 }
 PLAN_LABELS = {
     "trial": lazy("Free trial"),
@@ -158,6 +161,9 @@ def used(db: Session, workspace_id: int, resource: str) -> float:
         return ai_spend_month(db, workspace_id)
     if resource == "storage_gb":
         return round(storage_bytes(db, workspace_id) / GB, 3)
+    if resource == "listening_queries":
+        from app.modules.listening.models import ListeningQuery
+        return db.scalar(select(func.count()).where(ListeningQuery.workspace_id == workspace_id)) or 0
     return 0
 
 

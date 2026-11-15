@@ -23,7 +23,9 @@ SETTINGS_SCHEMA: dict[str, str] = {
     "billing.trial_days": "int",
     "billing.grace_days": "int",
     "billing.stripe_prices": "dict",       # {"pro_month": "price_..."} — overrides the environment
-    "platform.announcement": "str",        # optional banner text shown to every workspace
+    "platform.announcement": "str",
+    "listening.x_bearer_token": "secret",   # radar: X recent search (pay per post read)
+    "listening.youtube_api_key": "secret",  # radar: YouTube search (Google API key)        # optional banner text shown to every workspace
 }
 
 

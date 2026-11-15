@@ -93,6 +93,7 @@ function PlanCard({ plan, previous, interval, currency, tone, action, current, c
       <ul className={cx("flex flex-col text-[13px]", compact ? "mt-5 gap-2" : "mt-6 gap-2.5")}>
         {RESOURCES.map((r) => {
           const limit = plan.limits[r];
+          if (limit === 0 && r === "listening_queries") return null; // a plan without the radar says nothing about it
           return (
             <li key={r} className="flex items-start gap-2">
               <Icon name="check_circle" size={16} duo className={cx("mt-px", dark && !highlight ? "text-white" : "text-ink")} />

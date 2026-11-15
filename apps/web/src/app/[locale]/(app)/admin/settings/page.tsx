@@ -14,6 +14,8 @@ const AI_KEYS = [
   { key: "ai.anthropic_api_key", label: "Anthropic" },
   { key: "ai.gemini_api_key", label: "Google Gemini" },
   { key: "ai.elevenlabs_api_key", label: "ElevenLabs" },
+  { key: "listening.x_bearer_token", label: "X (Radar)" },
+  { key: "listening.youtube_api_key", label: "YouTube API key (Radar)" },
 ];
 const PRICE_KEYS = ["starter_month", "starter_year", "pro_month", "pro_year", "business_month", "business_year"];
 

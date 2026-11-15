@@ -9,11 +9,11 @@ from collections import Counter
 
 _DIACRITICS = re.compile(r"[ؐ-ًؚ-ٰٟۖ-ۭـ]")  # harakat + tatweel
 _ALEF = str.maketrans({"أ": "ا", "إ": "ا", "آ": "ا", "ٱ": "ا", "ى": "ي", "ة": "ه", "ؤ": "و", "ئ": "ي"})
-_WORD = re.compile(r"[#@]?[\w؀-ۿ]+(?:['’][\w]+)?", re.UNICODE)
+_WORD = re.compile(r"[#@]?[\w\u0621-\u064a\u066e-\u06d3]+(?:['’][\w]+)?", re.UNICODE)  # letters only, no ؟ ، ؛
 _URL = re.compile(r"https?://\S+|www\.\S+")
 _REPEAT = re.compile(r"(.)\1{2,}")  # "حلوووو" → "حلوو"
 
-STOPWORDS = set(["في", "من", "على", "الى", "إلى", "عن", "مع", "هذا", "هذه", "ذلك", "تلك", "هو", "هي", "هم", "انا", "أنا", "انت", "أنت", "نحن", "ما", "ماذا", "لا", "لم", "لن", "ان", "إن", "أن", "كان", "كانت", "يكون", "و", "او", "أو", "ثم", "بل", "قد", "كل", "بعض", "اي", "أي", "الي", "اللي", "الذي", "التي", "الذين", "هنا", "هناك", "عند", "لكن", "لان", "لأن", "حتى", "اذا", "إذا", "كما", "مثل", "بين", "فيه", "فيها", "يا", "وش", "ايش", "شو", "مو", "مب", "كذا", "عشان", "علشان", "بس", "جدا", "جداً", "واجد", "مره", "مرة", "اليوم", "امس", "أمس", "بعد", "قبل", "كمان", "برضو", "يعني", "والله", "ان", "شاء", "الله", "the", "a", "an", "and", "or", "of", "to", "in", "on", "for", "with", "at", "by", "from", "is", "are", "was", "were", "be", "been", "it", "this", "that", "these", "those", "i", "you", "he", "she", "we", "they", "my", "your", "our", "their", "me", "us", "them", "so", "but", "not", "no", "yes", "just", "very", "really", "too", "also", "there", "here", "what", "when", "where", "how", "why", "who", "which", "will", "would", "can", "could", "should", "do", "does", "did", "have", "has", "had", "im", "it's", "its", "rt", "via", "amp"])
+STOPWORDS = set(["في", "من", "على", "الى", "إلى", "عن", "مع", "هذا", "هذه", "ذلك", "تلك", "هو", "هي", "هم", "انا", "أنا", "انت", "أنت", "نحن", "ما", "ماذا", "لا", "لم", "لن", "ان", "إن", "أن", "كان", "كانت", "يكون", "و", "او", "أو", "ثم", "بل", "قد", "كل", "بعض", "اي", "أي", "الي", "اللي", "الذي", "التي", "الذين", "هنا", "هناك", "عند", "لكن", "لان", "لأن", "حتى", "اذا", "إذا", "كما", "مثل", "بين", "فيه", "فيها", "يا", "وش", "ايش", "شو", "مو", "مب", "كذا", "عشان", "علشان", "بس", "جدا", "جداً", "واجد", "مره", "مرة", "اليوم", "امس", "أمس", "بعد", "قبل", "كمان", "برضو", "يعني", "والله", "ان", "شاء", "الله", "the", "a", "an", "and", "or", "of", "to", "in", "on", "for", "with", "at", "by", "from", "is", "are", "was", "were", "be", "been", "it", "this", "that", "these", "those", "i", "you", "he", "she", "we", "they", "my", "your", "our", "their", "me", "us", "them", "so", "but", "not", "no", "yes", "just", "very", "really", "too", "also", "there", "here", "what", "when", "where", "how", "why", "who", "which", "will", "would", "can", "could", "should", "do", "does", "did", "have", "has", "had", "im", "it's", "its", "rt", "via", "amp", "الحين", "للحين", "عندهم", "عندكم", "عنده", "عندي", "احد", "أحد", "بدون", "غير", "لهم", "لنا", "له", "لها", "منهم", "فيهم", "معهم", "صار", "صارت", "كله", "كلها", "شي", "شيء", "ايه", "ايوه", "نعم", "مثلا", "حق", "حقهم", "هل", "كم", "متى", "وين", "كيف", "ليش"])
 
 POSITIVE = set(["لذيذ", "لذيذه", "رهيب", "رهيبه", "حلو", "حلوه", "ممتاز", "ممتازه", "افضل", "أفضل", "يجنن", "تجنن", "روعه", "رائع", "رائعه", "جميل", "جميله", "احب", "أحب", "حبيت", "عجبني", "عجبتني", "شكرا", "شكراً", "ذوق", "سريع", "نظيف", "مرتب", "انصح", "أنصح", "يستاهل", "تستاهل", "خرافي", "خرافيه", "فخم", "فخمه", "مبدع", "مبدعين", "تحفه", "بطل", "ابطال", "love", "great", "amazing", "awesome", "best", "delicious", "excellent", "perfect", "recommend", "nice", "good", "fantastic", "thanks", "thank", "fresh", "friendly"])
 NEGATIVE = set(["سيء", "سيئ", "سيئه", "سيئة", "تاخر", "تأخر", "متاخر", "متأخر", "تاخير", "تأخير", "غالي", "غاليه", "بارد", "بارده", "زفت", "خايس", "خايسه", "مقرف", "وسخ", "وسخه", "اسوا", "أسوأ", "زحمه", "خربان", "يعلق", "معلق", "فاشل", "فاشله", "ردي", "رديء", "رديئه", "سيئين", "حرامي", "نصب", "ضعيف", "ضعيفه", "خيبه", "محبط", "محبطه", "ندمت", "مستحيل", "كارثه", "مشكله", "مشكلة", "شكوى", "زعلان", "زعلانه", "غلط", "ناقص", "ماوصل", "ماوصلني", "bad", "worst", "terrible", "awful", "late", "slow", "cold", "expensive", "dirty", "rude", "disappointed", "disappointing", "never", "refund", "scam", "broken", "problem", "complaint", "horrible", "poor", "wrong"])
@@ -99,7 +99,10 @@ def words(text: str, exclude: set[str] | None = None) -> list[str]:
             if norm.startswith(prefix) and len(norm) - len(prefix) >= 3:
                 norm = norm[len(prefix):]
                 break
-        if norm in STOPWORDS or (exclude and norm in exclude) or len(norm) < 2:
+        if norm[:1] in "وف" and norm[1:] in _STOP:  # "وللحين", "فيه" style joined stopwords
+            continue
+        norm = norm.rstrip("؟?،,.!")
+        if norm in _STOP or (exclude and norm in exclude) or len(norm) < 2:
             continue
         out.append(norm)
     return out
@@ -155,3 +158,6 @@ def classify(text: str) -> dict:
     if emotion == "none" and sentiment == "negative":
         emotion = "anger" if "!" in (text or "") else "sadness"
     return {"sentiment": sentiment, "intent": intent, "emotion": emotion}
+
+
+_STOP = {normalize(w) for w in STOPWORDS}

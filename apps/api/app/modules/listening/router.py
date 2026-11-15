@@ -395,8 +395,8 @@ def feedback(event_id: int, body: FeedbackIn, ctx: Ctx = Depends(workspace_ctx(R
 # ------------------------------------------------------------------------------------------- quick search
 @router.get("/search")
 def quick_search(q: str = Query(min_length=2, max_length=80), days: int = Days, live: bool = False,
-                 ctx: Ctx = Depends(workspace_ctx(Role.editor))):
-    """Search everything the radar stored (every setup), and optionally the news right now."""
+                 ctx: Ctx = Depends(workspace_ctx())):
+    """Search everything the radar stored (every setup), and optionally the news right now (editors)."""
     from . import collectors
     from . import text as tx
 
@@ -407,6 +407,7 @@ def quick_search(q: str = Query(min_length=2, max_length=80), days: int = Days, 
     found = [svc.mention_out(m) for m in rows]
     news = []
     if live:
+        ctx.require(Role.editor)
         limits.require(ctx.db, ctx.workspace.id, "listening")
         probe = ListeningQuery(id=0, workspace_id=ctx.workspace.id, name=term, keywords=[term],
                                languages=[ctx.workspace.locale if ctx.workspace.locale in ("ar", "en") else "ar"],

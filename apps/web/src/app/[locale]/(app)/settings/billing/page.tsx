@@ -16,6 +16,7 @@ type Invoice = { id: string; number: string | null; status: string; amount: numb
 const RANK: Record<string, number> = { trial: 0, starter: 1, pro: 2, business: 3, enterprise: 4 };
 const RESOURCE_ICONS: Record<Resource, string> = {
   social_accounts: "link", members: "group", posts_month: "send", ai_credits: "auto_awesome", storage_gb: "photo_library",
+  listening_queries: "graphic_eq",
 };
 
 function useNumber() {

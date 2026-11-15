@@ -19,14 +19,16 @@
   "members": "{n} Teammitglieder",
   "posts_month": "{n} Beiträge / Monat",
   "ai_credits": "{n} KI-Credits / Monat",
-  "storage_gb": "{n} GB Speicher"
+  "storage_gb": "{n} GB Speicher",
+  "listening_queries": "{n} Radar-Einrichtungen"
  },
  "unlimitedLine": {
   "social_accounts": "Unbegrenzt Social-Media-Konten",
   "members": "Unbegrenzt Teammitglieder",
   "posts_month": "Unbegrenzt Beiträge",
   "ai_credits": "KI-Credits auf Anfrage",
-  "storage_gb": "Unbegrenzter Speicher"
+  "storage_gb": "Unbegrenzter Speicher",
+  "listening_queries": "Unbegrenzte Radar-Einrichtungen"
  },
  "features": {
   "ai_studio": "KI-Studio",
@@ -42,7 +44,9 @@
   "evergreen": "Evergreen-Wiederholung",
   "production": "Produktionsboard",
   "priority_support": "Bevorzugter Support",
-  "custom_branding": "Eigenes Branding"
+  "custom_branding": "Eigenes Branding",
+  "listening": "Radar: Social Listening",
+  "listening_x": "Radar: Quelle X"
  },
  "monthly": "Monatlich",
  "yearly": "Jährlich",
@@ -67,5 +71,8 @@
   "dismiss": "Ausblenden"
  },
  "freeTitle": "Und nach der Testphase? Es bleibt kostenlos.",
- "freeText": "{accounts} Konten und {posts} Beiträge im Monat ohne Karte, und KI mit deinem eigenen Schlüssel. Upgrade, wenn du mehr brauchst."
+ "freeText": "{accounts} Konten und {posts} Beiträge im Monat ohne Karte, und KI mit deinem eigenen Schlüssel. Upgrade, wenn du mehr brauchst.",
+ "resources": {
+  "listening_queries": "Radar-Einrichtungen"
+ }
 }

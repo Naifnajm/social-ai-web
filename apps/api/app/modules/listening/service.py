@@ -261,7 +261,9 @@ def voice(db: Session, workspace: Workspace, query: ListeningQuery, days: int = 
         for p in set(tx.phrases(m.text, exclude)):
             phrase_counts[p] += 1
             phrase_mood[p][m.sentiment or "neutral"] += 1
-    phrase_list = [{"phrase": p, "count": c, "sentiment": phrase_mood[p].most_common(1)[0][0]}
+    shown = tx.display_forms([m.text for m in now_rows[-3000:]], exclude)
+    phrase_list = [{"phrase": " ".join(shown.get(w, w) for w in p.split(" ")), "count": c,
+                    "sentiment": phrase_mood[p].most_common(1)[0][0]}
                    for p, c in phrase_counts.most_common(10) if c >= 2]
 
     tags_now = Counter(h for m in now_rows for h in set(tx.hashtags(m.text)))

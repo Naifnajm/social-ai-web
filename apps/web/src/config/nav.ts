@@ -27,6 +27,7 @@ export const NAV: NavItem[] = [
   { href: "/campaigns", label: "campaigns", icon: "campaign", order: 32, group: "plan" },
   { href: "/approvals", label: "approvals", icon: "verified_user", order: 34, group: "plan", minRole: "approver" },
   { href: "/performance", label: "performance", icon: "bar_chart", order: 50, group: "results" },
+  { href: "/radar", label: "radar", icon: "graphic_eq", order: 51, group: "results" },
   { href: "/links", label: "links", icon: "link", order: 52, group: "results" },
   { href: "/reports", label: "reports", icon: "description", order: 54, group: "results", minRole: "admin" },
   { href: "/ai-costs", label: "aiCosts", icon: "payments", order: 56, group: "results", minRole: "admin" },

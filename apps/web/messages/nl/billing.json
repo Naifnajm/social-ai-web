@@ -19,14 +19,16 @@
   "members": "{n} teamleden",
   "posts_month": "{n} berichten / maand",
   "ai_credits": "{n} AI-credits / maand",
-  "storage_gb": "{n} GB opslag"
+  "storage_gb": "{n} GB opslag",
+  "listening_queries": "{n} radar-instellingen"
  },
  "unlimitedLine": {
   "social_accounts": "Onbeperkt social accounts",
   "members": "Onbeperkt teamleden",
   "posts_month": "Onbeperkt berichten",
   "ai_credits": "AI-credits op aanvraag",
-  "storage_gb": "Onbeperkte opslag"
+  "storage_gb": "Onbeperkte opslag",
+  "listening_queries": "Onbeperkt radar-instellingen"
  },
  "features": {
   "ai_studio": "AI-studio",
@@ -42,7 +44,9 @@
   "evergreen": "Evergreen opnieuw plaatsen",
   "production": "Productiebord",
   "priority_support": "Support met voorrang",
-  "custom_branding": "Eigen huisstijl"
+  "custom_branding": "Eigen huisstijl",
+  "listening": "Radar: social listening",
+  "listening_x": "Radar: X als bron"
  },
  "monthly": "Maandelijks",
  "yearly": "Jaarlijks",
@@ -67,5 +71,8 @@
   "dismiss": "Verbergen"
  },
  "freeTitle": "En na de proefperiode? Dan blijft het gratis.",
- "freeText": "{accounts} accounts en {posts} berichten per maand zonder creditcard, en AI met je eigen sleutel. Upgrade wanneer je meer nodig hebt."
+ "freeText": "{accounts} accounts en {posts} berichten per maand zonder creditcard, en AI met je eigen sleutel. Upgrade wanneer je meer nodig hebt.",
+ "resources": {
+  "listening_queries": "Radar-instellingen"
+ }
 }

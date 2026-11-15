@@ -19,14 +19,16 @@
   "members": "{n} membres d'équipe",
   "posts_month": "{n} publications / mois",
   "ai_credits": "{n} de crédits IA / mois",
-  "storage_gb": "{n} Go de stockage"
+  "storage_gb": "{n} Go de stockage",
+  "listening_queries": "{n} configurations Radar"
  },
  "unlimitedLine": {
   "social_accounts": "Comptes sociaux illimités",
   "members": "Membres d'équipe illimités",
   "posts_month": "Publications illimitées",
   "ai_credits": "Crédits IA sur demande",
-  "storage_gb": "Stockage illimité"
+  "storage_gb": "Stockage illimité",
+  "listening_queries": "Configurations Radar illimitées"
  },
  "features": {
   "ai_studio": "Studio IA",
@@ -42,7 +44,9 @@
   "evergreen": "Republication evergreen",
   "production": "Tableau de production",
   "priority_support": "Support prioritaire",
-  "custom_branding": "Image de marque personnalisée"
+  "custom_branding": "Image de marque personnalisée",
+  "listening": "Radar : écoute sociale",
+  "listening_x": "Radar : source X"
  },
  "monthly": "Mensuel",
  "yearly": "Annuel",
@@ -67,5 +71,8 @@
   "dismiss": "Masquer"
  },
  "freeTitle": "Et après l'essai ? Cela reste gratuit.",
- "freeText": "{accounts} comptes et {posts} publications par mois sans carte, et l'IA avec votre propre clé. Passez à l'offre supérieure quand il vous en faut plus."
+ "freeText": "{accounts} comptes et {posts} publications par mois sans carte, et l'IA avec votre propre clé. Passez à l'offre supérieure quand il vous en faut plus.",
+ "resources": {
+  "listening_queries": "Configurations Radar"
+ }
 }

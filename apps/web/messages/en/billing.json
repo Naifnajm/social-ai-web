@@ -31,21 +31,24 @@
   "members": "Team members",
   "posts_month": "Posts this month",
   "ai_credits": "AI credits",
-  "storage_gb": "Storage"
+  "storage_gb": "Storage",
+  "listening_queries": "Radar setups"
  },
  "limitLine": {
   "social_accounts": "{n} social accounts",
   "members": "{n} team members",
   "posts_month": "{n} posts / month",
   "ai_credits": "{n} AI credits / month",
-  "storage_gb": "{n} GB storage"
+  "storage_gb": "{n} GB storage",
+  "listening_queries": "{n} radar setups"
  },
  "unlimitedLine": {
   "social_accounts": "Unlimited social accounts",
   "members": "Unlimited team members",
   "posts_month": "Unlimited posts",
   "ai_credits": "AI credits on request",
-  "storage_gb": "Unlimited storage"
+  "storage_gb": "Unlimited storage",
+  "listening_queries": "Unlimited radar setups"
  },
  "features": {
   "ai_studio": "AI studio",
@@ -61,7 +64,9 @@
   "evergreen": "Evergreen reposting",
   "production": "Production canvas",
   "priority_support": "Priority support",
-  "custom_branding": "Custom branding"
+  "custom_branding": "Custom branding",
+  "listening": "Radar: social listening",
+  "listening_x": "Radar: X source"
  },
  "monthly": "Monthly",
  "yearly": "Yearly",

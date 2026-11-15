@@ -31,21 +31,24 @@
   "members": "أعضاء الفريق",
   "posts_month": "منشورات هذا الشهر",
   "ai_credits": "رصيد الذكاء الاصطناعي",
-  "storage_gb": "مساحة التخزين"
+  "storage_gb": "مساحة التخزين",
+  "listening_queries": "إعدادات الرصد"
  },
  "limitLine": {
   "social_accounts": "{n} حسابات",
   "members": "{n} أعضاء في الفريق",
   "posts_month": "{n} منشور شهريًا",
   "ai_credits": "رصيد ذكاء اصطناعي {n} شهريًا",
-  "storage_gb": "{n} جيجابايت تخزين"
+  "storage_gb": "{n} جيجابايت تخزين",
+  "listening_queries": "{n} إعداد رصد"
  },
  "unlimitedLine": {
   "social_accounts": "حسابات غير محدودة",
   "members": "فريق غير محدود",
   "posts_month": "منشورات غير محدودة",
   "ai_credits": "رصيد ذكاء اصطناعي حسب الطلب",
-  "storage_gb": "تخزين غير محدود"
+  "storage_gb": "تخزين غير محدود",
+  "listening_queries": "إعدادات رصد بلا حد"
  },
  "features": {
   "ai_studio": "استوديو الذكاء الاصطناعي",
@@ -61,7 +64,9 @@
   "evergreen": "إعادة نشر المحتوى الدائم",
   "production": "لوحة الإنتاج",
   "priority_support": "دعم ذو أولوية",
-  "custom_branding": "علامة تجارية مخصّصة"
+  "custom_branding": "علامة تجارية مخصّصة",
+  "listening": "الرادار: رصد الشبكات الاجتماعية",
+  "listening_x": "الرادار: مصدر X"
  },
  "monthly": "شهري",
  "yearly": "سنوي",

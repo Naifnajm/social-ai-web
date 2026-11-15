@@ -10,8 +10,8 @@ import { api } from "./api";
 
 export type PlanCode = "trial" | "free" | "starter" | "pro" | "business" | "enterprise";
 export type Interval = "month" | "year";
-export type Resource = "social_accounts" | "members" | "posts_month" | "ai_credits" | "storage_gb";
-export const RESOURCES: Resource[] = ["social_accounts", "members", "posts_month", "ai_credits", "storage_gb"];
+export type Resource = "social_accounts" | "members" | "posts_month" | "ai_credits" | "storage_gb" | "listening_queries";
+export const RESOURCES: Resource[] = ["social_accounts", "members", "posts_month", "ai_credits", "storage_gb", "listening_queries"];
 
 export type Plan = {
   code: PlanCode;

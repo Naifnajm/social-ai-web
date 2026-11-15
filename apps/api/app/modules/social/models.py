@@ -149,6 +149,29 @@ class PostTarget(WorkspaceMixin, Base):
     account = relationship("SocialAccount")
 
 
+class ExternalPost(WorkspaceMixin, Base):
+    """A post that exists on the network but was not made here: history read from Facebook / Instagram and posts
+    scheduled in Meta's own tools. Read-only mirror: it is NEVER a ``Post`` (the scheduler would publish it twice)."""
+
+    __tablename__ = "external_posts"
+    __table_args__ = (UniqueConstraint("account_id", "external_id"),)
+
+    account_id: Mapped[int] = mapped_column(ForeignKey("social_accounts.id", ondelete="CASCADE"), index=True)
+    platform: Mapped[str] = mapped_column(String(20), index=True)
+    external_id: Mapped[str] = mapped_column(String(255))
+    kind: Mapped[str] = mapped_column(String(12), default="published", index=True)  # published | scheduled
+    text: Mapped[str | None] = mapped_column(Text)
+    permalink: Mapped[str | None] = mapped_column(String(1000))
+    media_url: Mapped[str | None] = mapped_column(String(2000))
+    media_type: Mapped[str | None] = mapped_column(String(20))
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), index=True)
+    comments_count: Mapped[int] = mapped_column(Integer, default=0)
+    synced_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    account = relationship("SocialAccount")
+
+
 class OAuthSession(WorkspaceMixin, Base):
     """Short-lived link between an OAuth redirect and the admin (and workspace) who started it."""
 

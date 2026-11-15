@@ -106,7 +106,14 @@ export type InboxAccount = {
   whatsapp_number?: string | null;
   has_token: boolean;
   open_conversations: number;
+  // Meta webhook subscription of the page (Facebook / Instagram): null = not checked yet
+  webhook_ok?: boolean | null;
+  webhook_fields?: string[];
+  webhook_error?: string | null;
+  webhook_checked_at?: string | null;
 };
+
+export type HistoryResult = { messages: number; comments: number; posts: number; scheduled: number; errors: string[]; notes: string[] };
 
 export type Canned = { id: number; name: string; body: string; shortcut?: string | null; sequence: number; active: boolean };
 export type Knowledge = { id: number; title: string; content: string; sequence: number; active: boolean };

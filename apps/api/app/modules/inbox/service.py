@@ -21,7 +21,7 @@ from app.modules.workspaces.models import Role
 from .bot_config import workspace_option
 from .messaging import LABELS, get_messenger
 from .models import Contact, Conversation, Message
-from .text import aware, digits, utcnow
+from .text import aware, digits, picture_expired, utcnow
 
 _logger = logging.getLogger(__name__)
 
@@ -81,8 +81,11 @@ def find_or_create(db: Session, account: SocialAccount, kind: str, thread_id, cu
     if conv:
         for key, field in (("name", "customer_name"), ("handle", "customer_handle"),
                            ("avatar_url", "avatar_url"), ("user_id", "external_user_id")):
-            if customer.get(key) and not getattr(conv, field):
-                setattr(conv, field, str(customer[key])[:200] if key != "avatar_url" else customer[key])
+            if key == "avatar_url":
+                if customer.get(key) and picture_expired(conv.avatar_url):
+                    conv.avatar_url = customer[key][:1000]
+            elif customer.get(key) and not getattr(conv, field):
+                setattr(conv, field, str(customer[key])[:200])
         if post.get("target_id") and not conv.post_target_id:
             conv.post_target_id = post["target_id"]
         return conv

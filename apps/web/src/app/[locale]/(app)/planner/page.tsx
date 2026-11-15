@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { type DragEvent, useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/icon";
+import { ExternalScheduled } from "@/components/planning/external-scheduled";
 import { PostPanel } from "@/components/planning/post-panel";
 import type { PlannerData, PlannerPost } from "@/components/planning/types";
 import { ColorDot, PlatformStack, StateBadge, onError, useFormat, useWeekdays } from "@/components/planning/ui";
@@ -191,6 +192,8 @@ export default function PlannerPage() {
     <div className="pt-2">
       <PageHeader icon="calendar_today" title={t("title")} subtitle={t("subtitle")}
         actions={canEdit && <Link href={studioHref()}><Button variant="primary" icon="add">{t("newPost")}</Button></Link>} />
+
+      <ExternalScheduled />
 
       {/* toolbar */}
       <div className="mb-4 flex flex-wrap items-center gap-2">

@@ -23,13 +23,14 @@ chmod 600 .env
 sed -i "s|^SAI_DOMAIN=.*|SAI_DOMAIN=${DOMAIN}|" .env      # a new domain only changes this line; secrets stay
 
 for port in 3110 8110; do
-  if ss -ltn "sport = :$port" | grep -q LISTEN && ! "${COMPOSE[@]}" ps -q 2>/dev/null | grep -q .; then
+  # (no "| grep -q" on compose output: with pipefail, grep exiting early makes the pipeline fail at random)
+  if ss -ltn "sport = :$port" | grep -q LISTEN && [ -z "$("${COMPOSE[@]}" ps -q 2>/dev/null)" ]; then
     echo "Port $port is already in use by something else. Change it in deploy/server/ and retry." >&2; exit 1
   fi
 done
 
 # Back up the database before touching a running install.
-if "${COMPOSE[@]}" ps -q db 2>/dev/null | grep -q .; then
+if [ -n "$("${COMPOSE[@]}" ps -q db 2>/dev/null)" ]; then
   mkdir -p "$BACKUPS"; chmod 700 "$BACKUPS"
   "${COMPOSE[@]}" exec -T db pg_dump -U stravica -Fc stravica > "$BACKUPS/pre-deploy_$(date +%F_%H%M).dump"
   echo "Database backed up to $BACKUPS"

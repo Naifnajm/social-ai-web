@@ -22,7 +22,7 @@ from .bot_config import whatsapp_provider
 from .config import inbox_settings
 from .messaging import get_messenger
 from .models import INBOX_PLATFORMS, AccountInboxState, Conversation, MetaApp
-from .text import digits, parse_dt, utcnow
+from .text import digits, parse_dt, picture_expired, utcnow
 
 _logger = logging.getLogger(__name__)
 
@@ -140,6 +140,15 @@ def meta_entry(db: Session, kind: str | None, entry: dict, allowed_workspaces: s
     return new
 
 
+def needs_profile(db: Session, account: SocialAccount, customer_id: str) -> bool:
+    """True when the customer's DM conversation is new, has no name, or its picture is missing or expired (Meta's
+    picture URLs are signed for about 30 days): then one profile call is made for the incoming message."""
+    conv = db.scalar(select(Conversation).where(
+        Conversation.account_id == account.id, Conversation.kind == "dm",
+        Conversation.external_thread_id == customer_id))
+    return conv is None or not conv.customer_name or picture_expired(conv.avatar_url)
+
+
 def meta_messaging(db: Session, account: SocialAccount, event: dict, from_poll: bool = False) -> int:
     message = event.get("message")
     if not isinstance(message, dict) or message.get("is_deleted"):
@@ -158,14 +167,13 @@ def meta_messaging(db: Session, account: SocialAccount, event: dict, from_poll: 
         return 0
     messenger = get_messenger(account)
     customer = {"user_id": customer_id, "name": event.get("customer_name"), "handle": event.get("customer_handle")}
-    known = db.scalar(select(Conversation.id).where(
-        Conversation.account_id == account.id, Conversation.kind == "dm",
-        Conversation.external_thread_id == customer_id, Conversation.customer_name.is_not(None)))
-    if not echo and not known and not from_poll:
-        profile = messenger.user_profile(customer_id)  # name and picture (needs pages_messaging)
-        customer.update(name=profile.get("name"), handle=profile.get("username"), avatar_url=profile.get("avatar_url"))
     if service.find_message(db, account.id, message.get("mid")):
         return 0
+    if not echo and needs_profile(db, account, customer_id):
+        # name and picture (needs pages_messaging); polled threads already carry the name, the picture comes from here
+        profile = messenger.user_profile(customer_id)
+        customer.update(name=customer["name"] or profile.get("name"), handle=customer["handle"] or profile.get("username"),
+                        avatar_url=profile.get("avatar_url"))
     conv = service.find_or_create(db, account, "dm", customer_id, customer=customer)
     media_ids = []
     for index, item in enumerate((message.get("attachments") or [])[:MAX_ATTACHMENTS]):
@@ -449,8 +457,11 @@ def poll_accounts(db: Session, accounts: list[SocialAccount] | None = None) -> d
         state = account_state(db, account)
         try:
             with db.begin_nested():
+                state.sync_error = None
                 result["new"] += poll_account(db, account, state)
-            state.last_sync_at, state.sync_error = utcnow(), None
+            state.last_sync_at = utcnow()
+            if state.sync_error:
+                result["errors"].append("%s: %s" % (account.name, state.sync_error))
         except ApiError as exc:
             state.last_sync_at, state.sync_error = utcnow(), exc.message[:300]
             result["errors"].append("%s: %s" % (account.name, exc.message))
@@ -460,38 +471,81 @@ def poll_accounts(db: Session, accounts: list[SocialAccount] | None = None) -> d
     return result
 
 
+def _meta_poll_error(account: SocialAccount, label: str, exc: ApiError) -> str:
+    if label == "messages" and account.platform == "facebook" and "pages_messaging" in exc.message:
+        return "Messenger messages need the Messenger permission (pages_messaging); comments still sync."
+    return exc.message
+
+
 def poll_account(db: Session, account: SocialAccount, state: AccountInboxState) -> int:
     if not account.inbox_enabled or account.platform not in INBOX_PLATFORMS:
         return 0
     if account.platform in ("facebook", "instagram"):
-        new = poll_meta_conversations(db, account)
-        if account.platform == "facebook":
-            new += poll_facebook_comments(db, account)
-        else:
-            new += poll_instagram_comments(db, account)
+        # Messages and comments are independent: one failing (for example Messenger without its permission) must
+        # never hide the other.
+        comments = poll_facebook_comments if account.platform == "facebook" else poll_instagram_comments
+        new, errors = 0, []
+        for label, step in (("messages", poll_meta_conversations), ("comments", comments)):
+            try:
+                with db.begin_nested():
+                    new += step(db, account)
+            except ApiError as exc:
+                errors.append("%s: %s" % (label, _meta_poll_error(account, label, exc)))
+        state.sync_error = "; ".join(errors)[:300] or None
         return new
     if account.platform == "telegram" and not state.telegram_webhook_active:
         return poll_telegram(db, account, state)
     return 0  # WhatsApp: webhooks only
 
 
-def poll_meta_conversations(db: Session, account: SocialAccount) -> int:
+def import_thread(db: Session, account: SocialAccount, thread: dict) -> int:
+    """Store the messages of one Graph conversation (oldest first: replies get later ids than questions)."""
     new = 0
-    for thread in get_messenger(account).fetch_conversations():
-        people = [p for p in ((thread.get("participants") or {}).get("data") or [])
-                  if str(p.get("id")) != account.external_id]
-        person = people[0] if people else {}
-        messages = (thread.get("messages") or {}).get("data") or []
-        for item in reversed(messages):  # oldest first: replies get later ids than questions
-            author = item.get("from") or {}
-            recipients = (item.get("to") or {}).get("data") or [{}]
-            event = {"sender": {"id": author.get("id")}, "recipient": {"id": recipients[0].get("id")},
-                     "timestamp": int(parse_dt(item.get("created_time")).timestamp()),
-                     "customer_name": person.get("name") or person.get("username"),
-                     "customer_handle": person.get("username"),
-                     "message": {"mid": item.get("id"), "text": item.get("message") or "",
-                                 "is_echo": str(author.get("id")) == account.external_id}}
-            new += meta_messaging(db, account, event, from_poll=True)
+    people = [p for p in ((thread.get("participants") or {}).get("data") or [])
+              if str(p.get("id")) != account.external_id]
+    person = people[0] if people else {}
+    messages = (thread.get("messages") or {}).get("data") or []
+    for item in reversed(messages):
+        author = item.get("from") or {}
+        recipients = (item.get("to") or {}).get("data") or [{}]
+        event = {"sender": {"id": author.get("id")}, "recipient": {"id": recipients[0].get("id")},
+                 "timestamp": int(parse_dt(item.get("created_time")).timestamp()),
+                 "customer_name": person.get("name") or person.get("username"),
+                 "customer_handle": person.get("username"),
+                 "message": {"mid": item.get("id"), "text": item.get("message") or "",
+                             "is_echo": str(author.get("id")) == account.external_id}}
+        new += meta_messaging(db, account, event, from_poll=True)
+    return new
+
+
+def poll_meta_conversations(db: Session, account: SocialAccount) -> int:
+    return sum(import_thread(db, account, thread) for thread in get_messenger(account).fetch_conversations())
+
+
+def import_facebook_comments(db: Session, account: SocialAccount, messenger, post: dict) -> int:
+    new = 0
+    for item in reversed(messenger.fetch_comments(post["external_id"])):
+        parent = (item.get("parent") or {}).get("id")
+        author = item.get("from") or {}
+        new += comment(db, account, comment_id=item.get("id"), root_id=parent or item.get("id"), post=post,
+                       author_id=author.get("id"), author_name=author.get("name"), handle=None,
+                       text=item.get("message"), date=parse_dt(item.get("created_time")))
+    return new
+
+
+def import_instagram_comments(db: Session, account: SocialAccount, messenger, post: dict) -> int:
+    new = 0
+    for item in reversed(messenger.fetch_comments(post["external_id"])):
+        rows = [(item, item.get("id"))] + [
+            (reply, item.get("id")) for reply in ((item.get("replies") or {}).get("data") or [])]
+        for row, root in rows:
+            author = row.get("from") or {}
+            username = row.get("username") or author.get("username")
+            author_id = author.get("id") or (account.external_id if username and username == account.username
+                                             else None)
+            new += comment(db, account, comment_id=row.get("id"), root_id=root, post=post,
+                           author_id=author_id, author_name=username, handle=username,
+                           text=row.get("text"), date=parse_dt(row.get("timestamp")))
     return new
 
 
@@ -504,12 +558,7 @@ def poll_facebook_comments(db: Session, account: SocialAccount) -> int:
     new = 0
     for target in targets:
         post = {"target_id": target.id, "external_id": target.external_id, "url": target.external_url}
-        for item in reversed(messenger.fetch_comments(target.external_id)):
-            parent = (item.get("parent") or {}).get("id")
-            author = item.get("from") or {}
-            new += comment(db, account, comment_id=item.get("id"), root_id=parent or item.get("id"), post=post,
-                           author_id=author.get("id"), author_name=author.get("name"), handle=None,
-                           text=item.get("message"), date=parse_dt(item.get("created_time")))
+        new += import_facebook_comments(db, account, messenger, post)
     return new
 
 
@@ -519,17 +568,7 @@ def poll_instagram_comments(db: Session, account: SocialAccount) -> int:
     for media in messenger.fetch_recent_media():
         post = service.post_info(db, account, media.get("id"))
         post.update(url=post.get("url") or media.get("permalink"), text=media.get("caption"))
-        for item in reversed(messenger.fetch_comments(media.get("id"))):
-            rows = [(item, item.get("id"))] + [
-                (reply, item.get("id")) for reply in ((item.get("replies") or {}).get("data") or [])]
-            for row, root in rows:
-                author = row.get("from") or {}
-                username = row.get("username") or author.get("username")
-                author_id = author.get("id") or (account.external_id if username and username == account.username
-                                                 else None)
-                new += comment(db, account, comment_id=row.get("id"), root_id=root, post=post,
-                               author_id=author_id, author_name=username, handle=username,
-                               text=row.get("text"), date=parse_dt(row.get("timestamp")))
+        new += import_instagram_comments(db, account, messenger, post)
     return new
 
 

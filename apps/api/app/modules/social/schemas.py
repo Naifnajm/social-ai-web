@@ -236,6 +236,26 @@ class PostOut(BaseModel):
     totals: dict[str, float] = {}
 
 
+class ExternalPostOut(BaseModel):
+    """A post that exists on the network but was not made here (history, or scheduled in Meta's own tools)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    account_id: int
+    account_name: str = ""
+    platform: str
+    external_id: str
+    kind: Literal["published", "scheduled"]
+    text: str | None = None
+    permalink: str | None = None
+    media_url: str | None = None
+    media_type: str | None = None
+    published_at: datetime | None = None
+    scheduled_at: datetime | None = None
+    comments_count: int = 0
+
+
 class PostPage(BaseModel):
     items: list[PostOut]
     total: int

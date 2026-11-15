@@ -276,6 +276,26 @@ class InboxAccountOut(BaseModel):
     whatsapp_number: str | None = None
     has_token: bool = False
     open_conversations: int = 0
+    # Meta webhook subscription of the page (Facebook / Instagram): ok=None means not checked yet
+    webhook_ok: bool | None = None
+    webhook_fields: list[str] = []
+    webhook_error: str | None = None
+    webhook_checked_at: str | None = None
+
+
+class HistoryIn(BaseModel):
+    days: int = Field(90, ge=1, le=730)
+    max_threads: int = Field(100, ge=1, le=500)
+    max_posts: int = Field(50, ge=1, le=200)
+
+
+class HistoryOut(BaseModel):
+    messages: int
+    comments: int
+    posts: int
+    scheduled: int
+    errors: list[str]
+    notes: list[str]
 
 
 class InboxAccountUpdate(BaseModel):

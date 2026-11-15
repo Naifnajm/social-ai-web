@@ -10,7 +10,7 @@
  */
 import clsx from "clsx";
 import { type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes,
-  type TextareaHTMLAttributes, forwardRef, useEffect } from "react";
+  type TextareaHTMLAttributes, forwardRef, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { create } from "zustand";
@@ -211,9 +211,12 @@ export function EmptyState({ icon = "inbox", title, text, action }: { icon?: str
 
 export function Avatar({ name, src, size = 32 }: { name: string; src?: string | null; size?: number }) {
   const initials = (name || "?").trim().split(/\s+/).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
-  return src ? (
+  // a picture that no longer loads (e.g. an expired Meta profile picture URL) falls back to the initials
+  const [failed, setFailed] = useState<string | null>(null);
+  return src && failed !== src ? (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt="" width={size} height={size} className="shrink-0 rounded-full object-cover" style={{ width: size, height: size }} />
+    <img src={src} alt="" width={size} height={size} referrerPolicy="no-referrer" onError={() => setFailed(src)}
+      className="shrink-0 rounded-full object-cover" style={{ width: size, height: size }} />
   ) : (
     <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-fill-2 font-semibold text-text-2" style={{ width: size, height: size, fontSize: size * 0.38 }}>
       {initials}

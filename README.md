@@ -17,6 +17,13 @@ web app + iPhone/Android app.
   library.
 - **Results** — Performance dashboard, best times, tips, AI strategy report, tracked short links with clicks and sales
   attribution (conversion pixel/API — no ERP needed), scheduled e-mail reports (PDF), AI cost tracking.
+- **Radar (social listening)** — what people say about the brand and its competitors: Instagram tags and brand
+  hashtags, Facebook Page tags and reviews, YouTube, Google reviews, the news, X (paid add-on with a monthly cap) and
+  the comments the inbox already receives. Arabic-aware matching, sentiment / intent / emotion / topic (AI with a
+  dialect lexicon fallback), and events — crisis, spike, sales opportunity, influencer, competitor move, rising word —
+  each written as *what happened, why it matters, what to do* with a draft in the brand's voice, and one click to
+  the inbox, studio, planner or approvals. Share of voice, passion matrix, word cloud, heatmap, morning brief, and a
+  Radar section in scheduled reports.
 - **SaaS** — workspaces per company, team roles (viewer, editor, approver, admin, owner), invitations, plans & limits,
   Stripe subscriptions, 14-day trial, landing page with pricing, platform admin.
 
@@ -61,6 +68,21 @@ cd apps/mobile && npm install && EXPO_PUBLIC_API_URL=http://<your-ip>:8000 npx e
 
 Configuration: environment variables prefixed `SAI_` (`apps/api/app/core/config.py`, `.env.example`).
 After changing models: `uv run alembic revision --autogenerate -m "..."`.
+
+## Radar sources
+
+| Source | Needs | Cost |
+| --- | --- | --- |
+| Inbox comments | nothing | free |
+| Instagram tags and #hashtags | a connected Instagram account; Meta App Review for *Instagram Public Content Access* (30 hashtags per account per 7 days) | free |
+| Facebook Page tags and reviews | a connected Page (`pages_read_user_content` for reviews) | free |
+| YouTube search | platform key `listening.youtube_api_key` (admin settings) or a connected YouTube account; 100 quota units per search, at most every 6 h per setup | free quota |
+| Google reviews | a connected Google Business location | free |
+| News | nothing (Google News RSS) | free |
+| X recent search | platform key `listening.x_bearer_token`; plan feature `listening_x` (Business and up) | pay per post read on X's side, capped per setup and month |
+
+Plans: `listening` from Pro (3 setups; Business 10; trial 1). Collection runs every 30 minutes per setup; the
+morning brief goes out at 08:00 in the workspace's time zone.
 
 ## Architecture notes
 - Feature modules live in `apps/api/app/modules/<feature>` and are discovered automatically (models, router, public

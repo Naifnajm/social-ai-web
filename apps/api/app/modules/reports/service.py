@@ -343,12 +343,28 @@ def report_values(db: Session, workspace: Workspace, *, period: str = "last_7", 
             "ai_text": ai_summary(db, workspace, data, best, language) if include_ai else None,
             "generated": fmt_date(datetime.now(tz).date(), language),
             "has_metrics": data["has_metrics"],
+            "radar": _radar(db, workspace, start, end),
             "app_name": settings.app_name,
             "web_url": settings.web_url.rstrip("/"),
         }
         return values
     finally:
         set_locale(previous_locale)
+
+
+def _radar(db: Session, workspace: Workspace, start: datetime, end: datetime) -> dict | None:
+    """What people said about the brand in the period (Radar), when the workspace listens and has data."""
+    from app.modules.billing import limits
+    from app.modules.listening import service as radar
+    if not limits.feature(db, workspace.id, "listening"):
+        return None
+    block = radar.report_block(db, workspace, start, end)
+    if not block or not block["mentions"]:
+        return None
+    block["net_label"] = f"{block['net_sentiment']:+d}"
+    block["delta_label"] = (f"{abs(block['mentions_delta']):g}%" if block["mentions_delta"] is not None else None)
+    block["up"] = (block["mentions_delta"] or 0) >= 0
+    return block
 
 
 # ---------------------------------------------------------------------------------------------- rendering

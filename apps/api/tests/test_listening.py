@@ -388,3 +388,22 @@ def test_brief_and_search(client, auth, db, monkeypatch):
     assert note.link == "/radar" and "2" in note.title
     found = client.get("/api/listening/search", params={"q": "latte"}, headers=auth.headers).json()
     assert found["total"] == 1 and found["sentiment"]["positive"] == 1
+
+
+def test_scheduled_report_shows_what_people_say(db, auth):
+    from app.modules.reports import service as reports
+    from app.modules.workspaces.models import Workspace
+    query = _query(db, auth.workspace_id)
+    now = utcnow() + timedelta(days=1)  # the report covers the 7 days before today's midnight
+    for i in range(4):
+        _mention(db, query, "nakhla latte رهيب", hours=5 + i, sentiment="positive")
+    _mention(db, query, "nakhla cold", hours=6, sentiment="negative")
+    _mention(db, query, "habba offer", hours=6, brand="Habba")
+    _event(db, query, [], kind="spike")
+    workspace = db.get(Workspace, auth.workspace_id)
+    values = reports.report_values(db, workspace, period="last_7", language="en", now=now)
+    radar = values["radar"]
+    assert radar["mentions"] == 5 and radar["net_label"] == "+60" and radar["share_of_voice"] == 83
+    assert radar["events"][0]["title"] == "Delivery complaints" and "latte" in radar["words"]
+    html = reports.render("report.html", values)
+    assert "What people say about you" in html and "+60" in html

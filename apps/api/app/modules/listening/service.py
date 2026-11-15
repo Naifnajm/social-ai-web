@@ -549,3 +549,27 @@ def check_query_limits(db: Session, workspace_id: int, sources: list[str], addin
         limits.check(db, workspace_id, "listening_queries")
     if "x" in sources:
         limits.require(db, workspace_id, "listening_x")
+
+
+# ---------------------------------------------------------------------------------------------- reports
+def report_block(db: Session, workspace: Workspace, start: datetime, end: datetime) -> dict | None:
+    """The Radar section of scheduled reports: own-brand numbers for [start, end) against the span before,
+    the most used words and the events of the period. None when the workspace listens to nothing."""
+    query = db.scalar(select(ListeningQuery).where(ListeningQuery.workspace_id == workspace.id,
+                                                   ListeningQuery.active.is_(True)).order_by(ListeningQuery.id))
+    if not query:
+        return None
+    span = end - start
+    rows = _rows(db, query, start - span, end)
+    now_all = [m for m in rows if _aware(m.published_at) >= start]
+    prev_all = [m for m in rows if _aware(m.published_at) < start]
+    own, prev_own = [m for m in now_all if m.brand is None], [m for m in prev_all if m.brand is None]
+    events = list(db.scalars(select(RadarEvent).where(RadarEvent.query_id == query.id,
+                                                      RadarEvent.started_at >= start, RadarEvent.started_at < end,
+                                                      RadarEvent.severity != "info")))
+    events.sort(key=lambda e: SEVERITY_ORDER.get(e.severity, 9))
+    sov = round(len(own) / len(now_all) * 100) if query.competitors and now_all else None
+    return {"mentions": len(own), "mentions_delta": _delta(len(own), len(prev_own)),
+            "net_sentiment": net_sentiment(own), "sentiment": _split(own), "share_of_voice": sov,
+            "words": [w["word"] for w in word_cloud(own, _brand_exclude(query), 10)],
+            "events": [{"title": e.title, "what": e.what, "severity": e.severity} for e in events[:3]]}

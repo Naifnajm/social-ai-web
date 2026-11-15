@@ -159,6 +159,26 @@
     </div>
   </div>
 
+  {% if r.radar %}
+  <div class="section">
+    <h2>{{ _("What people say about you") }} <span class="note">— {{ _("from the Radar, own brand only") }}</span></h2>
+    <table class="kpis">
+      <tr>
+        <td class="kpi"><div class="value" dir="ltr">{{ r.radar.mentions }}</div><div class="label">{{ _("Mentions") }}</div>
+          {% if r.radar.delta_label %}<span class="delta {{ 'up' if r.radar.up else 'down' }}">{{ '▲' if r.radar.up else '▼' }} {{ r.radar.delta_label }}</span>{% else %}<span class="delta flat">—</span>{% endif %}</td>
+        <td class="kpi"><div class="value" dir="ltr">{{ r.radar.net_label }}</div><div class="label">{{ _("Net sentiment") }}</div>
+          <span class="delta flat">{{ r.radar.sentiment.positive }}% · {{ r.radar.sentiment.negative }}%</span></td>
+        <td class="kpi"><div class="value" dir="ltr">{% if r.radar.share_of_voice is not none %}{{ r.radar.share_of_voice }}%{% else %}—{% endif %}</div><div class="label">{{ _("Share of voice") }}</div><span class="delta flat"></span></td>
+        <td class="kpi"><div class="value" dir="ltr">{{ r.radar.events | length }}</div><div class="label">{{ _("Open events") }}</div><span class="delta flat"></span></td>
+      </tr>
+    </table>
+    {% if r.radar.words %}<p style="margin: 8px 0 0; color: #52525b;">{{ r.radar.words | join(" · ") }}</p>{% endif %}
+    {% for e in r.radar.events %}
+    <p style="margin: 8px 0 0;"><strong>{{ e.title }}</strong><br><span style="color: #52525b;">{{ e.what }}</span></p>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   {% if r.top_results %}
   <div class="section">
     <h2>{{ _("Clicks and sales") }} <span class="note">— {{ _("from the tracked links in your posts") }}</span></h2>

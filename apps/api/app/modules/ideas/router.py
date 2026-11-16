@@ -91,6 +91,7 @@ def idea_out(ctx: Ctx, idea: ContentIdea) -> dict:
         "product_id": idea.product_id, "media_ids": idea.media_ids or [],
         "media_urls": [f"/api/media/{m}/file" for m in idea.media_ids or []],
         "ai_written": idea.ai_written, "edited": idea.edited, "created_at": idea.created_at,
+        "rejected_reason": idea.rejected_reason,
         "post": {"id": post.id, "state": post.state, "scheduled_at": post.scheduled_at} if post else None,
     }
 
@@ -112,7 +113,9 @@ def get_settings(ctx: Ctx = Depends(workspace_ctx())):
     accounts = ctx.db.scalars(select(SocialAccount).where(SocialAccount.workspace_id == ctx.workspace.id,
                                                           SocialAccount.active.is_(True))).all()
     from app.modules.ai import service as ai
+    from app.modules.social.publishing import approval_required
     return {**svc.settings(ctx.db, ctx.workspace), "languages": list(LOCALES),
+            "approvals_required": approval_required(ctx.db, ctx.workspace.id, ctx.user.id),
             "has_ai": ai.has_provider(ctx.db, ctx.workspace.id, "text"),
             "accounts": [{"id": a.id, "name": a.name, "platform": a.platform, "avatar_url": a.avatar_url}
                          for a in accounts if a.platform != "whatsapp"]}

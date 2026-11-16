@@ -1,0 +1,212 @@
+{
+ "generated": "{n, plural, one {Une nouvelle idée est prête} other {# nouvelles idées sont prêtes}}",
+ "readOnly": "Vous pouvez lire les idées ; les éditeurs peuvent les programmer.",
+ "allDone": "Toutes les idées du jour sont traitées. Bravo.",
+ "nextBatch": "De nouvelles idées arrivent chaque matin à {time}",
+ "greeting": {
+  "morning": "{name, select, none {Bonjour} other {Bonjour {name}}}",
+  "afternoon": "{name, select, none {Bon après-midi} other {Bon après-midi, {name}}}",
+  "evening": "{name, select, none {Bonsoir} other {Bonsoir {name}}}"
+ },
+ "header": {
+  "count": "{n, plural, one {une idée pour aujourd'hui} other {# idées pour aujourd'hui}}",
+  "none": "rien de nouveau pour l'instant"
+ },
+ "basedOn": {
+  "line": "Inspirées par {list}.",
+  "default": "Des idées prêtes à publier, inspirées par ce qui marche sur vos pages, ce que demandent vos clients et vos meilleurs horaires.",
+  "kinds": {
+   "question": "ce que demandent vos clients",
+   "rising": "ce qui monte dans le Radar",
+   "event": "ce qui se passe autour de vous",
+   "pillar": "un pilier de contenu en retard",
+   "product": "un produit à mettre en avant",
+   "top_post": "vos meilleures publications",
+   "format": "les formats qui marchent pour vous",
+   "best_time": "les meilleurs horaires de votre audience",
+   "brief": "votre demande"
+  }
+ },
+ "tabs": {
+  "new": "Nouvelles",
+  "handled": "Traitées"
+ },
+ "empty": {
+  "title": "Vos premières idées sont à portée de clic",
+  "text": "Nous regardons ce qui a marché sur vos pages, ce que demandent vos clients et vos meilleurs horaires, puis nous proposons des publications prêtes à partir.",
+  "textDaily": "Nous regardons ce qui a marché sur vos pages, ce que demandent vos clients et vos meilleurs horaires. De nouvelles idées arrivent aussi chaque matin à {time}.",
+  "action": "Obtenir mes premières idées"
+ },
+ "handled": {
+  "emptyTitle": "Rien de traité pour l'instant",
+  "empty": "Les idées que vous programmez, gardez en brouillon ou passez apparaîtront ici.",
+  "open": "Ouvrir",
+  "created": "Proposée {when}",
+  "states": {
+   "skipped": "Passée",
+   "draft": "Brouillon dans le studio",
+   "toApprove": "En attente de validation",
+   "posted": "Publiée",
+   "partial": "Publiée en partie",
+   "failed": "Échec",
+   "scheduled": "Programmée"
+  }
+ },
+ "notes": {
+  "noAccounts": "Connectez un compte social pour que les idées puissent être programmées et publiées.",
+  "connect": "Connecter des comptes",
+  "noAi": "Aucun fournisseur d'IA n'est configuré, les idées sont donc plus simples : de courts modèles tirés de vos données. Ajoutez-en un pour des textes plus riches, prêts à publier.",
+  "addAi": "Configurer l'IA"
+ },
+ "thinking": {
+  "l1": "Nous lisons ce que vos clients ont demandé…",
+  "l2": "Nous regardons vos meilleures publications…",
+  "l3": "Nous vérifions ce qui monte dans le Radar…",
+  "l4": "Nous cherchons le pilier qui mérite un peu d'attention…",
+  "l5": "Nous vérifions vos meilleurs horaires…",
+  "l6": "Nous écrivons avec la voix de votre marque…"
+ },
+ "formats": {
+  "post": "Publication",
+  "carousel": "Carrousel",
+  "video": "Vidéo"
+ },
+ "time": {
+  "today": "Aujourd'hui · {time}",
+  "tomorrow": "Demain · {time}",
+  "on": "{day} · {time}",
+  "auto": "Au meilleur moment",
+  "best": "le meilleur moment pour votre audience"
+ },
+ "card": {
+  "edited": "Modifiée",
+  "why": "Pourquoi cette idée",
+  "noAccount": "Aucun compte choisi",
+  "openStudio": "Ouvrir dans le studio",
+  "approve": "Valider et programmer",
+  "chooseAccounts": "Choisir les comptes",
+  "edit": "Modifier",
+  "skip": "Passer",
+  "skipped": "Idée passée. Merci, cela améliore les suivantes."
+ },
+ "skip": {
+  "question": "Pourquoi la passer ?",
+  "cancel": "La garder",
+  "reasons": {
+   "not_relevant": "Pas pertinente",
+   "not_our_tone": "Pas notre ton",
+   "already_done": "Déjà fait",
+   "bad_timing": "Mauvais moment",
+   "other": "Autre chose"
+  }
+ },
+ "done": {
+  "scheduledFor": "Programmée pour {when}",
+  "scheduled": "Programmée au meilleur moment",
+  "approval": "Envoyée pour validation",
+  "draft": "Vous attend dans le studio",
+  "openPlanner": "Voir dans le planning",
+  "openApprovals": "Voir les validations",
+  "openStudio": "Ouvrir dans le studio"
+ },
+ "preview": {
+  "label": "Aperçu de la publication",
+  "more": "plus",
+  "less": "moins",
+  "empty": "Pas encore de texte.",
+  "carousel": "carrousel",
+  "slideOf": "Diapositive {n} sur {total}",
+  "previous": "Diapositive précédente",
+  "next": "Diapositive suivante",
+  "realImages": "Images réelles",
+  "livePreview": "Aperçu en direct",
+  "rendering": "Préparation des images…",
+  "seeReal": "Voir les vraies images",
+  "noSlides": "Pas encore de diapositives.",
+  "vertical": "Vidéo verticale",
+  "seconds": "{n} s",
+  "hook": "Accroche",
+  "moreScenes": "{n, plural, one {+ une autre scène} other {+ # autres scènes}}",
+  "voiceover": "Voix off"
+ },
+ "more": {
+  "button": "Plus d'idées",
+  "title": "Quelques idées de plus",
+  "count": "Combien",
+  "formats": "Formats",
+  "formatsAll": "Aucun choisi : un mélange de tout.",
+  "formatsSome": "Uniquement les formats choisis.",
+  "language": "Langue",
+  "focus": "Mettre l'accent sur…",
+  "focusHint": "Facultatif : un produit, une offre, une occasion.",
+  "focusPlaceholder": "ex. notre nouvelle carte d'été",
+  "go": "{n, plural, one {Obtenir une idée} other {Obtenir # idées}}"
+ },
+ "settings": {
+  "title": "Réglages des idées",
+  "saved": "Réglages enregistrés",
+  "cancel": "Annuler",
+  "save": "Enregistrer",
+  "daily": "De nouvelles idées chaque matin",
+  "dailyHint": "Nous préparons chaque jour des idées fraîches pour l'équipe et la prévenons.",
+  "count": "Idées par jour",
+  "hour": "Heure",
+  "hourHint": "Dans le fuseau horaire de l'espace de travail ({zone}).",
+  "language": "Langue des idées",
+  "languageHint": "Vous pouvez toujours demander une autre langue avec « Plus d'idées »."
+ },
+ "home": {
+  "title": "{n, plural, one {L'idée du jour est prête} other {Les # idées du jour sont prêtes}}",
+  "open": "Voir les idées"
+ },
+ "editor": {
+  "title": "Modifier l'idée",
+  "cancel": "Annuler",
+  "save": "Enregistrer",
+  "saved": "Idée enregistrée",
+  "saveApprove": "Enregistrer et valider",
+  "saveOpenStudio": "Enregistrer et ouvrir dans le studio",
+  "ideaTitle": "Titre",
+  "caption": "Texte",
+  "allNetworks": "Tous les réseaux",
+  "removeVariant": "Supprimer cette version",
+  "captionPlaceholder": "Que doit dire la publication ?",
+  "variantHint": "Version dédiée à {network}",
+  "hashtags": "Hashtags",
+  "hashtagsHint": "Jusqu'à {n}",
+  "removeTag": "Retirer {tag}",
+  "addTag": "Ajouter un hashtag…",
+  "slides": "Diapositives",
+  "slidesHint": "La première diapositive accroche, la dernière appelle à l'action.",
+  "slideTitle": "Titre de la diapositive {n}",
+  "slideBody": "Texte (facultatif)",
+  "moveUp": "Monter",
+  "moveDown": "Descendre",
+  "removeSlide": "Supprimer la diapositive",
+  "addSlide": "Ajouter une diapositive",
+  "script": "Script vidéo",
+  "hook": "Accroche (3 premières secondes)",
+  "duration": "Durée",
+  "seconds": "{n} s",
+  "scenes": "Scènes",
+  "sceneVisual": "Ce qu'on voit",
+  "sceneText": "Texte à l'écran",
+  "removeScene": "Supprimer la scène",
+  "addScene": "Ajouter une scène",
+  "voiceover": "Voix off",
+  "videoNote": "Une vidéo doit encore être tournée : la valider ouvre un brouillon dans le studio avec ce script comme brief.",
+  "when": "Quand",
+  "suggested": "Horaire proposé",
+  "bestTime": "Meilleur moment automatiquement",
+  "bestTimeHint": "Nous choisissons le prochain bon créneau",
+  "custom": "Choisir un horaire",
+  "customHint": "Une date et une heure de votre choix",
+  "accounts": "Publier sur",
+  "accountsHint": "Choisissez-en au moins un",
+  "noAccounts": "Aucun compte n'est encore connecté.",
+  "needTitle": "Donnez un titre à l'idée.",
+  "needAccount": "Choisissez au moins un compte où publier.",
+  "needFuture": "Choisissez un horaire au moins quelques minutes plus tard."
+ },
+ "skippedAccounts": "Non publié sur : {names} (il faut une photo ou une vidéo)."
+}

@@ -1,0 +1,212 @@
+{
+ "generated": "{n, plural, one {Eine neue Idee ist bereit} other {# neue Ideen sind bereit}}",
+ "readOnly": "Du kannst die Ideen lesen; Redakteure können sie einplanen.",
+ "allDone": "Alle Ideen von heute sind erledigt. Gut gemacht.",
+ "nextBatch": "Neue Ideen kommen jeden Morgen um {time}",
+ "greeting": {
+  "morning": "{name, select, none {Guten Morgen} other {Guten Morgen, {name}}}",
+  "afternoon": "{name, select, none {Guten Tag} other {Guten Tag, {name}}}",
+  "evening": "{name, select, none {Guten Abend} other {Guten Abend, {name}}}"
+ },
+ "header": {
+  "count": "{n, plural, one {eine Idee für heute} other {# Ideen für heute}}",
+  "none": "gerade nichts Neues"
+ },
+ "basedOn": {
+  "line": "Basierend auf {list}.",
+  "default": "Fertige Ideen zum Veröffentlichen – basierend darauf, was auf deinen Seiten funktioniert, was deine Kunden fragen und deinen besten Zeiten.",
+  "kinds": {
+   "question": "dem, was deine Kunden fragen",
+   "rising": "dem, was im Radar gerade steigt",
+   "event": "dem, was um dich herum passiert",
+   "pillar": "einer Content-Säule, die zurückliegt",
+   "product": "einem Produkt, das sich zu zeigen lohnt",
+   "top_post": "deinen besten Beiträgen",
+   "format": "den Formaten, die bei dir funktionieren",
+   "best_time": "den besten Zeiten deines Publikums",
+   "brief": "deiner Anfrage"
+  }
+ },
+ "tabs": {
+  "new": "Neu",
+  "handled": "Erledigt"
+ },
+ "empty": {
+  "title": "Deine ersten Ideen sind nur einen Tipp entfernt",
+  "text": "Wir schauen, was auf deinen Seiten funktioniert hat, was deine Kunden fragen und wann deine besten Zeiten sind, und schlagen dir fertige Beiträge vor.",
+  "textDaily": "Wir schauen, was auf deinen Seiten funktioniert hat, was deine Kunden fragen und wann deine besten Zeiten sind. Neue Ideen kommen außerdem jeden Morgen um {time}.",
+  "action": "Meine ersten Ideen holen"
+ },
+ "handled": {
+  "emptyTitle": "Noch nichts erledigt",
+  "empty": "Ideen, die du einplanst, als Entwurf behältst oder überspringst, erscheinen hier.",
+  "open": "Öffnen",
+  "created": "Vorgeschlagen {when}",
+  "states": {
+   "skipped": "Übersprungen",
+   "draft": "Entwurf im Studio",
+   "toApprove": "Wartet auf Freigabe",
+   "posted": "Veröffentlicht",
+   "partial": "Teilweise veröffentlicht",
+   "failed": "Fehlgeschlagen",
+   "scheduled": "Eingeplant"
+  }
+ },
+ "notes": {
+  "noAccounts": "Verbinde ein Social-Media-Konto, damit Ideen eingeplant und veröffentlicht werden können.",
+  "connect": "Konten verbinden",
+  "noAi": "Es ist noch kein KI-Anbieter eingerichtet, deshalb sind die Ideen einfacher: kurze Vorlagen aus deinen Daten. Füge einen hinzu, um ausführlichere, fertige Texte zu bekommen.",
+  "addAi": "KI einrichten"
+ },
+ "thinking": {
+  "l1": "Wir lesen, was deine Kunden gefragt haben…",
+  "l2": "Wir sehen uns deine besten Beiträge an…",
+  "l3": "Wir prüfen, was im Radar gerade steigt…",
+  "l4": "Wir suchen die Säule, die etwas Aufmerksamkeit braucht…",
+  "l5": "Wir prüfen deine besten Zeiten…",
+  "l6": "Wir schreiben in der Stimme deiner Marke…"
+ },
+ "formats": {
+  "post": "Beitrag",
+  "carousel": "Karussell",
+  "video": "Video"
+ },
+ "time": {
+  "today": "Heute · {time}",
+  "tomorrow": "Morgen · {time}",
+  "on": "{day} · {time}",
+  "auto": "Zur besten Zeit",
+  "best": "die beste Zeit deines Publikums"
+ },
+ "card": {
+  "edited": "Bearbeitet",
+  "why": "Warum diese Idee",
+  "noAccount": "Kein Konto gewählt",
+  "openStudio": "Im Studio öffnen",
+  "approve": "Freigeben & einplanen",
+  "chooseAccounts": "Konten wählen",
+  "edit": "Bearbeiten",
+  "skip": "Überspringen",
+  "skipped": "Idee übersprungen. Danke, das verbessert die nächsten."
+ },
+ "skip": {
+  "question": "Warum überspringen?",
+  "cancel": "Doch behalten",
+  "reasons": {
+   "not_relevant": "Nicht relevant",
+   "not_our_tone": "Nicht unser Ton",
+   "already_done": "Schon gemacht",
+   "bad_timing": "Falscher Zeitpunkt",
+   "other": "Etwas anderes"
+  }
+ },
+ "done": {
+  "scheduledFor": "Eingeplant für {when}",
+  "scheduled": "Zur besten Zeit eingeplant",
+  "approval": "Zur Freigabe gesendet",
+  "draft": "Wartet im Studio auf dich",
+  "openPlanner": "Im Planer ansehen",
+  "openApprovals": "Freigaben ansehen",
+  "openStudio": "Im Studio öffnen"
+ },
+ "preview": {
+  "label": "Vorschau des Beitrags",
+  "more": "mehr",
+  "less": "weniger",
+  "empty": "Noch kein Text.",
+  "carousel": "Karussell",
+  "slideOf": "Folie {n} von {total}",
+  "previous": "Vorherige Folie",
+  "next": "Nächste Folie",
+  "realImages": "Echte Bilder",
+  "livePreview": "Live-Vorschau",
+  "rendering": "Bilder werden erstellt…",
+  "seeReal": "Echte Bilder ansehen",
+  "noSlides": "Noch keine Folien.",
+  "vertical": "Hochformat-Video",
+  "seconds": "{n} s",
+  "hook": "Hook",
+  "moreScenes": "{n, plural, one {+ eine weitere Szene} other {+ # weitere Szenen}}",
+  "voiceover": "Voice-over"
+ },
+ "more": {
+  "button": "Mehr Ideen",
+  "title": "Noch ein paar Ideen",
+  "count": "Wie viele",
+  "formats": "Formate",
+  "formatsAll": "Nichts gewählt: eine Mischung aus allem.",
+  "formatsSome": "Nur die gewählten Formate.",
+  "language": "Sprache",
+  "focus": "Fokus auf…",
+  "focusHint": "Optional: ein Produkt, ein Angebot, ein Anlass.",
+  "focusPlaceholder": "z. B. unsere neue Sommerkarte",
+  "go": "{n, plural, one {Eine Idee holen} other {# Ideen holen}}"
+ },
+ "settings": {
+  "title": "Einstellungen für Ideen",
+  "saved": "Einstellungen gespeichert",
+  "cancel": "Abbrechen",
+  "save": "Speichern",
+  "daily": "Jeden Morgen neue Ideen",
+  "dailyHint": "Wir bereiten jeden Tag frische Ideen für das Team vor und sagen Bescheid.",
+  "count": "Ideen pro Tag",
+  "hour": "Uhrzeit",
+  "hourHint": "In der Zeitzone des Workspace ({zone}).",
+  "language": "Sprache der Ideen",
+  "languageHint": "Über „Mehr Ideen“ kannst du jederzeit eine andere Sprache wählen."
+ },
+ "home": {
+  "title": "{n, plural, one {Die Idee des Tages ist bereit} other {Die # Ideen des Tages sind bereit}}",
+  "open": "Ideen ansehen"
+ },
+ "editor": {
+  "title": "Idee bearbeiten",
+  "cancel": "Abbrechen",
+  "save": "Speichern",
+  "saved": "Idee gespeichert",
+  "saveApprove": "Speichern & freigeben",
+  "saveOpenStudio": "Speichern & im Studio öffnen",
+  "ideaTitle": "Titel",
+  "caption": "Text",
+  "allNetworks": "Alle Netzwerke",
+  "removeVariant": "Diese Version entfernen",
+  "captionPlaceholder": "Was soll der Beitrag sagen?",
+  "variantHint": "Eigene Version für {network}",
+  "hashtags": "Hashtags",
+  "hashtagsHint": "Bis zu {n}",
+  "removeTag": "{tag} entfernen",
+  "addTag": "Hashtag hinzufügen…",
+  "slides": "Folien",
+  "slidesHint": "Die erste Folie ist der Hook, die letzte der Call-to-Action.",
+  "slideTitle": "Titel von Folie {n}",
+  "slideBody": "Text (optional)",
+  "moveUp": "Nach oben",
+  "moveDown": "Nach unten",
+  "removeSlide": "Folie entfernen",
+  "addSlide": "Folie hinzufügen",
+  "script": "Video-Skript",
+  "hook": "Hook (erste 3 Sekunden)",
+  "duration": "Dauer",
+  "seconds": "{n} s",
+  "scenes": "Szenen",
+  "sceneVisual": "Was man sieht",
+  "sceneText": "Text im Bild",
+  "removeScene": "Szene entfernen",
+  "addScene": "Szene hinzufügen",
+  "voiceover": "Voice-over",
+  "videoNote": "Ein Video muss erst gedreht werden: Beim Freigeben öffnet sich ein Entwurf im Studio mit diesem Skript als Briefing.",
+  "when": "Wann",
+  "suggested": "Vorgeschlagene Zeit",
+  "bestTime": "Automatisch zur besten Zeit",
+  "bestTimeHint": "Wir wählen den nächsten guten Zeitpunkt",
+  "custom": "Zeit wählen",
+  "customHint": "Datum und Uhrzeit deiner Wahl",
+  "accounts": "Veröffentlichen auf",
+  "accountsHint": "Wähle mindestens eins",
+  "noAccounts": "Es ist noch kein Konto verbunden.",
+  "needTitle": "Gib der Idee einen Titel.",
+  "needAccount": "Wähle mindestens ein Konto zum Veröffentlichen.",
+  "needFuture": "Wähle eine Zeit, die mindestens ein paar Minuten in der Zukunft liegt."
+ },
+ "skippedAccounts": "Nicht gepostet auf: {names} (braucht ein Foto oder Video)."
+}

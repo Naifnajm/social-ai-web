@@ -1,0 +1,212 @@
+{
+ "generated": "{n, plural, one {One new idea is ready} other {# new ideas are ready}}",
+ "readOnly": "You can read the ideas; editors can schedule them.",
+ "allDone": "All of today's ideas are handled. Nice work.",
+ "nextBatch": "New ideas arrive every morning at {time}",
+ "greeting": {
+  "morning": "{name, select, none {Good morning} other {Good morning, {name}}}",
+  "afternoon": "{name, select, none {Good afternoon} other {Good afternoon, {name}}}",
+  "evening": "{name, select, none {Good evening} other {Good evening, {name}}}"
+ },
+ "header": {
+  "count": "{n, plural, one {one idea for today} other {# ideas for today}}",
+  "none": "nothing new for now"
+ },
+ "basedOn": {
+  "line": "Built from {list}.",
+  "default": "Ready-to-publish ideas built from what works on your pages, what your customers ask and your best times.",
+  "kinds": {
+   "question": "what your customers ask",
+   "rising": "what is rising in the Radar",
+   "event": "what is happening around you",
+   "pillar": "a content pillar that is behind",
+   "product": "a product worth showing",
+   "top_post": "your best posts",
+   "format": "the formats that work for you",
+   "best_time": "your audience's best times",
+   "brief": "your request"
+  }
+ },
+ "tabs": {
+  "new": "New",
+  "handled": "Handled"
+ },
+ "empty": {
+  "title": "Your first ideas are one tap away",
+  "text": "We look at what worked on your pages, what your customers ask and your best times, then suggest posts ready to publish.",
+  "textDaily": "We look at what worked on your pages, what your customers ask and your best times. New ideas also arrive every morning at {time}.",
+  "action": "Get my first ideas"
+ },
+ "handled": {
+  "emptyTitle": "Nothing handled yet",
+  "empty": "Ideas you schedule, keep as drafts or skip will appear here.",
+  "open": "Open",
+  "created": "Suggested {when}",
+  "states": {
+   "skipped": "Skipped",
+   "draft": "Draft in the studio",
+   "toApprove": "Waiting for approval",
+   "posted": "Published",
+   "partial": "Partly published",
+   "failed": "Failed",
+   "scheduled": "Scheduled"
+  }
+ },
+ "notes": {
+  "noAccounts": "Connect a social account so ideas can be scheduled and published.",
+  "connect": "Connect accounts",
+  "noAi": "No AI provider is set up yet, so ideas are simpler: short templates built from your data. Add one for richer, ready-to-publish writing.",
+  "addAi": "Set up AI"
+ },
+ "thinking": {
+  "l1": "Reading what your customers asked…",
+  "l2": "Looking at your best posts…",
+  "l3": "Checking what is rising in the Radar…",
+  "l4": "Finding the pillar that needs some love…",
+  "l5": "Checking your best times…",
+  "l6": "Writing in your brand's voice…"
+ },
+ "formats": {
+  "post": "Post",
+  "carousel": "Carousel",
+  "video": "Video"
+ },
+ "time": {
+  "today": "Today · {time}",
+  "tomorrow": "Tomorrow · {time}",
+  "on": "{day} · {time}",
+  "auto": "At the best time",
+  "best": "your audience's best time"
+ },
+ "card": {
+  "edited": "Edited",
+  "why": "Why this idea",
+  "noAccount": "No account chosen",
+  "openStudio": "Open in studio",
+  "approve": "Approve & schedule",
+  "chooseAccounts": "Choose accounts",
+  "edit": "Edit",
+  "skip": "Skip",
+  "skipped": "Idea skipped. Thanks, this helps the next ones."
+ },
+ "skip": {
+  "question": "Why skip it?",
+  "cancel": "Keep it",
+  "reasons": {
+   "not_relevant": "Not relevant",
+   "not_our_tone": "Not our tone",
+   "already_done": "Already done",
+   "bad_timing": "Bad timing",
+   "other": "Something else"
+  }
+ },
+ "done": {
+  "scheduledFor": "Scheduled for {when}",
+  "scheduled": "Scheduled at the best time",
+  "approval": "Sent for approval",
+  "draft": "Waiting in the studio",
+  "openPlanner": "See in planner",
+  "openApprovals": "See approvals",
+  "openStudio": "Open in studio"
+ },
+ "preview": {
+  "label": "Post preview",
+  "more": "more",
+  "less": "less",
+  "empty": "No text yet.",
+  "carousel": "carousel",
+  "slideOf": "Slide {n} of {total}",
+  "previous": "Previous slide",
+  "next": "Next slide",
+  "realImages": "Real images",
+  "livePreview": "Live preview",
+  "rendering": "Preparing images…",
+  "seeReal": "See the real images",
+  "noSlides": "No slides yet.",
+  "vertical": "Vertical video",
+  "seconds": "{n} s",
+  "hook": "Hook",
+  "moreScenes": "{n, plural, one {+ one more scene} other {+ # more scenes}}",
+  "voiceover": "Voice-over"
+ },
+ "more": {
+  "button": "More ideas",
+  "title": "A few more ideas",
+  "count": "How many",
+  "formats": "Formats",
+  "formatsAll": "None chosen: a mix of everything.",
+  "formatsSome": "Only the formats you picked.",
+  "language": "Language",
+  "focus": "Focus on…",
+  "focusHint": "Optional: a product, an offer, an occasion.",
+  "focusPlaceholder": "e.g. our new summer menu",
+  "go": "{n, plural, one {Get one idea} other {Get # ideas}}"
+ },
+ "settings": {
+  "title": "Ideas settings",
+  "saved": "Settings saved",
+  "cancel": "Cancel",
+  "save": "Save",
+  "daily": "New ideas every morning",
+  "dailyHint": "We prepare fresh ideas for the team each day and let them know.",
+  "count": "Ideas per day",
+  "hour": "Time",
+  "hourHint": "In the workspace time zone ({zone}).",
+  "language": "Language of the ideas",
+  "languageHint": "You can still ask for another language with “More ideas”."
+ },
+ "home": {
+  "title": "{n, plural, one {Today's idea is ready} other {Today's # ideas are ready}}",
+  "open": "See ideas"
+ },
+ "editor": {
+  "title": "Edit idea",
+  "cancel": "Cancel",
+  "save": "Save",
+  "saved": "Idea saved",
+  "saveApprove": "Save & approve",
+  "saveOpenStudio": "Save & open in studio",
+  "ideaTitle": "Title",
+  "caption": "Text",
+  "allNetworks": "All networks",
+  "removeVariant": "Remove this version",
+  "captionPlaceholder": "What should the post say?",
+  "variantHint": "Special version for {network}",
+  "hashtags": "Hashtags",
+  "hashtagsHint": "Up to {n}",
+  "removeTag": "Remove {tag}",
+  "addTag": "Add a hashtag…",
+  "slides": "Slides",
+  "slidesHint": "The first slide is the hook, the last the call to action.",
+  "slideTitle": "Slide {n} title",
+  "slideBody": "Text (optional)",
+  "moveUp": "Move up",
+  "moveDown": "Move down",
+  "removeSlide": "Remove slide",
+  "addSlide": "Add a slide",
+  "script": "Video script",
+  "hook": "Hook (first 3 seconds)",
+  "duration": "Duration",
+  "seconds": "{n} s",
+  "scenes": "Scenes",
+  "sceneVisual": "What we see",
+  "sceneText": "Text on screen",
+  "removeScene": "Remove scene",
+  "addScene": "Add a scene",
+  "voiceover": "Voice-over",
+  "videoNote": "A video still has to be filmed: approving it opens a draft in the studio with this script as the brief.",
+  "when": "When",
+  "suggested": "Suggested time",
+  "bestTime": "Best time automatically",
+  "bestTimeHint": "We pick the next good slot",
+  "custom": "Choose a time",
+  "customHint": "A date and time you pick",
+  "accounts": "Publish on",
+  "accountsHint": "Pick at least one",
+  "noAccounts": "No account is connected yet.",
+  "needTitle": "Give the idea a title.",
+  "needAccount": "Choose at least one account to publish on.",
+  "needFuture": "Choose a time at least a few minutes from now."
+ },
+ "skippedAccounts": "Not posted to: {names} (needs a photo or video)."
+}

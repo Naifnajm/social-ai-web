@@ -36,6 +36,20 @@ def _accounts(db: Session, workspace_id: int, platforms: list[str] | None = None
     return list(db.scalars(stmt.order_by(SocialAccount.id)))
 
 
+def _text_only_ok(platform: str) -> bool:
+    from app.modules.social.platforms import PUBLISHERS
+    cls = PUBLISHERS.get(platform)
+    return bool(cls and cls.supports_text_only and not cls.requires_media)
+
+
+def _has_image(db: Session, product_id: int | None) -> bool:
+    if not product_id:
+        return False
+    from app.modules.products.models import Product
+    product = db.get(Product, product_id)
+    return bool(product and product.image_media_id)
+
+
 def _taken_slots(db: Session, workspace_id: int) -> set[str]:
     rows = db.scalars(select(ContentIdea.suggested_at).where(ContentIdea.workspace_id == workspace_id,
                                                              ContentIdea.state == "new",
@@ -59,6 +73,8 @@ def generate(db: Session, workspace: Workspace, user_id: int | None = None, *, c
         platforms = list(context.get("platforms") or [])
         if item["format"] == "video":
             platforms = [p for p in platforms if p in generator.VIDEO_PLATFORMS] or platforms
+        elif item["format"] == "post" and not _has_image(db, item.get("product_id")):
+            platforms = [p for p in platforms if _text_only_ok(p)] or platforms
         slot = slots[index] if index < len(slots) else (slots[-1] if slots else None)
         reasons = list(item.get("reasons") or [])
         if slot:
@@ -118,6 +134,15 @@ def approve(db: Session, workspace: Workspace, idea: ContentIdea, user_id: int, 
         product = db.get(Product, idea.product_id)
         if product and product.image_media_id:
             media_ids = [product.image_media_id]
+    skipped: list[str] = []
+    if not media_ids and accounts and idea.format != "video":  # a text post cannot go to Instagram, TikTok…
+        rows = db.scalars(select(SocialAccount).where(SocialAccount.id.in_(accounts))).all()
+        keep = [a.id for a in rows if _text_only_ok(a.platform)]
+        skipped = [a.name for a in rows if a.id not in keep]
+        if not keep and mode != "draft":
+            raise AppError(_("These accounts need a photo or a video. Add one in the studio, or choose other "
+                             "accounts."), code="idea_needs_media")
+        accounts = keep
     if idea.format == "video":
         mode = "draft"  # the video still has to be made: the post waits in the studio with the script as brief
     brief = None
@@ -141,7 +166,8 @@ def approve(db: Session, workspace: Workspace, idea: ContentIdea, user_id: int, 
     db.flush()
     url = f"/studio?post={post.id}" if idea.state == "draft" else (
         f"/approvals?post={post.id}" if post.state == "to_approve" else f"/planner?post={post.id}")
-    return {"post_id": post.id, "post_state": post.state, "scheduled_at": post.scheduled_at, "url": url}
+    return {"post_id": post.id, "post_state": post.state, "scheduled_at": post.scheduled_at, "url": url,
+            "skipped_accounts": skipped}
 
 
 def expire(db: Session, now: datetime | None = None) -> int:

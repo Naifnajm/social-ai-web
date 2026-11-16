@@ -1,0 +1,212 @@
+{
+ "generated": "{n, plural, one {Er staat een nieuw idee klaar} other {Er staan # nieuwe ideeën klaar}}",
+ "readOnly": "Je kunt de ideeën lezen; redacteuren kunnen ze inplannen.",
+ "allDone": "Alle ideeën van vandaag zijn afgehandeld. Goed bezig.",
+ "nextBatch": "Elke ochtend om {time} komen er nieuwe ideeën",
+ "greeting": {
+  "morning": "{name, select, none {Goedemorgen} other {Goedemorgen, {name}}}",
+  "afternoon": "{name, select, none {Goedemiddag} other {Goedemiddag, {name}}}",
+  "evening": "{name, select, none {Goedenavond} other {Goedenavond, {name}}}"
+ },
+ "header": {
+  "count": "{n, plural, one {één idee voor vandaag} other {# ideeën voor vandaag}}",
+  "none": "voorlopig niets nieuws"
+ },
+ "basedOn": {
+  "line": "Gebaseerd op {list}.",
+  "default": "Kant-en-klare ideeën, gebaseerd op wat werkt op je pagina's, wat je klanten vragen en je beste tijden.",
+  "kinds": {
+   "question": "wat je klanten vragen",
+   "rising": "wat opkomt in de Radar",
+   "event": "wat er om je heen gebeurt",
+   "pillar": "een contentpijler die achterloopt",
+   "product": "een product dat het tonen waard is",
+   "top_post": "je beste berichten",
+   "format": "de formats die voor jou werken",
+   "best_time": "de beste tijden van je publiek",
+   "brief": "je verzoek"
+  }
+ },
+ "tabs": {
+  "new": "Nieuw",
+  "handled": "Afgehandeld"
+ },
+ "empty": {
+  "title": "Je eerste ideeën zijn één tik verwijderd",
+  "text": "We kijken naar wat werkte op je pagina's, wat je klanten vragen en je beste tijden, en stellen berichten voor die klaar zijn om te publiceren.",
+  "textDaily": "We kijken naar wat werkte op je pagina's, wat je klanten vragen en je beste tijden. Elke ochtend om {time} komen er ook nieuwe ideeën.",
+  "action": "Geef me mijn eerste ideeën"
+ },
+ "handled": {
+  "emptyTitle": "Nog niets afgehandeld",
+  "empty": "Ideeën die je inplant, als concept bewaart of overslaat, verschijnen hier.",
+  "open": "Openen",
+  "created": "Voorgesteld {when}",
+  "states": {
+   "skipped": "Overgeslagen",
+   "draft": "Concept in de studio",
+   "toApprove": "Wacht op goedkeuring",
+   "posted": "Gepubliceerd",
+   "partial": "Deels gepubliceerd",
+   "failed": "Mislukt",
+   "scheduled": "Ingepland"
+  }
+ },
+ "notes": {
+  "noAccounts": "Koppel een social-media-account zodat ideeën ingepland en gepubliceerd kunnen worden.",
+  "connect": "Accounts koppelen",
+  "noAi": "Er is nog geen AI-provider ingesteld, dus de ideeën zijn eenvoudiger: korte sjablonen op basis van je gegevens. Voeg er een toe voor rijkere teksten die klaar zijn om te publiceren.",
+  "addAi": "AI instellen"
+ },
+ "thinking": {
+  "l1": "We lezen wat je klanten vroegen…",
+  "l2": "We bekijken je beste berichten…",
+  "l3": "We checken wat opkomt in de Radar…",
+  "l4": "We zoeken de pijler die wat aandacht nodig heeft…",
+  "l5": "We controleren je beste tijden…",
+  "l6": "We schrijven in de stem van je merk…"
+ },
+ "formats": {
+  "post": "Bericht",
+  "carousel": "Carrousel",
+  "video": "Video"
+ },
+ "time": {
+  "today": "Vandaag · {time}",
+  "tomorrow": "Morgen · {time}",
+  "on": "{day} · {time}",
+  "auto": "Op het beste moment",
+  "best": "het beste moment voor je publiek"
+ },
+ "card": {
+  "edited": "Bewerkt",
+  "why": "Waarom dit idee",
+  "noAccount": "Geen account gekozen",
+  "openStudio": "Openen in de studio",
+  "approve": "Goedkeuren & inplannen",
+  "chooseAccounts": "Accounts kiezen",
+  "edit": "Bewerken",
+  "skip": "Overslaan",
+  "skipped": "Idee overgeslagen. Bedankt, zo worden de volgende beter."
+ },
+ "skip": {
+  "question": "Waarom overslaan?",
+  "cancel": "Toch houden",
+  "reasons": {
+   "not_relevant": "Niet relevant",
+   "not_our_tone": "Niet onze toon",
+   "already_done": "Al gedaan",
+   "bad_timing": "Slechte timing",
+   "other": "Iets anders"
+  }
+ },
+ "done": {
+  "scheduledFor": "Ingepland voor {when}",
+  "scheduled": "Ingepland op het beste moment",
+  "approval": "Ter goedkeuring verstuurd",
+  "draft": "Wacht op je in de studio",
+  "openPlanner": "Bekijk in de planner",
+  "openApprovals": "Bekijk goedkeuringen",
+  "openStudio": "Openen in de studio"
+ },
+ "preview": {
+  "label": "Voorbeeld van het bericht",
+  "more": "meer",
+  "less": "minder",
+  "empty": "Nog geen tekst.",
+  "carousel": "carrousel",
+  "slideOf": "Dia {n} van {total}",
+  "previous": "Vorige dia",
+  "next": "Volgende dia",
+  "realImages": "Echte afbeeldingen",
+  "livePreview": "Live voorbeeld",
+  "rendering": "Afbeeldingen maken…",
+  "seeReal": "Bekijk de echte afbeeldingen",
+  "noSlides": "Nog geen dia's.",
+  "vertical": "Verticale video",
+  "seconds": "{n} s",
+  "hook": "Hook",
+  "moreScenes": "{n, plural, one {+ nog één scène} other {+ nog # scènes}}",
+  "voiceover": "Voice-over"
+ },
+ "more": {
+  "button": "Meer ideeën",
+  "title": "Nog een paar ideeën",
+  "count": "Hoeveel",
+  "formats": "Formats",
+  "formatsAll": "Niets gekozen: een mix van alles.",
+  "formatsSome": "Alleen de formats die je koos.",
+  "language": "Taal",
+  "focus": "Focus op…",
+  "focusHint": "Optioneel: een product, een aanbieding, een gelegenheid.",
+  "focusPlaceholder": "bijv. ons nieuwe zomermenu",
+  "go": "{n, plural, one {Geef me één idee} other {Geef me # ideeën}}"
+ },
+ "settings": {
+  "title": "Instellingen voor ideeën",
+  "saved": "Instellingen opgeslagen",
+  "cancel": "Annuleren",
+  "save": "Opslaan",
+  "daily": "Elke ochtend nieuwe ideeën",
+  "dailyHint": "We maken elke dag verse ideeën voor het team en laten het weten.",
+  "count": "Ideeën per dag",
+  "hour": "Tijd",
+  "hourHint": "In de tijdzone van de werkruimte ({zone}).",
+  "language": "Taal van de ideeën",
+  "languageHint": "Via „Meer ideeën” kun je altijd een andere taal vragen."
+ },
+ "home": {
+  "title": "{n, plural, one {Het idee van vandaag staat klaar} other {De # ideeën van vandaag staan klaar}}",
+  "open": "Bekijk ideeën"
+ },
+ "editor": {
+  "title": "Idee bewerken",
+  "cancel": "Annuleren",
+  "save": "Opslaan",
+  "saved": "Idee opgeslagen",
+  "saveApprove": "Opslaan & goedkeuren",
+  "saveOpenStudio": "Opslaan & openen in de studio",
+  "ideaTitle": "Titel",
+  "caption": "Tekst",
+  "allNetworks": "Alle netwerken",
+  "removeVariant": "Deze versie verwijderen",
+  "captionPlaceholder": "Wat moet het bericht zeggen?",
+  "variantHint": "Aparte versie voor {network}",
+  "hashtags": "Hashtags",
+  "hashtagsHint": "Maximaal {n}",
+  "removeTag": "{tag} verwijderen",
+  "addTag": "Hashtag toevoegen…",
+  "slides": "Dia's",
+  "slidesHint": "De eerste dia is de hook, de laatste de call-to-action.",
+  "slideTitle": "Titel van dia {n}",
+  "slideBody": "Tekst (optioneel)",
+  "moveUp": "Omhoog",
+  "moveDown": "Omlaag",
+  "removeSlide": "Dia verwijderen",
+  "addSlide": "Dia toevoegen",
+  "script": "Videoscript",
+  "hook": "Hook (eerste 3 seconden)",
+  "duration": "Duur",
+  "seconds": "{n} s",
+  "scenes": "Scènes",
+  "sceneVisual": "Wat we zien",
+  "sceneText": "Tekst in beeld",
+  "removeScene": "Scène verwijderen",
+  "addScene": "Scène toevoegen",
+  "voiceover": "Voice-over",
+  "videoNote": "Een video moet nog gefilmd worden: bij goedkeuren opent een concept in de studio met dit script als briefing.",
+  "when": "Wanneer",
+  "suggested": "Voorgesteld moment",
+  "bestTime": "Automatisch het beste moment",
+  "bestTimeHint": "Wij kiezen het volgende goede moment",
+  "custom": "Kies een moment",
+  "customHint": "Een datum en tijd naar keuze",
+  "accounts": "Publiceren op",
+  "accountsHint": "Kies er minstens één",
+  "noAccounts": "Er is nog geen account gekoppeld.",
+  "needTitle": "Geef het idee een titel.",
+  "needAccount": "Kies minstens één account om op te publiceren.",
+  "needFuture": "Kies een moment dat minstens een paar minuten in de toekomst ligt."
+ },
+ "skippedAccounts": "Niet geplaatst op: {names} (heeft een foto of video nodig)."
+}

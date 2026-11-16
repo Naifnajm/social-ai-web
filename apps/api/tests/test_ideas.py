@@ -183,3 +183,24 @@ def test_morning_batch_once_a_day(db, auth, monkeypatch):
     old.created_at = utcnow() - timedelta(days=5)
     db.flush()
     assert ideas.expire(db) >= 1 and old.state == "expired"
+
+
+def test_text_posts_skip_networks_that_need_media(db, auth, monkeypatch):
+    _no_ai(monkeypatch)
+    fb, ig = _account(db, auth.workspace_id), _account(db, auth.workspace_id, "instagram")
+    workspace = db.get(Workspace, auth.workspace_id)
+    made = ideas.generate(db, workspace, auth.user_id, count=1, language="en")
+    assert made[0].format == "post" and made[0].platforms == ["facebook"] and made[0].account_ids == [fb.id]
+    both = ContentIdea(workspace_id=auth.workspace_id, format="post", title="t", caption="text only",
+                       account_ids=[fb.id, ig.id], platforms=["facebook", "instagram"])
+    only_ig = ContentIdea(workspace_id=auth.workspace_id, format="post", title="t", caption="text only",
+                          account_ids=[ig.id], platforms=["instagram"])
+    db.add_all([both, only_ig])
+    db.flush()
+    result = ideas.approve(db, workspace, both, auth.user_id, mode="best_time")
+    assert result["skipped_accounts"] == [ig.name] and [a.id for a in db.get(Post, result["post_id"]).accounts] == [fb.id]
+    import pytest
+
+    from app.core.errors import AppError
+    with pytest.raises(AppError):
+        ideas.approve(db, workspace, only_ig, auth.user_id, mode="best_time")

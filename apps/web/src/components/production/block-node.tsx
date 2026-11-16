@@ -58,7 +58,7 @@ function ExpandButton({ onClick }: { onClick: () => void }) {
   return (
     <button type="button" onClick={onClick} aria-label={t("lightbox.open")} title={t("lightbox.open")}
       className="nodrag absolute end-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/55 text-white opacity-0 backdrop-blur-md transition-opacity duration-150 hover:bg-black/75 focus-visible:opacity-100 group-hover/preview:opacity-100">
-      <Icon name="crop_free" size={14} />
+      <Icon name="open_in_full" size={14} />
     </button>
   );
 }

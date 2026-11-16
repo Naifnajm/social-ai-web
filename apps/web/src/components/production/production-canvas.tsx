@@ -735,7 +735,7 @@ function CanvasInner({ boardId }: { boardId: number }) {
           { icon: "content_paste", label: t("duplicate"), shortcut: `${MOD}+D`, onClick: () => duplicate(ids) },
           { icon: "content_copy", label: t("copy"), shortcut: `${MOD}+C`, onClick: () => copy(ids) },
           { icon: "select_group", label: t("group"), shortcut: `${MOD}+G`, onClick: () => group(ids) },
-          ...(many ? [{ icon: "account_tree", label: t("menu.tidy"), shortcut: "Shift+T", onClick: () => tidy(ids) }] : []),
+          ...(many ? [{ icon: "auto_layout", label: t("menu.tidy"), shortcut: "Shift+T", onClick: () => tidy(ids) }] : []),
           "-" as const,
           { icon: "delete", label: t("delete"), shortcut: "Del", danger: true, onClick: () => deleteIds(ids, []) },
         ] : []),
@@ -749,10 +749,10 @@ function CanvasInner({ boardId }: { boardId: number }) {
         "-" as const,
       ] : []),
       { icon: "select_group", label: t("menu.selectAll"), shortcut: `${MOD}+A`, onClick: () => select(rfNodes.map((n) => Number(n.id))) },
-      ...(!readOnly ? [{ icon: "account_tree", label: t("menu.tidy"), shortcut: "Shift+T", onClick: () => tidy() }] : []),
-      { icon: "zoom_in_map", label: t("menu.fit"), shortcut: "Shift+1", onClick: () => fitTo(undefined, !!selectedBlock) },
+      ...(!readOnly ? [{ icon: "auto_layout", label: t("menu.tidy"), shortcut: "Shift+T", onClick: () => tidy() }] : []),
+      { icon: "fit_screen", label: t("menu.fit"), shortcut: "Shift+1", onClick: () => fitTo(undefined, !!selectedBlock) },
       { icon: "search", label: t("search.title"), shortcut: `${MOD}+K`, onClick: () => setSearchOpen(true) },
-      { icon: "info", label: t("shortcuts.title"), shortcut: "?", onClick: () => setHelpOpen(true) },
+      { icon: "keyboard", label: t("shortcuts.title"), shortcut: "?", onClick: () => setHelpOpen(true) },
     ];
   };
 
@@ -874,14 +874,14 @@ function CanvasInner({ boardId }: { boardId: number }) {
             className={cx("!overflow-hidden !rounded-xl !border !border-white/70 !shadow-[0_8px_24px_-10px_rgba(0,0,0,.25)]", empty ? "!mb-4" : "!mb-[150px] max-md:!mb-24")}>
             {!readOnly && !empty && (
               <ControlButton onClick={() => tidy(selectedIds)} title={`${t("menu.tidy")} (Shift+T)`} aria-label={t("menu.tidy")}>
-                <Icon name="account_tree" size={14} />
+                <Icon name="auto_layout" size={14} />
               </ControlButton>
             )}
             <ControlButton onClick={() => setSearchOpen(true)} title={`${t("search.title")} (${MOD}+K)`} aria-label={t("search.title")}>
               <Icon name="search" size={14} />
             </ControlButton>
             <ControlButton onClick={() => setHelpOpen(true)} title={`${t("shortcuts.title")} (?)`} aria-label={t("shortcuts.title")}>
-              <span className="text-[13px] font-semibold">?</span>
+              <Icon name="keyboard" size={14} />
             </ControlButton>
           </Controls>
         </ReactFlow>
@@ -918,7 +918,7 @@ function CanvasInner({ boardId }: { boardId: number }) {
           <Button size="sm" variant="ghost" icon="select_group" onClick={() => group(selectedIds)} title={`${MOD}+G`}>{t("group")}</Button>
           <Button size="sm" variant="ghost" icon="content_copy" onClick={() => copy(selectedIds)} title={`${MOD}+C`}>{t("copy")}</Button>
           <Button size="sm" variant="ghost" icon="content_paste" onClick={() => duplicate(selectedIds)} title={`${MOD}+D`}>{t("duplicate")}</Button>
-          <Button size="sm" variant="ghost" icon="account_tree" onClick={() => tidy(selectedIds)} title="Shift+T" className="max-sm:hidden">{t("menu.tidy")}</Button>
+          <Button size="sm" variant="ghost" icon="auto_layout" onClick={() => tidy(selectedIds)} title="Shift+T" className="max-sm:hidden">{t("menu.tidy")}</Button>
           <Button size="sm" variant="ghost" icon="play_arrow" onClick={() => run(selectedIds)} title={`${MOD}+Enter`}>{t("run")}</Button>
           <Button size="sm" variant="danger" icon="delete" onClick={deleteSelection} title="Delete">{t("delete")}</Button>
         </div>

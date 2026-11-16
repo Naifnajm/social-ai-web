@@ -49,6 +49,9 @@ MAP = {
     "add_photo": "gallery-add", "inbox": "import", "group_off": "widget-add", "people_check": "user-check", "visibility": "eye", "wand_stars": "magic-stick-3", "warning": "danger-triangle",
     # UI
     "add_circle": "add-circle", "business_center": "case", "menu": "hamburger-menu", "help": "question-circle",
+    "stop": "stop-circle", "keyboard": "keyboard", "fit_screen": "maximize-square", "auto_layout": "structure",
+    "wallet": "wallet", "compare": "round-transfer-horizontal", "open_in_full": "full-screen",
+    "chevron_left": "alt-arrow-left", "chevron_right": "alt-arrow-right", "more_vert": "menu-dots",
     # camera panel (apps/api/app/modules/ai/camera.py: GROUPS, PRESETS, GROUP_ICONS)
     "360": "refresh-circle", "3d_rotation": "camera-rotate", "ac_unit": "snowflake",
     "accessibility_new": "user-hand-up", "animation": "videocamera-record", "arrow_forward": "arrow-right",

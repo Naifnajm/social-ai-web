@@ -124,7 +124,7 @@ export function Lightbox({ nodeId, outputId, onClose }: { nodeId: number; output
         {items.length > 1 && (
           <button type="button" onClick={() => setCompare(compare == null ? (current + 1) % items.length : null)} aria-pressed={compare != null}
             className={cx("hidden h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium transition-colors duration-150 sm:inline-flex", compare != null ? "bg-white text-ink" : "bg-white/10 hover:bg-white/20")}>
-            <Icon name="swap_horiz" size={16} />{t("compare")}
+            <Icon name="compare" size={16} />{t("compare")}
           </button>
         )}
         {download && (
@@ -162,11 +162,11 @@ export function Lightbox({ nodeId, outputId, onClose }: { nodeId: number; output
           <>
             <button type="button" onClick={() => go(-1)} aria-label={t("previous")}
               className="absolute start-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 hover:bg-white/20">
-              <Icon name="arrow_back" size={20} className="rtl:rotate-180" />
+              <Icon name="chevron_left" size={20} className="rtl:rotate-180" />
             </button>
             <button type="button" onClick={() => go(1)} aria-label={t("next")}
               className="absolute end-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 hover:bg-white/20">
-              <Icon name="arrow_forward" size={20} className="rtl:rotate-180" />
+              <Icon name="chevron_right" size={20} className="rtl:rotate-180" />
             </button>
           </>
         )}

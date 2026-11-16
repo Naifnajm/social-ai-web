@@ -87,14 +87,14 @@ export function TopBar({ graph, canUndo, canRedo, onUndo, onRedo, onRunAll, onSt
             <Link href="/settings/billing#credits" title={over ? t("wallet.notEnough") : t("wallet.hint")}
               className={cx("hidden h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium tabular-nums transition-colors duration-150 lg:inline-flex",
                 over ? "bg-bad-bg text-bad hover:bg-red-500/15" : "bg-fill text-text-2 hover:bg-fill-2")}>
-              <Icon name="toll" size={16} />
+              <Icon name="wallet" size={16} />
               {est.credits_available == null ? t("wallet.unlimited") : t("wallet.available", { amount: creditsText(est.credits_available) })}
             </Link>
           )}
 
           {!readOnly && (
             graph.busy ? (
-              <Button variant="danger" icon="square" loading={stopping} onClick={stop} className="shrink-0" title={t("stopHint")} aria-keyshortcuts="Escape Escape">
+              <Button variant="danger" icon="stop" loading={stopping} onClick={stop} className="shrink-0" title={t("stopHint")} aria-keyshortcuts="Escape Escape">
                 <span className={cx(compact && "sr-only")}>{t("stop")}</span>
               </Button>
             ) : (

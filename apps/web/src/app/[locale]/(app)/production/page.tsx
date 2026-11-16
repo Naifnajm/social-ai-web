@@ -138,7 +138,7 @@ function ProductionHub() {
                   <div className="absolute end-2 top-2">
                     <button type="button" aria-label={t("more")} onClick={() => setMenu(menu === board.id ? null : board.id)}
                       className="flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-ink opacity-90 shadow backdrop-blur-md transition hover:bg-white sm:opacity-0 sm:group-hover:opacity-100">
-                      <Icon name="menu" size={16} />
+                      <Icon name="more_vert" size={16} />
                     </button>
                     {menu === board.id && (
                       <div className="glass-strong pop-in absolute end-0 top-9 z-10 w-44 rounded-2xl p-1.5">

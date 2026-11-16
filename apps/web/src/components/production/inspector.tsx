@@ -341,7 +341,7 @@ function Inputs({ node }: { node: BlockNode }) {
             const port = ports.find((p) => p.key === e.port);
             return (
               <li key={e.id} className="flex items-center gap-2 rounded-xl bg-white/60 px-2.5 py-1.5 text-[13px] ring-1 ring-line">
-                <Icon name={KIND_META[source?.kind || "text"]?.icon || "link"} size={15} className="text-text-2" />
+                <Icon name={(source && KIND_META[source.kind]?.icon) || "link"} size={15} className="text-text-2" />
                 <span className="bidi min-w-0 flex-1 truncate" dir="auto">{source?.name}</span>
                 <span className="shrink-0 text-xs text-muted">→ {port?.label || e.port}</span>
                 {!readOnly && (

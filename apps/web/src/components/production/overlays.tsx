@@ -174,7 +174,7 @@ export function PreflightDialog({ state, blocks, onClose, onShow }: {
         </dl>
         {est.credits != null && (
           <div className={cx("flex items-center gap-2 rounded-2xl px-3 py-2.5 text-[13px]", over ? "bg-bad-bg text-bad" : "bg-fill text-text-2")}>
-            <Icon name="toll" size={17} />
+            <Icon name="wallet" size={17} />
             <span className="flex-1">{est.credits_available == null ? t("unlimited") : t("available", { amount: creditsText(est.credits_available) })}</span>
             {over && <Link href="/settings/billing#credits" className="shrink-0 rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-white hover:bg-ink-2">{t("buy")}</Link>}
           </div>

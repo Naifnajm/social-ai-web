@@ -241,7 +241,8 @@ def test_estimates_per_block_and_run(api, fake_ai):
                                                                     "blocks": 2}
     api.run(board)
     estimate = api.get(f"/boards/{board}/estimate")
-    assert estimate == {"cost": 0, "reused": 2, "blocks": 0}
+    assert estimate == {"cost": 0, "reused": 2, "blocks": 0, "credits": None, "credits_available": None,
+                        "missing": [], "empty_text": []}
     forced = api.get(f"/boards/{board}/estimate", node_ids=[image["id"]], force="true")
     assert forced["cost"] == pytest.approx(0.12) and forced["blocks"] == 1
     node = api.by_id(api.graph(board), image["id"])

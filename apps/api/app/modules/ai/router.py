@@ -583,16 +583,25 @@ def video_models(mode: str = Query("i2v", pattern="^(i2v|t2v)$"), seconds: int =
     db, ws = ctx.db, ctx.workspace.id
     europe = (ctx.workspace.timezone or "").startswith(("Europe/", "Atlantic/Reykjavik"))
     rows = []
-    for provider in prov.list_providers(db, ws, catalog.VIDEO, active_only=True):
+    providers = prov.list_providers(db, ws, catalog.VIDEO, active_only=True)
+    if not providers:  # no own key: the platform's AI, priced with the markup and paid with AI credits
+        managed = prov.platform_provider(db, ws, catalog.VIDEO)
+        providers = [managed] if managed else []
+    for provider in providers:
         prov.seed_models(db, provider)
         for model in prov.provider_models(db, provider, catalog.VIDEO):
             features = pricing.video_features(model.name)
             if not features[mode]:
                 continue
             cost = pricing.cost_of(model, seconds=seconds) if model.unit == "second" else model.price
+            price_per_second, credit_cost = model.price, None
+            if provider.managed:
+                from app.modules.billing import credits
+                cost, price_per_second = credits.price_of(db, cost), credits.price_of(db, model.price)
+                credit_cost = round(cost * credits.credits_per_usd(db), 1)
             rows.append({"id": model.id, "name": model.name, "label": model.label, "provider": provider.name,
-                         "provider_type": provider.provider_type, "price_per_second": model.price,
-                         "cost": round(cost, 3), "audio": features["audio"],
+                         "provider_type": provider.provider_type, "price_per_second": price_per_second,
+                         "cost": round(cost, 3), "credits": credit_cost, "audio": features["audio"],
                          "eu_limited": bool(features.get("eu_limited") and europe), "recommended": False})
     picks = pricing.VIDEO_PICKS[mode]
     rank = {name: i for i, name in enumerate(picks)}

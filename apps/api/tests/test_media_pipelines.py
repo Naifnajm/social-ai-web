@@ -188,3 +188,20 @@ def test_production_pipelines(client, auth, db):
     wrong = client.post("/api/production/boards", json={"template": "pipeline_quick", "video_model_id": text_model.id},
                         headers=h)
     assert wrong.status_code == 400 and wrong.json()["code"] == "bad_model"
+
+
+def test_video_models_on_the_platform_ai_are_priced_in_credits(client, auth, db):
+    from app.modules.billing import credits, platform
+    platform.set_secret(db, "ai.gemini_api_key", "platform-key")
+    platform.set_setting(db, "billing.ai_markup_percent", 50.0)
+    rows = client.get("/api/ai/video-models", params={"mode": "t2v", "seconds": 8}, headers=auth.headers).json()["models"]
+    assert rows, "the platform's video models are offered when the workspace has no own key"
+    omni = next(m for m in rows if m["name"] == "gemini-omni-1.2-flash")
+    model = db.get(AIModel, omni["id"])
+    raw = prov.pricing.cost_of(model, seconds=8)
+    assert omni["cost"] == pytest.approx(raw * 1.5, abs=0.001)
+    assert omni["credits"] == pytest.approx(omni["cost"] * credits.credits_per_usd(db), rel=0.01)
+
+    add_provider(client, auth, "gemini")  # own key: plain provider price, no credits
+    own = client.get("/api/ai/video-models", params={"mode": "t2v", "seconds": 8}, headers=auth.headers).json()["models"]
+    assert own and all(m["credits"] is None for m in own)

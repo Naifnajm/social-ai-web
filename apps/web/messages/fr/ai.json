@@ -1,0 +1,23 @@
+{
+ "providers": {
+  "jobs": {
+   "title": "Qui fait quoi",
+   "hint": "Choisissez le fournisseur de chaque type de travail. Par défaut, les images passent par OpenAI, la vidéo par Seedance, la voix off, la musique et les effets sonores par ElevenLabs, et les traitements en masse comme le classement des commentaires utilisent le modèle rapide.",
+   "saved": "Enregistré",
+   "inUse": "Utilisé : {name}",
+   "nobody": "Aucun fournisseur ne peut encore le faire",
+   "textHint": "Pour le changer, utilisez « Définir par défaut » sur un fournisseur ci-dessus.",
+   "autoRecommended": "Automatique (recommandé : {name})",
+   "auto": "Automatique",
+   "noOptions": "Aucun fournisseur pour l’instant",
+   "names": {
+    "text": "Rédaction",
+    "image": "Images",
+    "video": "Vidéo",
+    "audio": "Voix off, musique et effets sonores",
+    "stt": "Transcription",
+    "fast": "Modèle rapide pour les traitements en masse"
+   }
+  }
+ }
+}

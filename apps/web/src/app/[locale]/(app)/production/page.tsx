@@ -9,6 +9,7 @@ import { useFormatter, useNow, useTranslations } from "next-intl";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icon";
 import { Badge, Button, Card, EmptyState, Modal, PageHeader, SectionTitle, Spinner, cx, toast } from "@/components/ui";
+import { NewProductionDialog } from "@/components/production/new-production-dialog";
 import type { BoardCard, BoardTemplate } from "@/components/production/types";
 import { Link, useRouter } from "@/i18n/navigation";
 import { ApiError, api } from "@/lib/api";
@@ -37,6 +38,8 @@ function ProductionHub() {
   const boards = useQuery({ queryKey: ["production", "boards"], queryFn: () => api.get<BoardCard[]>("/production/boards") });
   const [confirm, setConfirm] = useState<BoardCard | null>(null);
   const [menu, setMenu] = useState<number | null>(null);
+  // production pipelines ask which video model to use (and the idea) before the board is made
+  const [pipeline, setPipeline] = useState<BoardTemplate | null>(null);
 
   const create = useMutation({
     mutationFn: (key: string) => api.post<BoardCard>("/production/boards", { template: key }),
@@ -83,7 +86,7 @@ function ProductionHub() {
               {templates.data?.map((tpl) => {
                 const blank = tpl.key === "blank";
                 return (
-                  <button key={tpl.key} type="button" disabled={create.isPending} onClick={() => create.mutate(tpl.key)}
+                  <button key={tpl.key} type="button" disabled={create.isPending} onClick={() => (tpl.video_mode ? setPipeline(tpl) : create.mutate(tpl.key))}
                     className={cx("group relative flex flex-col gap-1.5 rounded-[20px] p-4 text-start transition hover:-translate-y-0.5 disabled:opacity-60",
                       blank ? "border-[1.5px] border-dashed border-black/15 bg-white/30 hover:bg-white/60" : "glass hover:shadow-[var(--shadow-lift)]")}>
                     <span className={cx("mb-1 flex h-10 w-10 items-center justify-center rounded-xl",
@@ -156,6 +159,8 @@ function ProductionHub() {
           </div>
         )}
       </section>
+
+      {pipeline && <NewProductionDialog key={pipeline.key} template={pipeline} onClose={() => setPipeline(null)} />}
 
       <Modal open={!!confirm} onClose={() => setConfirm(null)} size="sm" title={t("deleteBoard")}
         footer={<>

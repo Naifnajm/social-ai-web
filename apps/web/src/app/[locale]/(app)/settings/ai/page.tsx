@@ -12,6 +12,7 @@ import { Badge, Button, Card, EmptyState, IconButton, Modal, SectionTitle, Segme
 import { ApiError, api } from "@/lib/api";
 import { CAPABILITY_ICONS, type Capability, money } from "@/lib/ai";
 import { useSession } from "@/lib/session";
+import { JobDefaultsCard } from "./defaults-card";
 import { ProviderDialog } from "./provider-dialog";
 import type { CatalogEntry, Provider, TestResult } from "./types";
 
@@ -119,6 +120,8 @@ export default function AiProvidersPage() {
           </ul>
         )}
       </Card>
+
+      {!!providers.data?.length && <JobDefaultsCard />}
 
       <Card>
         <SectionTitle icon="add">{t("addProvider")}</SectionTitle>

@@ -1,0 +1,23 @@
+{
+ "providers": {
+  "jobs": {
+   "title": "Wer welche Aufgabe übernimmt",
+   "hint": "Lege fest, welcher Anbieter welche Art von Arbeit erledigt. Standardmäßig gehen Bilder an OpenAI, Videos an Seedance, Sprecher, Musik und Soundeffekte an ElevenLabs, und Massenaufgaben wie das Einordnen von Kommentaren nutzen das schnelle Modell.",
+   "saved": "Gespeichert",
+   "inUse": "Aktiv: {name}",
+   "nobody": "Noch kein Anbieter kann das",
+   "textHint": "Ändern über „Als Standard festlegen“ bei einem Anbieter oben.",
+   "autoRecommended": "Automatisch (empfohlen: {name})",
+   "auto": "Automatisch",
+   "noOptions": "Noch kein Anbieter",
+   "names": {
+    "text": "Texte",
+    "image": "Bilder",
+    "video": "Video",
+    "audio": "Sprecher, Musik & Soundeffekte",
+    "stt": "Sprache zu Text",
+    "fast": "Schnelles Modell für Massenaufgaben"
+   }
+  }
+ }
+}

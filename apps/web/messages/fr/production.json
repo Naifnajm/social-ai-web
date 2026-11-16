@@ -1,0 +1,20 @@
+{
+ "newProduction": {
+  "title": "Nouvelle production",
+  "cancel": "Annuler",
+  "create": "Créer",
+  "about": "De quoi parle la vidéo ?",
+  "aboutPlaceholder": "ex. Notre nouveau latte espagnol glacé, servi au soleil du matin",
+  "aboutHint": "Facultatif · {count}/{max}",
+  "videoModel": "Modèle vidéo",
+  "noModels": "Aucun modèle vidéo pour l’instant",
+  "noModelsText": "Ajoutez un fournisseur qui crée des vidéos (par exemple Replicate ou Gemini) dans Paramètres › Fournisseurs d’IA.",
+  "addProvider": "Ouvrir les fournisseurs d’IA",
+  "recommended": "Recommandé",
+  "cost": "≈ {amount} pour {seconds} s",
+  "ownSound": "Génère son propre son",
+  "euLimited": "Peut ne pas être disponible dans l’UE",
+  "voiceOver": "Remplacer le son du modèle par une voix off ElevenLabs",
+  "voiceOverHint": "Le son d’origine du clip est remplacé par une voix off écrite pour votre idée."
+ }
+}

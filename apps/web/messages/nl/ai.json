@@ -1,0 +1,23 @@
+{
+ "providers": {
+  "jobs": {
+   "title": "Wie doet welke taak",
+   "hint": "Kies welke provider elk soort werk doet. Standaard gaan afbeeldingen naar OpenAI, video naar Seedance, voice-over, muziek en geluidseffecten naar ElevenLabs, en bulkwerk zoals reacties indelen gebruikt het snelle model.",
+   "saved": "Opgeslagen",
+   "inUse": "In gebruik: {name}",
+   "nobody": "Nog geen provider die dit kan",
+   "textHint": "Wijzig dit met “Als standaard instellen” bij een provider hierboven.",
+   "autoRecommended": "Automatisch (aanbevolen: {name})",
+   "auto": "Automatisch",
+   "noOptions": "Nog geen provider",
+   "names": {
+    "text": "Schrijven",
+    "image": "Afbeeldingen",
+    "video": "Video",
+    "audio": "Voice-over, muziek en geluidseffecten",
+    "stt": "Spraak naar tekst",
+    "fast": "Snel model voor bulkwerk"
+   }
+  }
+ }
+}

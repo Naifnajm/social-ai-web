@@ -1,0 +1,20 @@
+{
+ "newProduction": {
+  "title": "Nieuwe productie",
+  "cancel": "Annuleren",
+  "create": "Maken",
+  "about": "Waar gaat de video over?",
+  "aboutPlaceholder": "bijv. Onze nieuwe iced Spanish latte, geserveerd in de ochtendzon",
+  "aboutHint": "Optioneel · {count}/{max}",
+  "videoModel": "Videomodel",
+  "noModels": "Nog geen videomodellen",
+  "noModelsText": "Voeg een provider toe die video's maakt (bijvoorbeeld Replicate of Gemini) via Instellingen › AI-providers.",
+  "addProvider": "AI-providers openen",
+  "recommended": "Aanbevolen",
+  "cost": "≈ {amount} voor {seconds} s",
+  "ownSound": "Maakt zelf geluid",
+  "euLimited": "Mogelijk niet beschikbaar in de EU",
+  "voiceOver": "Het geluid van het model vervangen door een ElevenLabs-voice-over",
+  "voiceOverHint": "Het eigen geluid van de clip wordt vervangen door een voice-over die voor je idee is geschreven."
+ }
+}

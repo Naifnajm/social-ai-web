@@ -126,4 +126,17 @@ export type BoardCard = {
   updated_at?: string | null;
 };
 
-export type BoardTemplate = { key: string; name: string; icon: string; description: string; blocks: number };
+export type BoardTemplate = { key: string; name: string; icon: string; description: string; blocks: number; video_mode?: "i2v" | "t2v" | null };
+/** A video model offered when a production pipeline is created (`GET /api/ai/video-models`). */
+export type VideoModelOption = {
+  id: number;
+  name: string;
+  label: string;
+  provider: string;
+  provider_type: string;
+  price_per_second: number;
+  cost: number;
+  audio: boolean;
+  eu_limited: boolean;
+  recommended: boolean;
+};

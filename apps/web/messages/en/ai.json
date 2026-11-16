@@ -185,7 +185,26 @@
    "minute": "per minute",
    "free": "free (local)"
   },
-  "tryMedia": "Try creating"
+  "tryMedia": "Try creating",
+  "jobs": {
+   "title": "Who does each job",
+   "hint": "Choose which provider handles each kind of work. By default, images go to OpenAI, video to Seedance, voice, music and sound effects to ElevenLabs, and bulk work such as classifying comments uses the fast model.",
+   "saved": "Saved",
+   "inUse": "In use: {name}",
+   "nobody": "No provider can do this yet",
+   "textHint": "To change it, use “Make default” on a provider above.",
+   "autoRecommended": "Automatic (recommended: {name})",
+   "auto": "Automatic",
+   "noOptions": "No provider yet",
+   "names": {
+    "text": "Writing",
+    "image": "Images",
+    "video": "Video",
+    "audio": "Voice, music & sound effects",
+    "stt": "Speech to text",
+    "fast": "Fast model for bulk work"
+   }
+  }
  },
  "brand": {
   "title": "Brand kits",

@@ -1,0 +1,20 @@
+{
+ "newProduction": {
+  "title": "Neue Produktion",
+  "cancel": "Abbrechen",
+  "create": "Erstellen",
+  "about": "Worum geht es im Video?",
+  "aboutPlaceholder": "z. B. Unser neuer Iced Spanish Latte in der Morgensonne",
+  "aboutHint": "Optional · {count}/{max}",
+  "videoModel": "Videomodell",
+  "noModels": "Noch keine Videomodelle",
+  "noModelsText": "Füge unter Einstellungen › KI-Anbieter einen Anbieter hinzu, der Videos erstellt (zum Beispiel Replicate oder Gemini).",
+  "addProvider": "KI-Anbieter öffnen",
+  "recommended": "Empfohlen",
+  "cost": "≈ {amount} für {seconds} s",
+  "ownSound": "Erzeugt eigenen Ton",
+  "euLimited": "In der EU möglicherweise nicht verfügbar",
+  "voiceOver": "Ton des Modells durch einen ElevenLabs-Sprecher ersetzen",
+  "voiceOverHint": "Der eigene Ton des Clips wird durch einen Sprechertext ersetzt, der für deine Idee geschrieben wird."
+ }
+}

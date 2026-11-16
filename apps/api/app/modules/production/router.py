@@ -81,7 +81,8 @@ def _board_of(ctx: Ctx, node) -> Board:
 @router.get("/templates", response_model=list[TemplateOut])
 def list_templates(ctx: Ctx = Depends(viewer)):
     return [{"key": key, "name": t["name"], "icon": t["icon"], "description": t["description"],
-             "blocks": len(t["nodes"])} for key, t in templates().items()]
+             "blocks": len(t["nodes"]), "video_mode": t.get("video_mode")}
+            for key, t in templates().items() if not t.get("hidden")]
 
 
 @router.get("/kinds", response_model=list[KindOut])
@@ -103,7 +104,8 @@ def list_boards(ctx: Ctx = Depends(viewer)):
 
 @router.post("/boards", response_model=BoardCard, status_code=201)
 def create_board(data: BoardCreate, ctx: Ctx = Depends(editor)):
-    board = service.create_board(ctx.db, ctx.workspace.id, ctx.user.id, data.template, data.name)
+    board = service.create_board(ctx.db, ctx.workspace.id, ctx.user.id, data.template, data.name,
+                                 video_model_id=data.video_model_id, text=data.text, voice_over=data.voice_over)
     return next(c for c in service.board_cards(ctx.db, ctx.workspace.id) if c["id"] == board.id)
 
 

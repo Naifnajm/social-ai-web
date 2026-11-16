@@ -175,8 +175,14 @@ def default_text_provider(db: Session, workspace_id: int, exclude_id: int | None
 
 
 def seed_models(db: Session, provider: AIProvider) -> list[AIModel]:
-    """Create the catalog models of a provider that are missing (prices are approximate list prices)."""
-    existing = {(m.name, m.capability) for m in provider_models(db, provider, active_only=False)}
+    """Create the catalog models of a provider that are missing (prices are approximate list prices) and switch
+    off the ones the provider has shut down."""
+    rows = provider_models(db, provider, active_only=False)
+    retired = pricing.RETIRED.get(provider.provider_type, set())
+    for row in rows:
+        if row.name in retired and row.active:
+            row.active = False
+    existing = {(m.name, m.capability) for m in rows}
     created = []
     for seq, (name, cap, unit, p_in, p_out, price, label) in enumerate(pricing.entries(provider.provider_type)):
         if (name, cap) in existing:
@@ -249,7 +255,10 @@ def provider_for(db: Session, workspace_id: int, capability: str, provider_id: i
         default = default_text_provider(db, workspace_id)
         if default and not default.managed:
             return default
-    providers = list_providers(db, workspace_id, capability, active_only=True)
+    chosen = chosen_default(db, workspace_id, capability)
+    if chosen is not None:
+        return chosen
+    providers = ranked(list_providers(db, workspace_id, capability, active_only=True), capability)
     if not providers:
         managed = platform_provider(db, workspace_id, capability)
         if managed is not None:
@@ -425,3 +434,57 @@ def refresh_balance(db: Session, provider: AIProvider) -> dict:
     provider.balance_checked_at = utcnow()
     db.flush()
     return result
+
+
+# ------------------------------------------------------------------ defaults per capability
+# Preferred provider types per capability when the workspace did not choose one (first match wins): the
+# recommended mix — OpenAI for text and images, Seedance/Wan (Replicate) or Omni (Gemini) for video,
+# ElevenLabs for voice, sound effects and music.
+PREFERRED = {
+    catalog.IMAGE: ("openai", "gemini", "azure_openai", "stability", "luma", "replicate", "together", "xai"),
+    catalog.VIDEO: ("replicate", "gemini", "runway", "luma"),
+    catalog.AUDIO: ("elevenlabs", "openai", "azure_openai", "replicate"),
+    catalog.STT: ("openai", "elevenlabs", "azure_openai"),
+}
+DEFAULT_SETTING = "ai.default.%s"
+FAST_SETTING = "ai.fast_model_id"
+FAST_MODELS = {"openai": "gpt-5-nano", "anthropic": "claude-haiku-5-5", "gemini": "gemini-2.5-flash-lite",
+               "azure_openai": "gpt-5-mini", "openrouter": "openai/gpt-5-nano", "qwen": "qwen-turbo",
+               "deepseek": "deepseek-chat", "mistral": "mistral-small-latest", "groq": "llama-3.1-8b-instant"}
+
+
+def chosen_default(db: Session, workspace_id: int, capability: str) -> AIProvider | None:
+    """The provider the workspace picked for ``capability`` (Settings › AI providers), when still usable."""
+    from app.modules.workspaces.settings import get_setting
+    provider_id = get_setting(db, workspace_id, DEFAULT_SETTING % capability)
+    if not provider_id:
+        return None
+    provider = db.get(AIProvider, provider_id)
+    if provider and provider.workspace_id == workspace_id and provider.active and not provider.managed \
+            and catalog.can(provider.provider_type, capability):
+        return provider
+    return None
+
+
+def ranked(providers: list[AIProvider], capability: str) -> list[AIProvider]:
+    order = PREFERRED.get(capability)
+    if not order:
+        return providers
+    return sorted(providers, key=lambda p: order.index(p.provider_type) if p.provider_type in order else len(order))
+
+
+def fast_model(db: Session, workspace_id: int) -> AIModel | None:
+    """The cheap model for bulk work (Radar classification…): the one chosen, else the fast sibling of the default
+    text provider's model. None = use the normal default."""
+    from app.modules.workspaces.settings import get_setting
+    model_id = get_setting(db, workspace_id, FAST_SETTING)
+    if model_id:
+        model = db.get(AIModel, model_id)
+        if model and model.workspace_id == workspace_id and model.active and model.capability == catalog.TEXT:
+            return model
+    try:
+        provider = provider_for(db, workspace_id, catalog.TEXT)
+    except AppError:
+        return None
+    name = FAST_MODELS.get(provider.provider_type)
+    return find_model(db, provider, name, catalog.TEXT) if name else None

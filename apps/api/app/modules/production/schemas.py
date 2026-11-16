@@ -153,6 +153,7 @@ class TemplateOut(BaseModel):
     icon: str
     description: str
     blocks: int
+    video_mode: str | None = None  # "i2v" | "t2v": the template asks which video model to use first
 
 
 class PortOut(BaseModel):
@@ -239,6 +240,9 @@ class GraphOut(BaseModel):
 class BoardCreate(BaseModel):
     template: str = "blank"
     name: str | None = Field(default=None, max_length=200)
+    video_model_id: int | None = None
+    text: str | None = Field(default=None, max_length=2000)
+    voice_over: bool = False
 
 
 class BoardUpdate(BaseModel):

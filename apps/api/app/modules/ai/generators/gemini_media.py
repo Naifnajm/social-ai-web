@@ -40,7 +40,70 @@ class GeminiMediaClient(BaseMediaClient):
         reason = (data.get("promptFeedback") or {}).get("blockReason")
         raise ApiError("Gemini returned no image%s." % (" (%s)" % reason if reason else ""))
 
+    # -- Gemini Omni (Interactions API) --------------------------------------------
+    # Omni models run on the stateful Interactions API (/v1beta/interactions), not on generateContent or
+    # predictLongRunning. Clips are 3-15 seconds. Written from Google's announcement and developer guides
+    # (November 2026); not yet run against the live API.
+    @staticmethod
+    def is_omni(model) -> bool:
+        return (model or "").startswith("gemini-omni")
+
+    def _omni_start(self, prompt, aspect, seconds, image):
+        parts = [{"type": "text", "text": prompt}]
+        if image:
+            parts.insert(0, {"type": "image", "mime_type": image.mimetype, "data": image.b64()})
+        body = {"model": self.video_model, "input": parts,
+                "response_format": {"type": "video", "duration": "%ss" % max(3, min(int(seconds or 8), 15)),
+                                    "resolution": "720p", "aspect_ratio": aspect if aspect in ("16:9", "9:16")
+                                    else ("9:16" if aspect in ("4:5", "3:4") else "16:9"),
+                                    "delivery": "uri"}}
+        data = self._call("POST", "/interactions", "Start Omni video", headers=self._headers(), json_body=body,
+                          timeout=90)
+        found = self._omni_video(data)
+        if found:
+            return found
+        if not data.get("id"):
+            raise ApiError("Gemini Omni did not return an interaction id.")
+        return {"job": "interactions/%s" % data["id"]}
+
+    def _omni_video(self, data):
+        """The video of a finished interaction (a URI to download or inline bytes), else None."""
+        status = str(data.get("status") or data.get("state") or "").lower()
+        if status in ("failed", "cancelled", "canceled") or data.get("error"):
+            message = (data.get("error") or {}).get("message") if isinstance(data.get("error"), dict) else None
+            raise ApiError("Video generation failed: %s" % (message or status or "unknown reason"))
+
+        def walk(node):
+            if isinstance(node, dict):
+                mime = str(node.get("mime_type") or node.get("mimeType") or "")
+                if node.get("type") == "video" or mime.startswith("video/"):
+                    if node.get("uri") or node.get("url"):
+                        return {"uri": node.get("uri") or node.get("url")}
+                    if node.get("data"):
+                        return {"data": node["data"], "mimetype": mime or "video/mp4"}
+                for value in node.values():
+                    hit = walk(value)
+                    if hit:
+                        return hit
+            elif isinstance(node, list):
+                for value in node:
+                    hit = walk(value)
+                    if hit:
+                        return hit
+            return None
+
+        hit = walk(data.get("outputs") or data.get("output") or [])
+        if not hit:
+            return None
+        if hit.get("data"):
+            return {"content": base64.b64decode(hit["data"]), "mimetype": hit["mimetype"]}
+        content, mimetype = download(hit["uri"], self.provider, headers={"x-goog-api-key": self.api_key},
+                                     default_mimetype="video/mp4")
+        return {"content": content, "mimetype": mimetype}
+
     def video_start(self, prompt, aspect="16:9", seconds=8, image=None):
+        if self.is_omni(self.video_model):
+            return self._omni_start(prompt, aspect, seconds, image)
         instance = {"prompt": prompt}
         if image:
             instance["image"] = {"bytesBase64Encoded": image.b64(), "mimeType": image.mimetype}
@@ -53,6 +116,9 @@ class GeminiMediaClient(BaseMediaClient):
         return {"job": data["name"]}
 
     def video_poll(self, job):
+        if str(job).startswith("interactions/"):
+            data = self._call("GET", "/%s" % job, "Check Omni video", headers=self._headers(), timeout=30)
+            return self._omni_video(data) or {"status": "running", "progress": 0}
         data = self._call("GET", "/%s" % job, "Check video", headers=self._headers(), timeout=30)
         if not data.get("done"):
             return {"status": "running", "progress": 0}

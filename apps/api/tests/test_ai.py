@@ -56,9 +56,9 @@ def test_provider_crud_defaults_and_key_never_returned(client, auth):
     assert data["has_key"] is True and "api_key" not in data
     assert KEY not in str(data)
     assert data["name"] == "OpenAI"
-    assert data["text_model"] == "gpt-5-mini" and data["video_model"] == "sora-2" and data["voice"] == "alloy"
+    assert data["text_model"] == "gpt-5-mini" and data["video_model"] is None and data["voice"] == "alloy"
     assert data["is_default"] is True  # first text provider becomes the default
-    assert data["capabilities"] == ["text", "image", "video", "audio", "stt"]
+    assert data["capabilities"] == ["text", "image", "audio", "stt"]  # no video since Sora closed
     assert data["models_count"] == len(pricing.entries("openai"))
     assert data["wallet"]["kind"] == "spent"
 
@@ -150,15 +150,17 @@ def test_models_seeded_with_prices_and_crud(client, auth):
 
 def test_pickers_and_estimates(client, auth):
     openai = add_provider(client, auth, "openai")
+    assert client.get("/api/ai/pickers?capability=video", headers=auth.headers).json()["groups"] == []  # no Sora
+    add_provider(client, auth, "replicate")
     r = client.get("/api/ai/pickers?capability=video", headers=auth.headers).json()
     group = r["groups"][0]
-    assert group["provider"] == "OpenAI" and group["wallet"]["kind"] == "spent"
-    sora = next(m for m in group["models"] if m["name"] == "sora-2")
-    assert sora["default"] is True and sora["price_label"] == "$0.1 / second"
+    assert group["provider"] == "Replicate" and group["wallet"]["kind"] == "spent"
+    seedance = next(m for m in group["models"] if m["name"] == "bytedance/seedance-2.0")
+    assert seedance["default"] is True and seedance["price_label"] == "$0.13 / second"
 
-    est = client.post("/api/ai/estimate", json={"capability": "video", "model_id": sora["id"], "prompt": "x",
+    est = client.post("/api/ai/estimate", json={"capability": "video", "model_id": seedance["id"], "prompt": "x",
                                                 "seconds": 8}, headers=auth.headers).json()
-    assert est["cost"] == pytest.approx(0.8) and "8s" in est["detail"] and est["known"] is True
+    assert est["cost"] == pytest.approx(1.04) and "8s" in est["detail"] and est["known"] is True
     text = client.post("/api/ai/estimate", json={"capability": "text", "prompt": "Write a launch post " * 20},
                        headers=auth.headers).json()
     assert text["cost"] > 0 and text["model"] == "GPT-5 mini"
@@ -393,7 +395,7 @@ def test_budget_enforced(client, auth, db, mock_http):
     assert exc.value.code == "ai_budget_exceeded" and exc.value.status_code == 402
     r = client.post("/api/ai/text", json={"brief": "launch"}, headers=auth.headers)
     assert r.status_code == 402 and r.json()["code"] == "ai_budget_exceeded"
-    r = client.post("/api/ai/media", json={"kind": "video", "prompt": "waves", "seconds": 8}, headers=auth.headers)
+    r = client.post("/api/ai/media", json={"kind": "image", "prompt": "waves"}, headers=auth.headers)
     assert r.status_code == 402
     assert calls == []
     # raising the budget unblocks

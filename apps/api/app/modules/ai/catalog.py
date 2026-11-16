@@ -16,9 +16,9 @@ CATALOG: dict[str, dict] = {
     # --- the big three -------------------------------------------------------
     "openai": {
         "label": "OpenAI", "engine": "openai", "base_url": "https://api.openai.com/v1",
-        "caps": {TEXT, IMAGE, VIDEO, AUDIO, STT},
-        "models": {TEXT: "gpt-5-mini", IMAGE: "gpt-image-1", VIDEO: "sora-2", AUDIO: "gpt-4o-mini-tts",
-                   STT: "whisper-1"},
+        # no video: OpenAI closed the Sora API on 24 September 2026
+        "caps": {TEXT, IMAGE, AUDIO, STT},
+        "models": {TEXT: "gpt-5-mini", IMAGE: "gpt-image-1", AUDIO: "gpt-4o-mini-tts", STT: "whisper-1"},
         "voice": "alloy", "max_tokens": 4000,
         "key_url": "https://platform.openai.com/api-keys",
     },
@@ -33,7 +33,7 @@ CATALOG: dict[str, dict] = {
         "label": "Google Gemini", "engine": "gemini",
         "base_url": "https://generativelanguage.googleapis.com/v1beta",
         "caps": {TEXT, IMAGE, VIDEO},
-        "models": {TEXT: "gemini-2.5-flash", IMAGE: "gemini-2.5-flash-image", VIDEO: "veo-3.0-generate-001"},
+        "models": {TEXT: "gemini-2.5-flash", IMAGE: "gemini-2.5-flash-image", VIDEO: "gemini-omni-1.2-flash"},
         "max_tokens": 8000,
         "key_url": "https://aistudio.google.com/apikey",
     },
@@ -125,7 +125,7 @@ CATALOG: dict[str, dict] = {
     "replicate": {
         "label": "Replicate (any model)", "engine": None, "base_url": "https://api.replicate.com/v1",
         "caps": {IMAGE, VIDEO, AUDIO},
-        "models": {IMAGE: "black-forest-labs/flux-schnell", VIDEO: "minimax/video-01",
+        "models": {IMAGE: "black-forest-labs/flux-schnell", VIDEO: "bytedance/seedance-2.0",
                    AUDIO: "minimax/speech-02-turbo"},
         "key_url": "https://replicate.com/account/api-tokens",
     },

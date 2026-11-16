@@ -4,6 +4,7 @@ from datetime import UTC, date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
 from sqlalchemy import func, select
 
 from app.core.deps import Ctx, workspace_ctx
@@ -482,3 +483,110 @@ def usage_summary(date_from: date | None = None, date_to: date | None = None,
                         total_calls=total_calls or 0, month_cost=round(month_cost, 6), by_provider=by_provider,
                         by_model=by_model, by_capability=by_capability, by_day=by_day, by_month=by_month,
                         budgets=budgets)
+
+
+# ---------------------------------------------------------------------------- defaults per job
+MEDIA_CAPS = (catalog.IMAGE, catalog.VIDEO, catalog.AUDIO, catalog.STT)
+
+
+class DefaultsIn(BaseModel):
+    image: int | None = None
+    video: int | None = None
+    audio: int | None = None
+    stt: int | None = None
+    fast_model_id: int | None = None
+
+
+def _provider_brief(provider: AIProvider | None) -> dict | None:
+    if provider is None:
+        return None
+    return {"id": provider.id, "name": provider.name, "type": provider.provider_type, "managed": provider.managed}
+
+
+def defaults_out(ctx: Ctx) -> dict:
+    from app.modules.workspaces.settings import get_setting
+    db, ws = ctx.db, ctx.workspace.id
+    caps = {}
+    for capability in MEDIA_CAPS:
+        options = prov.ranked(prov.list_providers(db, ws, capability, active_only=True), capability)
+        try:
+            effective = prov.provider_for(db, ws, capability)
+        except AppError:
+            effective = None
+        caps[capability] = {"chosen_id": get_setting(db, ws, prov.DEFAULT_SETTING % capability),
+                            "effective": _provider_brief(effective),
+                            "options": [_provider_brief(p) for p in options],
+                            "recommended": list(prov.PREFERRED.get(capability, ()))[:2]}
+    try:
+        text_provider = prov.provider_for(db, ws, catalog.TEXT)
+    except AppError:
+        text_provider = None
+    fast = prov.fast_model(db, ws)
+    text_models = []
+    for provider in prov.list_providers(db, ws, catalog.TEXT, active_only=True):
+        for model in prov.provider_models(db, provider, catalog.TEXT):
+            text_models.append({"id": model.id, "label": model.label, "provider": provider.name,
+                                "price_label": pricing.price_label(model), "price_in": model.price_in,
+                                "price_out": model.price_out})
+    text_models.sort(key=lambda m: (m["price_in"] + m["price_out"], m["label"]))
+    return {"text": _provider_brief(text_provider), "capabilities": caps,
+            "fast": {"chosen_id": get_setting(db, ws, prov.FAST_SETTING),
+                     "effective": ({"id": fast.id, "label": fast.label, "price_label": pricing.price_label(fast)}
+                                   if fast else None),
+                     "options": text_models}}
+
+
+@router.get("/defaults")
+def get_defaults(ctx: Ctx = Depends(workspace_ctx(Role.admin))):
+    """Which provider does each job (images, video, voice & sound, speech to text) and the fast text model."""
+    return defaults_out(ctx)
+
+
+@router.put("/defaults")
+def put_defaults(data: DefaultsIn, ctx: Ctx = Depends(workspace_ctx(Role.admin))):
+    from app.modules.workspaces.settings import set_setting
+    db, ws = ctx.db, ctx.workspace.id
+    for capability in MEDIA_CAPS:
+        provider_id = getattr(data, capability)
+        if provider_id:
+            provider = prov.get_provider(db, ws, provider_id)
+            if not catalog.can(provider.provider_type, capability):
+                raise AppError(_("This provider cannot do that."), code="bad_provider")
+        set_setting(db, ws, prov.DEFAULT_SETTING % capability, provider_id)
+    if data.fast_model_id:
+        model = db.get(AIModel, data.fast_model_id)
+        if not model or model.workspace_id != ws or model.capability != catalog.TEXT:
+            raise NotFound(_("Model not found."))
+    set_setting(db, ws, prov.FAST_SETTING, data.fast_model_id)
+    db.flush()
+    return defaults_out(ctx)
+
+
+@router.get("/video-models")
+def video_models(mode: str = Query("i2v", pattern="^(i2v|t2v)$"), seconds: int = Query(8, ge=3, le=30),
+                 ctx: Ctx = Depends(workspace_ctx(Role.editor))):
+    """Video models the workspace can use for ``mode`` (image → video or text → video), with what each can do,
+    the price of a clip of ``seconds`` and the suggested one. Models a provider has not listed yet are added."""
+    db, ws = ctx.db, ctx.workspace.id
+    europe = (ctx.workspace.timezone or "").startswith(("Europe/", "Atlantic/Reykjavik"))
+    rows = []
+    for provider in prov.list_providers(db, ws, catalog.VIDEO, active_only=True):
+        prov.seed_models(db, provider)
+        for model in prov.provider_models(db, provider, catalog.VIDEO):
+            features = pricing.video_features(model.name)
+            if not features[mode]:
+                continue
+            cost = pricing.cost_of(model, seconds=seconds) if model.unit == "second" else model.price
+            rows.append({"id": model.id, "name": model.name, "label": model.label, "provider": provider.name,
+                         "provider_type": provider.provider_type, "price_per_second": model.price,
+                         "cost": round(cost, 3), "audio": features["audio"],
+                         "eu_limited": bool(features.get("eu_limited") and europe), "recommended": False})
+    picks = pricing.VIDEO_PICKS[mode]
+    rank = {name: i for i, name in enumerate(picks)}
+    rows.sort(key=lambda r: (rank.get(r["name"], len(picks)), r["cost"]))
+    for row in rows:
+        if row["name"] in rank and not row["eu_limited"]:
+            row["recommended"] = True
+            break
+    db.flush()
+    return {"mode": mode, "seconds": seconds, "models": rows}

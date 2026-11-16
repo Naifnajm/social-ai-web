@@ -52,5 +52,7 @@
  "Hashtags": "وسوم",
  "Rewrite": "إعادة صياغة",
  "AI text": "نص بالذكاء الاصطناعي",
- "Visual prompt": "وصف بصري"
+ "Visual prompt": "وصف بصري",
+ "This provider cannot do that.": "هذا المزوّد لا يستطيع القيام بذلك.",
+ "Model not found.": "النموذج غير موجود."
 }

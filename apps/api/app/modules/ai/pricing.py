@@ -21,8 +21,6 @@ MODELS: dict[str, list[tuple]] = {
         ("gpt-4.1-mini", T, "tokens", 0.40, 1.60, 0, "GPT-4.1 mini"),
         ("gpt-image-1", I, "image", 0, 0, 0.042, "GPT Image 1"),
         ("gpt-image-1-mini", I, "image", 0, 0, 0.011, "GPT Image 1 mini"),
-        ("sora-2", V, "second", 0, 0, 0.10, "Sora 2"),
-        ("sora-2-pro", V, "second", 0, 0, 0.30, "Sora 2 Pro"),
         ("gpt-4o-mini-tts", A, "minute", 0, 0, 0.015, "GPT-4o mini TTS"),
         ("tts-1-hd", A, "1k_chars", 0, 0, 0.030, "TTS-1 HD"),
         ("whisper-1", S, "minute", 0, 0, 0.006, "Whisper"),
@@ -38,6 +36,7 @@ MODELS: dict[str, list[tuple]] = {
         ("gemini-2.5-flash", T, "tokens", 0.30, 2.50, 0, "Gemini 2.5 Flash"),
         ("gemini-2.5-flash-lite", T, "tokens", 0.10, 0.40, 0, "Gemini 2.5 Flash-Lite"),
         ("gemini-2.5-flash-image", I, "image", 0, 0, 0.039, "Gemini 2.5 Flash Image"),
+        ("gemini-omni-1.2-flash", V, "second", 0, 0, 0.07, "Gemini Omni 1.2 Flash"),
         ("veo-3.0-generate-001", V, "second", 0, 0, 0.40, "Veo 3"),
         ("veo-3.0-fast-generate-001", V, "second", 0, 0, 0.15, "Veo 3 Fast"),
     ],
@@ -94,6 +93,9 @@ MODELS: dict[str, list[tuple]] = {
     "replicate": [
         ("black-forest-labs/flux-schnell", I, "image", 0, 0, 0.003, "FLUX schnell"),
         ("black-forest-labs/flux-1.1-pro", I, "image", 0, 0, 0.04, "FLUX 1.1 Pro"),
+        ("bytedance/seedance-2.0", V, "second", 0, 0, 0.13, "Seedance 2.0"),
+        ("wan-video/wan-2.5-i2v", V, "second", 0, 0, 0.10, "Wan 2.5 (image to video)"),
+        ("wan-video/wan-2.5-t2v", V, "second", 0, 0, 0.10, "Wan 2.5 (text to video)"),
         ("minimax/video-01", V, "second", 0, 0, 0.083, "MiniMax Video-01"),
         ("minimax/speech-02-turbo", A, "1k_chars", 0, 0, 0.06, "MiniMax Speech 02"),
     ],
@@ -114,6 +116,28 @@ MODELS: dict[str, list[tuple]] = {
         ("scribe_v1", S, "minute", 0, 0, 0.0067, "Scribe"),
     ],
 }
+
+# Models a provider has shut down: their rows are switched off, they are never seeded again.
+RETIRED = {"openai": {"sora-2", "sora-2-pro"}}
+
+# What each video model can do. ``eu_limited``: the provider limits it in the EEA, Switzerland and the UK
+# (shown with a warning, not blocked). Not listed = text and image to video, no sound.
+VIDEO_FEATURES = {
+    "bytedance/seedance-2.0": {"t2v": True, "i2v": True, "audio": False},
+    "wan-video/wan-2.5-i2v": {"t2v": False, "i2v": True, "audio": True},
+    "wan-video/wan-2.5-t2v": {"t2v": True, "i2v": False, "audio": True},
+    "gemini-omni-1.2-flash": {"t2v": True, "i2v": True, "audio": True, "eu_limited": True},
+    "veo-3.0-generate-001": {"t2v": True, "i2v": True, "audio": True},
+    "veo-3.0-fast-generate-001": {"t2v": True, "i2v": True, "audio": True},
+}
+# Suggested model per video mode (image → video, text → video), first available wins.
+VIDEO_PICKS = {"i2v": ("bytedance/seedance-2.0", "wan-video/wan-2.5-i2v", "gemini-omni-1.2-flash"),
+               "t2v": ("gemini-omni-1.2-flash", "wan-video/wan-2.5-t2v", "bytedance/seedance-2.0")}
+
+
+def video_features(name: str) -> dict:
+    return {"t2v": True, "i2v": True, "audio": False, "eu_limited": False, **VIDEO_FEATURES.get(name or "", {})}
+
 
 # Prices of the sound/music side products that are not "models" the user picks.
 SOUND_PRICE_PER_SECOND = {"elevenlabs": {"sfx": 0.008, "music": 0.013}, "replicate": {"music": 0.002}}

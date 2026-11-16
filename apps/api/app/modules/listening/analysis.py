@@ -81,9 +81,11 @@ def _ai_batch(db: Session, workspace: Workspace, brand: str, mentions: list[Ment
     lines = "\n".join(f"[{i}] ({m.source}) {(m.text or '')[:500]}" for i, m in enumerate(mentions))
     system = SYSTEM.format(brand=brand, language=LANGUAGE_NAMES.get(workspace.locale, "Arabic"),
                            topics=", ".join(topics) or "-")
+    from app.modules.ai import providers as prov
+    fast = prov.fast_model(db, workspace.id)  # bulk work goes to the cheap model (Settings › AI providers)
     try:
         data = ai.generate_json(db, workspace.id, system, lines, purpose="Radar: classify mentions",
-                                max_tokens=80 * len(mentions) + 200)
+                                max_tokens=80 * len(mentions) + 200, model_id=fast.id if fast else None)
     except Exception as exc:  # no provider, spend limit, unreadable answer: the lexicon takes over
         _logger.info("radar AI classification skipped for workspace %s: %s", workspace.id, exc)
         return False

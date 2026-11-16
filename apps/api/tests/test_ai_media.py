@@ -109,44 +109,49 @@ def test_reference_ignored_with_notice(client, auth, db, mock_http):
     assert calls[0]["data"]["aspect_ratio"] == "1:1"
 
 
-def test_sora_video_is_polled_until_ready(client, auth, db, mock_http, monkeypatch):
+def test_seedance_video_is_polled_until_ready(client, auth, db, mock_http, monkeypatch):
+    """Video on Replicate (Seedance by default since OpenAI closed Sora): started, polled, downloaded."""
     from app.core import db as core_db
     from app.core import jobs
     monkeypatch.setattr(jobs, "SessionLocal", core_db.SessionLocal)  # session_scope() bound it at import time
-    add_provider(client, auth, "openai")
-    progress = {"status": "in_progress"}
+    add_provider(client, auth, "openai")      # OpenAI first: it no longer does video
+    add_provider(client, auth, "replicate")
+    progress = {"status": "processing"}
 
     def handler(method, url, kw):
         if method == "POST":
-            assert kw["json"]["seconds"] == "8" and kw["json"]["size"] == "720x1280"
-            return mock_http.response(body={"id": "video_1", "status": "queued"})
-        if url.endswith("/content"):
-            return binary(mock_http, MP4, "video/mp4")
-        return mock_http.response(body={"id": "video_1", "status": progress["status"], "progress": 40})
+            assert url.endswith("/models/bytedance/seedance-2.0/predictions")
+            assert kw["json"]["input"] == {"prompt": kw["json"]["input"]["prompt"], "duration": 7,
+                                           "resolution": "720p", "aspect_ratio": "9:16"}
+            return mock_http.response(body={"id": "p1", "status": "starting"})
+        if url.endswith("/predictions/p1"):
+            if progress["status"] == "succeeded":
+                return mock_http.response(body={"id": "p1", "status": "succeeded",
+                                                "output": "https://files.example/v.mp4"})
+            return mock_http.response(body={"id": "p1", "status": progress["status"]})
+        return binary(mock_http, MP4, "video/mp4")
 
     mock_http(handler)
     r = client.post("/api/ai/media", headers=auth.headers, json={
         "kind": "video", "prompt": "A barista pours latte art", "aspect": "9:16", "seconds": 7})
     job_id = r.json()["id"]
-    assert r.json()["state"] == "running" and r.json()["seconds"] == 8  # Sora rounds to 4/8/12 s
+    assert r.json()["state"] == "running"
     job = db.get(MediaJob, job_id)
     job.callback = "tests.test_ai_media.on_job"
     job.next_check_at = None
     r = client.post("/api/ai/jobs/check", json={"ids": [job_id]}, headers=auth.headers).json()
-    assert (r[0]["state"], r[0]["progress"]) == ("running", 40)
-    assert CALLS == []
-    progress["status"] = "completed"
+    assert r[0]["state"] == "running" and CALLS == []
+    progress["status"] = "succeeded"
     job.next_check_at = None
     db.flush()
     assert poll_media_jobs() == 1  # the periodic task
     assert job.state == "done" and db.get(Media, job.media_id).mimetype == "video/mp4"
-    assert job.cost == pytest.approx(8 * 0.10)
+    assert job.cost == pytest.approx(7 * 0.13)
     assert CALLS == [(job.id, "done", {})]
-    assert client.get(f"/api/ai/jobs/{job_id}", headers=auth.headers).json()["media"]["duration"] == 8
 
 
 def test_veo_video_and_image_to_video(client, auth, db, mock_http):
-    add_provider(client, auth, "gemini")
+    add_provider(client, auth, "gemini", video_model="veo-3.0-generate-001")
     still = save_media(db, auth.workspace_id, PNG, "still.png", "image/png")
 
     def handler(method, url, kw):
@@ -192,8 +197,9 @@ def test_immediate_failure_and_timeout(client, auth, db, mock_http):
     assert job.state == "failed" and "flagged" in job.error
     assert CALLS == [(job.id, "failed", {})]
 
-    mock_http(lambda m, u, k: mock_http.response(body={"id": "v9", "status": "queued", "progress": 0}
-                                                  if m == "POST" else {"status": "in_progress", "progress": 10}))
+    add_provider(client, auth, "replicate")
+    mock_http(lambda m, u, k: mock_http.response(body={"id": "v9", "status": "starting"}
+                                                  if m == "POST" else {"id": "v9", "status": "processing"}))
     video = ai_media.start_job(db, auth.workspace_id, "video", "slow")
     video.created_at = video.created_at - timedelta(hours=3)
     ai_media.poll(db, video)

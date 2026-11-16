@@ -368,17 +368,35 @@ def update_node(db: Session, board: Board, node: Node, values: dict) -> Node:
     return node
 
 
-def create_board(db: Session, workspace_id: int, user_id: int, key: str = "blank", name: str | None = None) -> Board:
+def create_board(db: Session, workspace_id: int, user_id: int, key: str = "blank", name: str | None = None, *,
+                 video_model_id: int | None = None, text: str | None = None,
+                 voice_over: bool = False) -> Board:
+    """A board from a template. For the production pipelines: ``video_model_id`` goes on the video block,
+    ``text`` becomes the idea, and the quick pipeline with ``voice_over`` replaces the clip's own sound with an
+    AI voice-over."""
     catalog = templates()
+    if key == "pipeline_quick" and voice_over:
+        key = "pipeline_quick_voice"
     template = catalog.get(key) or catalog["blank"]
+    if video_model_id:
+        model = _owned(db, AIModel, workspace_id, video_model_id, _("AI model not found."))
+        if model.capability != "video":
+            raise AppError(_("Choose a video model."), code="bad_model")
     board = Board(workspace_id=workspace_id, user_id=user_id, name=(name or "").strip() or template["name"],
                   template=key if key in catalog else "blank")
     db.add(board)
     db.flush()
     nodes = []
+    first_text = True
     for spec in template["nodes"]:
         values = dict(spec)
         kind = values.pop("kind")
+        if kind == "video" and video_model_id:
+            values["model_id"] = video_model_id
+        if kind == "text" and first_text:
+            first_text = False
+            if text and text.strip():
+                values["text_value"] = text.strip()[:2000]
         # media-first cards are wide and tall: give them room
         x, y = values.pop("x", 0) * 1.25, values.pop("y", 0) * 1.6
         nodes.append(create_node(db, board, kind, x, y, **values))

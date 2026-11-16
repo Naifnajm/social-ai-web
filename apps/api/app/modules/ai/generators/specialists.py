@@ -76,12 +76,36 @@ class ReplicateClient(BaseMediaClient):
         result = self._run(self.image_model, {"prompt": prompt, "aspect_ratio": aspect})
         return result if "job" not in result else self._wait(result["job"])
 
-    def video_start(self, prompt, aspect="16:9", seconds=8, image=None):
+    def video_input(self, prompt, aspect="16:9", seconds=8, image=None) -> tuple[str, dict]:
+        """(model, input) for a video model on Replicate. Each family names its inputs differently:
+        Seedance (ByteDance) takes the start image as ``image`` plus duration/resolution/aspect ratio; Wan (Alibaba)
+        has separate text-to-video and image-to-video models, so the right one is picked from the inputs;
+        MiniMax takes ``first_frame_image``. Written from the model pages; not yet run against the live API."""
+        model = self.video_model or ""
+        seconds = int(seconds or 8)
+        if model.startswith("bytedance/seedance"):
+            input_ = {"prompt": prompt, "duration": max(4, min(seconds, 12)), "resolution": "720p",
+                      "aspect_ratio": aspect if aspect in ("16:9", "9:16", "1:1", "4:3", "3:4", "21:9") else "9:16"}
+            if image:
+                input_["image"] = image.data_uri()
+            return model, input_
+        if model.startswith("wan-video/wan-"):
+            family = model.rsplit("-", 1)[0] if model.endswith(("-i2v", "-t2v")) else model
+            model = family + ("-i2v" if image else "-t2v")
+            input_ = {"prompt": prompt, "duration": 10 if seconds > 7 else 5, "resolution": "720p"}
+            if image:
+                input_["image"] = image.data_uri()
+            else:
+                input_["aspect_ratio"] = aspect if aspect in ("16:9", "9:16", "1:1") else "9:16"
+            return model, input_
         input_ = {"prompt": prompt, "aspect_ratio": aspect}
         if image:
-            key = "first_frame_image" if "minimax" in (self.video_model or "") else "image"
-            input_[key] = image.data_uri()
-        result = self._run(self.video_model, input_, wait=False)
+            input_["first_frame_image" if "minimax" in model else "image"] = image.data_uri()
+        return model, input_
+
+    def video_start(self, prompt, aspect="16:9", seconds=8, image=None):
+        model, input_ = self.video_input(prompt, aspect, seconds, image)
+        result = self._run(model, input_, wait=False)
         return {"job": result["job"]} if "job" in result else result
 
     def video_poll(self, job):

@@ -6,10 +6,14 @@ import { CameraPanel } from "@/components/camera-panel";
 import { Icon, PlatformBadge } from "@/components/icon";
 import { Button, Field, IconButton, Input, Segmented, Select, Textarea, cx, toast } from "@/components/ui";
 import { useRouter } from "@/i18n/navigation";
+import { credits as creditsText } from "@/lib/ai";
+import { ErrorText, StateIcon } from "./block-node";
 import { useCanvas } from "./canvas-context";
+import { useOutputCost } from "./lightbox";
 import { ModelPicker } from "./model-picker";
 import { CAPABILITY, FORMATS, GENERATIVE, KIND_META, aspectBox, isRunning, usd } from "./meta";
 import { ApprovalActions } from "./approval-actions";
+import { pushUndo, updateNode, useCanvasStore } from "./store";
 import type { BlockNode, OutputItem } from "./types";
 
 function Section({ title, children }: { title?: ReactNode; children: ReactNode }) {
@@ -26,6 +30,11 @@ function DraftText({ value, onSave, rows, placeholder, disabled, multiline = tru
   value: string; onSave: (v: string) => void; rows?: number; placeholder?: string; disabled?: boolean; multiline?: boolean;
 }) {
   const [draft, setDraft] = useState(value);
+  const [shown, setShown] = useState(value);
+  if (shown !== value) { // changed elsewhere (undo / redo, another person)
+    setShown(value);
+    setDraft(value);
+  }
   const save = () => draft !== value && onSave(draft);
   return multiline ? (
     <Textarea rows={rows || 4} value={draft} placeholder={placeholder} disabled={disabled} dir="auto"
@@ -39,9 +48,9 @@ function DraftText({ value, onSave, rows, placeholder, disabled, multiline = tru
 export function Inspector({ node, onClose }: { node: BlockNode; onClose: () => void }) {
   const t = useTranslations("production");
   const router = useRouter();
-  const { graph, actions, readOnly, runNode, openDesign, pickFile } = useCanvas();
+  const { graph, actions, readOnly, ui } = useCanvas();
   const meta = KIND_META[node.kind] || KIND_META.text;
-  const update = (values: Record<string, unknown>) => !readOnly && actions.updateNode(node.id, values).catch(() => undefined);
+  const update = (values: Record<string, unknown>) => updateNode(node.id, values);
   const capability = CAPABILITY[node.kind];
   const running = isRunning(node.state);
 
@@ -60,8 +69,14 @@ export function Inspector({ node, onClose }: { node: BlockNode; onClose: () => v
         <div className="min-w-0 flex-1">
           <DraftText key={`name-${node.id}`} multiline={false} value={node.name} disabled={readOnly} onSave={(name) => update({ name })} />
         </div>
+        <StateIcon state={node.state} />
         <IconButton icon="close" label={t("close")} onClick={onClose} />
       </header>
+      {(node.error || node.notice) && (
+        <div className="border-b border-line pb-2.5">
+          {node.error ? <ErrorText text={node.error} /> : <p className="bidi mx-3 mt-2 rounded-[10px] bg-warn-bg px-2.5 py-1.5 text-[11.5px] text-warn" dir="auto">{node.notice}</p>}
+        </div>
+      )}
 
       <div className="flex-1 overflow-y-auto">
         {node.kind === "text" && (
@@ -129,13 +144,13 @@ export function Inspector({ node, onClose }: { node: BlockNode; onClose: () => v
 
         {node.kind === "design" && (
           <Section>
-            <Button variant="primary" icon="brush" disabled={readOnly} onClick={() => openDesign(node.id)}>{t("openEditor")}</Button>
+            <Button variant="primary" icon="brush" disabled={readOnly} onClick={() => ui.openDesign(node.id)}>{t("openEditor")}</Button>
           </Section>
         )}
 
         {node.kind === "upload" && (
           <Section>
-            <Button icon="upload" disabled={readOnly} onClick={() => pickFile(node.id)}>{node.output ? t("replaceFile") : t("chooseFile")}</Button>
+            <Button icon="upload" disabled={readOnly} onClick={() => ui.pickFile(node.id)}>{node.output ? t("replaceFile") : t("chooseFile")}</Button>
             {node.output && <span className="bidi truncate text-xs text-muted" dir="auto">{node.output.filename}</span>}
           </Section>
         )}
@@ -209,21 +224,30 @@ export function Inspector({ node, onClose }: { node: BlockNode; onClose: () => v
 
         {node.kind === "post" && <PostSettings node={node} update={update} />}
 
+        <Inputs node={node} />
         {node.outputs.length > 0 && <History node={node} />}
       </div>
 
       {!readOnly && node.kind !== "text" && (
-        <footer className="flex flex-wrap items-center gap-2 border-t border-line px-4 py-3">
-          <Button variant="primary" size="sm" icon={running ? undefined : "play_arrow"} loading={running} onClick={() => runNode(node.id)}>
-            {t("runFromHere")}
-          </Button>
-          {GENERATIVE.includes(node.kind) && node.state === "done" && (
-            <Button size="sm" icon="refresh" disabled={running} onClick={() => runNode(node.id, true)}>{t("regenerate")}</Button>
-          )}
-          {(node.output || node.output_text || node.post_id) && (
-            <Button size="sm" variant="ghost" icon="open_in_new" onClick={sendToStudio}>{node.kind === "post" ? t("openPost") : t("sendToStudio")}</Button>
-          )}
-          {node.estimate && node.estimate.cost > 0 && <span className="ms-auto text-xs tabular-nums text-muted">≈ {usd(node.estimate.cost)}</span>}
+        <footer className="flex flex-col gap-2 border-t border-line px-4 py-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="primary" size="sm" icon={running ? undefined : "fast_forward"} loading={running} title={`${t("runFromHere")} · Ctrl+Enter`}
+              onClick={() => ui.run([node.id], { downstream: true })}>
+              {t("runFromHere")}
+            </Button>
+            <Button size="sm" icon="play_arrow" disabled={running} onClick={() => ui.run([node.id], { downstream: false })} title={t("runOnlyHint")}>
+              {t("menu.runOnly")}
+            </Button>
+            {GENERATIVE.includes(node.kind) && node.state === "done" && (
+              <Button size="sm" variant="ghost" icon="refresh" disabled={running} onClick={() => ui.run([node.id], { force: true, downstream: false })}>{t("regenerate")}</Button>
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {(node.output || node.output_text || node.post_id) && (
+              <Button size="sm" variant="ghost" icon="open_in_new" onClick={sendToStudio}>{node.kind === "post" ? t("openPost") : t("sendToStudio")}</Button>
+            )}
+            <EstimateLine node={node} />
+          </div>
         </footer>
       )}
     </aside>
@@ -285,9 +309,60 @@ function PostSettings({ node, update }: { node: BlockNode; update: (v: Record<st
   );
 }
 
+/** Price of one run of the block: AI credits and dollars when credits pay for it. */
+function EstimateLine({ node }: { node: BlockNode }) {
+  const t = useTranslations("production");
+  const est = node.estimate;
+  if (!est || !(est.cost > 0)) return null;
+  return (
+    <span className="ms-auto text-end text-xs tabular-nums text-muted" title={t("estimateHint")}>
+      {est.credits != null ? <><span className="font-medium text-ink">{t("approxCredits", { amount: creditsText(est.credits) })}</span> · {usd(est.cost)}</> : `≈ ${usd(est.cost)}`}
+    </span>
+  );
+}
+
+/** The links into this block (also reachable by keyboard and screen readers), each can be removed. */
+function Inputs({ node }: { node: BlockNode }) {
+  const t = useTranslations("production");
+  const { graph, actions, readOnly } = useCanvas();
+  const ports = useCanvasStore((s) => s.kinds.get(node.kind)?.ports);
+  const links = graph.edges.filter((e) => e.target === node.id);
+  if (!ports?.length) return null;
+  const unlink = async (edgeId: number) => {
+    const removed = await actions.archive([], [edgeId]).catch(() => null);
+    if (removed?.edge_ids.length) pushUndo({ type: "archive", ...removed });
+  };
+  return (
+    <Section title={t("inspector.inputs")}>
+      {links.length ? (
+        <ul className="flex flex-col gap-1">
+          {links.map((e) => {
+            const source = graph.nodes.find((n) => n.id === e.source);
+            const port = ports.find((p) => p.key === e.port);
+            return (
+              <li key={e.id} className="flex items-center gap-2 rounded-xl bg-white/60 px-2.5 py-1.5 text-[13px] ring-1 ring-line">
+                <Icon name={KIND_META[source?.kind || "text"]?.icon || "link"} size={15} className="text-text-2" />
+                <span className="bidi min-w-0 flex-1 truncate" dir="auto">{source?.name}</span>
+                <span className="shrink-0 text-xs text-muted">→ {port?.label || e.port}</span>
+                {!readOnly && (
+                  <button type="button" onClick={() => unlink(e.id)} aria-label={t("inspector.unlink", { name: source?.name || "" })} title={t("inspector.unlink", { name: source?.name || "" })}
+                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted hover:bg-fill-2 hover:text-ink">
+                    <Icon name="link_off" size={14} />
+                  </button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      ) : <p className="text-xs text-muted">{t("inspector.noInputs")}</p>}
+    </Section>
+  );
+}
+
 function History({ node }: { node: BlockNode }) {
   const t = useTranslations("production");
-  const { actions, readOnly } = useCanvas();
+  const { ui } = useCanvas();
+  const costOf = useOutputCost();
   const runs = new Map<number, OutputItem[]>();
   for (const o of node.outputs) runs.set(o.run, [...(runs.get(o.run) || []), o]);
   return (
@@ -297,12 +372,13 @@ function History({ node }: { node: BlockNode }) {
           <div className="flex items-center gap-2 text-[11px] text-muted">
             <span className="font-semibold text-ink">{t("inspector.runNo", { n: run })}</span>
             {items[0].model && <span className="font-mono" dir="ltr">{items[0].model}</span>}
-            {items.reduce((s, o) => s + o.cost, 0) > 0 && <span className="tabular-nums">{usd(items.reduce((s, o) => s + o.cost, 0))}</span>}
+            {costOf(items.reduce((s, o) => s + o.cost, 0), node) && <span className="tabular-nums">{costOf(items.reduce((s, o) => s + o.cost, 0), node)}</span>}
           </div>
           <div className="flex flex-wrap gap-1.5">
             {items.map((o) => (
-              <button key={o.id} type="button" disabled={readOnly} onClick={() => actions.selectOutput(node.id, o.id)}
-                className={cx("overflow-hidden rounded-xl border-2 bg-fill-2 text-[11px] font-semibold text-muted", o.selected ? "border-ink" : "border-transparent",
+              <button key={o.id} type="button" onClick={() => ui.openLightbox(node.id, o.id)} aria-pressed={o.selected}
+                title={[o.selected ? t("lightbox.inUse") : null, costOf(o.cost, node)].filter(Boolean).join(" · ") || undefined}
+                className={cx("overflow-hidden rounded-xl border-2 bg-fill-2 text-[11px] font-semibold text-muted transition-colors duration-150", o.selected ? "border-ink" : "border-transparent hover:border-black/20",
                   o.media ? "h-14 w-14" : "w-full px-2.5 py-1.5 text-start font-normal")}>
                 {o.media?.kind === "image" ? (
                   // eslint-disable-next-line @next/next/no-img-element

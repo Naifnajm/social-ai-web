@@ -189,7 +189,10 @@
   "defaultModel": "Provider default",
   "noModels": "No AI provider for this kind yet — add one in Settings.",
   "estimate": "About {cost} per run",
-  "free": "Free"
+  "free": "Free",
+  "inputs": "Inputs",
+  "noInputs": "Nothing linked yet: drag a result onto an input on the left of this block.",
+  "unlink": "Remove the link from {name}"
  },
  "design": {
   "title": "Design editor",
@@ -247,6 +250,168 @@
   "ownSound": "Makes its own sound",
   "euLimited": "May not be available in the EU",
   "voiceOver": "Replace the model's sound with an ElevenLabs voice-over",
-  "voiceOverHint": "The clip's own audio is swapped for a voice-over written for your idea."
+  "voiceOverHint": "The clip's own audio is swapped for a voice-over written for your idea.",
+  "costCredits": "≈ {amount} credits for {seconds} s"
+ },
+ "states": {
+  "idle": "Ready",
+  "queued": "Queued",
+  "running": "Running",
+  "waiting": "Waiting for approval",
+  "done": "Done",
+  "failed": "Failed"
+ },
+ "creditsAmount": "{amount} credits",
+ "approxCredits": "≈ {amount} credits",
+ "spent": "What the last run cost",
+ "estimateHint": "Estimated price of one run",
+ "openSettings": "Open AI settings",
+ "addBlock": "Add block",
+ "toolbar": "Blocks",
+ "stop": "Stop",
+ "stopHint": "Stop the run (Esc Esc)",
+ "stopped": "Run stopped.",
+ "progress": "{done}/{total} done",
+ "progressRunning": "{count} running",
+ "runOnlyHint": "Run this block only, without the blocks after it",
+ "clipboardUnavailable": "Copying is not available in this browser.",
+ "nothingToPaste": "Nothing to paste: select blocks and press Ctrl+C first.",
+ "emptyTextViewer": "No blocks yet. Someone with edit rights can add them.",
+ "empty": {
+  "addText": "Add a text block",
+  "template": "Start from a template",
+  "dragHint": "…or drag a block from the toolbar below, or drop a photo or video here.",
+  "dragHintPhone": "…or tap “Add block” below."
+ },
+ "tip": {
+  "link": "Link blocks: drag from the dot on the right of a block (its result) to an input on the left of another block.",
+  "ok": "Got it"
+ },
+ "handles": {
+  "out": "Result — drag it to an input of another block"
+ },
+ "wallet": {
+  "available": "{amount} credits",
+  "unlimited": "Unlimited AI",
+  "hint": "AI credits available — buy more",
+  "notEnough": "Not enough AI credits for this run — buy more"
+ },
+ "kindDescriptions": {
+  "text": "A topic, a script or a caption",
+  "llm": "Writes or rewrites text",
+  "upload": "Your photo, video or audio",
+  "image": "Creates or edits an image",
+  "video": "Makes a video or animates an image",
+  "audio": "Voice-over, sound effect or music",
+  "merge": "Puts audio tracks on a video or image",
+  "design": "Headline and logo in your brand",
+  "template": "Frames a photo with a brand template",
+  "reframe": "Resizes for every network",
+  "captions": "Transcribes and burns in subtitles",
+  "approval": "Someone approves before it goes on",
+  "post": "Creates, schedules or publishes the post"
+ },
+ "menu": {
+  "label": "Block actions",
+  "runOnly": "Run only this",
+  "runOnlyThese": "{count, plural, one {Run only this block} other {Run only these # blocks}}",
+  "openResult": "Open the result",
+  "tidy": "Tidy up",
+  "pasteHere": "Paste here",
+  "addBlock": "Add a block here",
+  "selectAll": "Select all",
+  "fit": "Fit to screen"
+ },
+ "picker": {
+  "linkTitle": "Add a linked block",
+  "none": "No block can be linked here."
+ },
+ "preflight": {
+  "titleAll": "Run the whole board?",
+  "titleFrom": "Run from here?",
+  "titleOnly": "{count, plural, one {Run this block only?} other {Run these # blocks only?}}",
+  "run": "Run",
+  "runAnyway": "Run anyway",
+  "cost": "Estimated price",
+  "blocks": "Blocks to run",
+  "available": "Available: {amount} credits",
+  "unlimited": "Your plan's AI is unlimited.",
+  "buy": "Buy credits",
+  "notEnough": "This run needs more AI credits than you have left: it will stop when they run out.",
+  "emptyText": "{count, plural, one {# text block is empty} other {# text blocks are empty}}",
+  "show": "Show",
+  "missingTitle": "An AI provider is missing",
+  "missingText": "Some blocks need an AI provider that can do the job. Add one in the AI settings, then run again.",
+  "missingTextMember": "Some blocks need an AI provider that can do the job. Ask an admin of the workspace to add one.",
+  "openProviders": "Open AI providers",
+  "capabilities": {
+   "text": "Writing text",
+   "image": "Images",
+   "video": "Videos",
+   "audio": "Voice and sound",
+   "stt": "Speech to text"
+  }
+ },
+ "summary": {
+  "done": "{count, plural, =0 {Nothing done} one {# done} other {# done}}",
+  "failed": "{count, plural, one {# failed} other {# failed}}",
+  "stopped": "{count, plural, one {# stopped} other {# stopped}}",
+  "showFailed": "Show failed",
+  "dismiss": "Dismiss"
+ },
+ "search": {
+  "title": "Find a block",
+  "placeholder": "Block or group name…",
+  "none": "No block matches."
+ },
+ "lightbox": {
+  "open": "View larger",
+  "title": "Results of {name}",
+  "version": "Version {n}",
+  "versions": "Versions",
+  "position": "{n} of {total}",
+  "inUse": "In use",
+  "use": "Use this version",
+  "compare": "Compare",
+  "download": "Download",
+  "previous": "Previous",
+  "next": "Next"
+ },
+ "shortcuts": {
+  "title": "Keyboard shortcuts",
+  "scroll": "Scroll",
+  "click": "Click",
+  "rightClick": "Right-click",
+  "runSelection": "Run the selection (or all)",
+  "stop": "Stop the run",
+  "undo": "Undo",
+  "redo": "Redo",
+  "copy": "Copy",
+  "paste": "Paste at the pointer",
+  "duplicate": "Duplicate",
+  "delete": "Delete",
+  "selectAll": "Select all",
+  "group": "Group",
+  "search": "Find a block",
+  "fit": "Fit to screen",
+  "tidy": "Tidy up",
+  "pan": "Move around",
+  "zoom": "Zoom (or pinch)",
+  "multi": "Add to the selection",
+  "menu": "More actions",
+  "help": "This list"
+ },
+ "a11y": {
+  "block": "{name}, {kind} block, {state}",
+  "link": "Link from {from} to {to} ({port})",
+  "nodeHelp": "Press Enter or Space to select the block, Delete to remove it, Escape to cancel.",
+  "nodeHelpKeyboard": "Press Enter or Space to select the block, then the arrow keys to move it. Delete removes it, Escape cancels.",
+  "edgeHelp": "Press Enter or Space to select the link, then Delete to remove it.",
+  "controls": "Zoom controls",
+  "zoomIn": "Zoom in",
+  "zoomOut": "Zoom out",
+  "fitView": "Fit to screen",
+  "minimap": "Overview map",
+  "handle": "Link point"
  }
 }

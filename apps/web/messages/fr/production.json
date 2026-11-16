@@ -15,6 +15,173 @@
   "ownSound": "Génère son propre son",
   "euLimited": "Peut ne pas être disponible dans l’UE",
   "voiceOver": "Remplacer le son du modèle par une voix off ElevenLabs",
-  "voiceOverHint": "Le son d’origine du clip est remplacé par une voix off écrite pour votre idée."
+  "voiceOverHint": "Le son d’origine du clip est remplacé par une voix off écrite pour votre idée.",
+  "costCredits": "≈ {amount} crédits pour {seconds} s"
+ },
+ "states": {
+  "idle": "Prêt",
+  "queued": "En file d’attente",
+  "running": "En cours",
+  "waiting": "En attente de validation",
+  "done": "Terminé",
+  "failed": "Échec"
+ },
+ "creditsAmount": "{amount} crédits",
+ "approxCredits": "≈ {amount} crédits",
+ "spent": "Coût de la dernière exécution",
+ "estimateHint": "Prix estimé d’une exécution",
+ "openSettings": "Ouvrir les réglages IA",
+ "addBlock": "Ajouter un bloc",
+ "toolbar": "Blocs",
+ "stop": "Arrêter",
+ "stopHint": "Arrêter l’exécution (Échap Échap)",
+ "stopped": "Exécution arrêtée.",
+ "progress": "{done}/{total} terminés",
+ "progressRunning": "{count} en cours",
+ "runOnlyHint": "Exécuter ce bloc seul, sans les blocs qui suivent",
+ "clipboardUnavailable": "La copie n’est pas disponible dans ce navigateur.",
+ "nothingToPaste": "Rien à coller : sélectionnez d’abord des blocs et appuyez sur Ctrl+C.",
+ "emptyTextViewer": "Aucun bloc pour l’instant. Une personne pouvant modifier peut en ajouter.",
+ "empty": {
+  "addText": "Ajouter un bloc de texte",
+  "template": "Partir d’un modèle",
+  "dragHint": "…ou faites glisser un bloc depuis la barre ci-dessous, ou déposez une photo ou une vidéo ici.",
+  "dragHintPhone": "…ou touchez « Ajouter un bloc » ci-dessous."
+ },
+ "tip": {
+  "link": "Reliez les blocs : faites glisser le point à droite d’un bloc (son résultat) vers une entrée à gauche d’un autre bloc.",
+  "ok": "Compris"
+ },
+ "handles": {
+  "out": "Résultat — faites-le glisser vers une entrée d’un autre bloc"
+ },
+ "wallet": {
+  "available": "{amount} crédits",
+  "unlimited": "IA illimitée",
+  "hint": "Crédits IA disponibles — en acheter",
+  "notEnough": "Pas assez de crédits IA pour cette exécution — en acheter"
+ },
+ "kindDescriptions": {
+  "text": "Un sujet, un script ou une légende",
+  "llm": "Écrit ou réécrit du texte",
+  "upload": "Votre photo, vidéo ou audio",
+  "image": "Crée ou retouche une image",
+  "video": "Crée une vidéo ou anime une image",
+  "audio": "Voix off, effet sonore ou musique",
+  "merge": "Pose des pistes audio sur une vidéo ou une image",
+  "design": "Titre et logo aux couleurs de votre marque",
+  "template": "Encadre une photo avec un modèle de marque",
+  "reframe": "Adapte le format à chaque réseau",
+  "captions": "Transcrit et incruste les sous-titres",
+  "approval": "Quelqu’un valide avant de continuer",
+  "post": "Crée, planifie ou publie la publication"
+ },
+ "menu": {
+  "label": "Actions du bloc",
+  "runOnly": "Exécuter seulement celui-ci",
+  "runOnlyThese": "{count, plural, one {Exécuter seulement ce bloc} other {Exécuter seulement ces # blocs}}",
+  "openResult": "Ouvrir le résultat",
+  "tidy": "Ranger",
+  "pasteHere": "Coller ici",
+  "addBlock": "Ajouter un bloc ici",
+  "selectAll": "Tout sélectionner",
+  "fit": "Ajuster à l’écran"
+ },
+ "picker": {
+  "linkTitle": "Ajouter un bloc relié",
+  "none": "Aucun bloc ne peut être relié ici."
+ },
+ "preflight": {
+  "titleAll": "Exécuter tout le tableau ?",
+  "titleFrom": "Exécuter à partir d’ici ?",
+  "titleOnly": "{count, plural, one {Exécuter seulement ce bloc ?} other {Exécuter seulement ces # blocs ?}}",
+  "run": "Exécuter",
+  "runAnyway": "Exécuter quand même",
+  "cost": "Prix estimé",
+  "blocks": "Blocs à exécuter",
+  "available": "Disponible : {amount} crédits",
+  "unlimited": "L’IA de votre forfait est illimitée.",
+  "buy": "Acheter des crédits",
+  "notEnough": "Cette exécution demande plus de crédits IA qu’il ne vous en reste : elle s’arrêtera quand ils seront épuisés.",
+  "emptyText": "{count, plural, one {# bloc de texte est vide} other {# blocs de texte sont vides}}",
+  "show": "Afficher",
+  "missingTitle": "Il manque un fournisseur d’IA",
+  "missingText": "Certains blocs ont besoin d’un fournisseur d’IA capable de faire ce travail. Ajoutez-en un dans les réglages IA, puis relancez.",
+  "missingTextMember": "Certains blocs ont besoin d’un fournisseur d’IA capable de faire ce travail. Demandez à un administrateur de l’espace d’en ajouter un.",
+  "openProviders": "Ouvrir les fournisseurs d’IA",
+  "capabilities": {
+   "text": "Rédaction",
+   "image": "Images",
+   "video": "Vidéos",
+   "audio": "Voix et son",
+   "stt": "Transcription"
+  }
+ },
+ "summary": {
+  "done": "{count, plural, =0 {Rien de terminé} one {# terminé} other {# terminés}}",
+  "failed": "{count, plural, one {# en échec} other {# en échec}}",
+  "stopped": "{count, plural, one {# arrêté} other {# arrêtés}}",
+  "showFailed": "Voir les échecs",
+  "dismiss": "Fermer"
+ },
+ "search": {
+  "title": "Trouver un bloc",
+  "placeholder": "Nom du bloc ou du groupe…",
+  "none": "Aucun bloc ne correspond."
+ },
+ "lightbox": {
+  "open": "Agrandir",
+  "title": "Résultats de {name}",
+  "version": "Version {n}",
+  "versions": "Versions",
+  "position": "{n} sur {total}",
+  "inUse": "Utilisée",
+  "use": "Utiliser cette version",
+  "compare": "Comparer",
+  "download": "Télécharger",
+  "previous": "Précédente",
+  "next": "Suivante"
+ },
+ "shortcuts": {
+  "title": "Raccourcis clavier",
+  "scroll": "Défilement",
+  "click": "Clic",
+  "rightClick": "Clic droit",
+  "runSelection": "Exécuter la sélection (ou tout)",
+  "stop": "Arrêter l’exécution",
+  "undo": "Annuler",
+  "redo": "Rétablir",
+  "copy": "Copier",
+  "paste": "Coller sous le pointeur",
+  "duplicate": "Dupliquer",
+  "delete": "Supprimer",
+  "selectAll": "Tout sélectionner",
+  "group": "Grouper",
+  "search": "Trouver un bloc",
+  "fit": "Ajuster à l’écran",
+  "tidy": "Ranger",
+  "pan": "Se déplacer",
+  "zoom": "Zoomer (ou pincer)",
+  "multi": "Ajouter à la sélection",
+  "menu": "Plus d’actions",
+  "help": "Cette liste"
+ },
+ "a11y": {
+  "block": "{name}, bloc {kind}, {state}",
+  "link": "Lien de {from} vers {to} ({port})",
+  "nodeHelp": "Appuyez sur Entrée ou Espace pour sélectionner le bloc, Suppr pour le supprimer, Échap pour annuler.",
+  "nodeHelpKeyboard": "Appuyez sur Entrée ou Espace pour sélectionner le bloc, puis déplacez-le avec les flèches. Suppr le supprime, Échap annule.",
+  "edgeHelp": "Appuyez sur Entrée ou Espace pour sélectionner le lien, puis Suppr pour le retirer.",
+  "controls": "Commandes de zoom",
+  "zoomIn": "Zoom avant",
+  "zoomOut": "Zoom arrière",
+  "fitView": "Ajuster à l’écran",
+  "minimap": "Vue d’ensemble",
+  "handle": "Point de liaison"
+ },
+ "inspector": {
+  "inputs": "Entrées",
+  "noInputs": "Rien n’est relié : faites glisser un résultat sur une entrée à gauche de ce bloc.",
+  "unlink": "Retirer le lien depuis {name}"
  }
 }

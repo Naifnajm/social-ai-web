@@ -60,3 +60,61 @@ export function aspectBox(aspect: string, size = 26) {
 }
 
 export const isRunning = (state: string) => state === "queued" || state === "running";
+
+/** Grid of the canvas background; blocks snap to it while dragged. */
+export const GRID = 22;
+/** Below this zoom the blocks are drawn as compact cards (icon, name, state, thumbnail). */
+export const COMPACT_ZOOM = 0.55;
+/** Runs cheaper than this start without a confirmation (the checks still run). */
+export const CONFIRM_FROM_USD = 0.05;
+
+/** A stand-in block of `kind`, to test links to/from a block that does not exist yet. */
+export function sampleBlock(kinds: Kind[], kind: string): BlockNode {
+  const output = kinds.find((k) => k.key === kind)?.output ?? null;
+  return { id: -1, kind, out_type: output } as BlockNode;
+}
+
+/** Kinds that can be linked to a dragged link: from a block's output (`source`) or into a block's port (`target`). */
+export function compatibleKinds(kinds: Kind[], from: BlockNode, handleType: "source" | "target", port?: string | null): string[] {
+  return TOOLBAR_KINDS.filter((kind) => {
+    const sample = sampleBlock(kinds, kind);
+    return handleType === "source" ? !!pickPort(kinds, from, sample) : !!pickPort(kinds, sample, from, port);
+  });
+}
+
+/** Simple left → right layout: one column per depth in the graph, blocks keep their vertical order. */
+export function tidyLayout(
+  nodes: { id: number; x: number; y: number; height: number }[],
+  edges: { source: number; target: number }[],
+  gapX = 96, gapY = 44,
+): Record<number, [number, number]> {
+  if (!nodes.length) return {};
+  const ids = new Set(nodes.map((n) => n.id));
+  const ups = new Map<number, number[]>();
+  for (const e of edges) if (ids.has(e.source) && ids.has(e.target)) ups.set(e.target, [...(ups.get(e.target) || []), e.source]);
+  const depth = new Map<number, number>();
+  const visit = (id: number, trail: Set<number>): number => {
+    if (depth.has(id)) return depth.get(id)!;
+    if (trail.has(id)) return 0;
+    trail.add(id);
+    const d = Math.max(-1, ...(ups.get(id) || []).map((up) => visit(up, trail))) + 1;
+    trail.delete(id);
+    depth.set(id, d);
+    return d;
+  };
+  nodes.forEach((n) => visit(n.id, new Set()));
+  const left = Math.min(...nodes.map((n) => n.x));
+  const top = Math.min(...nodes.map((n) => n.y));
+  const columns = new Map<number, typeof nodes>();
+  for (const n of nodes) columns.set(depth.get(n.id)!, [...(columns.get(depth.get(n.id)!) || []), n]);
+  const snap = (v: number) => Math.round(v / GRID) * GRID;
+  const out: Record<number, [number, number]> = {};
+  for (const [d, column] of columns) {
+    let y = top;
+    for (const n of [...column].sort((a, b) => a.y - b.y || a.x - b.x)) {
+      out[n.id] = [snap(left + d * (NODE_W + gapX)), snap(y)];
+      y += n.height + gapY;
+    }
+  }
+  return out;
+}

@@ -15,6 +15,173 @@
   "ownSound": "Erzeugt eigenen Ton",
   "euLimited": "In der EU möglicherweise nicht verfügbar",
   "voiceOver": "Ton des Modells durch einen ElevenLabs-Sprecher ersetzen",
-  "voiceOverHint": "Der eigene Ton des Clips wird durch einen Sprechertext ersetzt, der für deine Idee geschrieben wird."
+  "voiceOverHint": "Der eigene Ton des Clips wird durch einen Sprechertext ersetzt, der für deine Idee geschrieben wird.",
+  "costCredits": "≈ {amount} Credits für {seconds} s"
+ },
+ "states": {
+  "idle": "Bereit",
+  "queued": "In der Warteschlange",
+  "running": "Läuft",
+  "waiting": "Wartet auf Freigabe",
+  "done": "Fertig",
+  "failed": "Fehlgeschlagen"
+ },
+ "creditsAmount": "{amount} Credits",
+ "approxCredits": "≈ {amount} Credits",
+ "spent": "Kosten des letzten Laufs",
+ "estimateHint": "Geschätzter Preis eines Laufs",
+ "openSettings": "KI-Einstellungen öffnen",
+ "addBlock": "Block hinzufügen",
+ "toolbar": "Blöcke",
+ "stop": "Stoppen",
+ "stopHint": "Lauf stoppen (Esc Esc)",
+ "stopped": "Lauf gestoppt.",
+ "progress": "{done}/{total} fertig",
+ "progressRunning": "{count} laufen",
+ "runOnlyHint": "Nur diesen Block ausführen, ohne die folgenden Blöcke",
+ "clipboardUnavailable": "Kopieren ist in diesem Browser nicht verfügbar.",
+ "nothingToPaste": "Nichts zum Einfügen: Wähle zuerst Blöcke aus und drücke Strg+C.",
+ "emptyTextViewer": "Noch keine Blöcke. Personen mit Bearbeitungsrechten können sie hinzufügen.",
+ "empty": {
+  "addText": "Textblock hinzufügen",
+  "template": "Mit einer Vorlage beginnen",
+  "dragHint": "…oder ziehe einen Block aus der Leiste unten oder lege hier ein Foto oder Video ab.",
+  "dragHintPhone": "…oder tippe unten auf „Block hinzufügen“."
+ },
+ "tip": {
+  "link": "Blöcke verbinden: Ziehe vom Punkt rechts an einem Block (sein Ergebnis) zu einem Eingang links an einem anderen Block.",
+  "ok": "Verstanden"
+ },
+ "handles": {
+  "out": "Ergebnis — zu einem Eingang eines anderen Blocks ziehen"
+ },
+ "wallet": {
+  "available": "{amount} Credits",
+  "unlimited": "Unbegrenzte KI",
+  "hint": "Verfügbare KI-Credits — mehr kaufen",
+  "notEnough": "Nicht genug KI-Credits für diesen Lauf — mehr kaufen"
+ },
+ "kindDescriptions": {
+  "text": "Ein Thema, ein Skript oder eine Bildunterschrift",
+  "llm": "Schreibt oder überarbeitet Text",
+  "upload": "Dein Foto, Video oder Audio",
+  "image": "Erstellt oder bearbeitet ein Bild",
+  "video": "Erstellt ein Video oder animiert ein Bild",
+  "audio": "Voice-over, Soundeffekt oder Musik",
+  "merge": "Legt Tonspuren auf ein Video oder Bild",
+  "design": "Überschrift und Logo im Markendesign",
+  "template": "Rahmt ein Foto mit einer Markenvorlage",
+  "reframe": "Passt das Format für jedes Netzwerk an",
+  "captions": "Transkribiert und brennt Untertitel ein",
+  "approval": "Jemand gibt frei, bevor es weitergeht",
+  "post": "Erstellt, plant oder veröffentlicht den Beitrag"
+ },
+ "menu": {
+  "label": "Blockaktionen",
+  "runOnly": "Nur diesen ausführen",
+  "runOnlyThese": "{count, plural, one {Nur diesen Block ausführen} other {Nur diese # Blöcke ausführen}}",
+  "openResult": "Ergebnis öffnen",
+  "tidy": "Aufräumen",
+  "pasteHere": "Hier einfügen",
+  "addBlock": "Hier einen Block hinzufügen",
+  "selectAll": "Alles auswählen",
+  "fit": "An Bildschirm anpassen"
+ },
+ "picker": {
+  "linkTitle": "Verbundenen Block hinzufügen",
+  "none": "Hier lässt sich kein Block verbinden."
+ },
+ "preflight": {
+  "titleAll": "Das ganze Board ausführen?",
+  "titleFrom": "Ab hier ausführen?",
+  "titleOnly": "{count, plural, one {Nur diesen Block ausführen?} other {Nur diese # Blöcke ausführen?}}",
+  "run": "Ausführen",
+  "runAnyway": "Trotzdem ausführen",
+  "cost": "Geschätzter Preis",
+  "blocks": "Auszuführende Blöcke",
+  "available": "Verfügbar: {amount} Credits",
+  "unlimited": "Die KI in deinem Tarif ist unbegrenzt.",
+  "buy": "Credits kaufen",
+  "notEnough": "Dieser Lauf braucht mehr KI-Credits, als dir bleiben: Er stoppt, wenn sie aufgebraucht sind.",
+  "emptyText": "{count, plural, one {# Textblock ist leer} other {# Textblöcke sind leer}}",
+  "show": "Anzeigen",
+  "missingTitle": "Ein KI-Anbieter fehlt",
+  "missingText": "Einige Blöcke brauchen einen KI-Anbieter, der diese Aufgabe erledigen kann. Füge einen in den KI-Einstellungen hinzu und starte erneut.",
+  "missingTextMember": "Einige Blöcke brauchen einen KI-Anbieter, der diese Aufgabe erledigen kann. Bitte eine Admin-Person des Workspace, einen hinzuzufügen.",
+  "openProviders": "KI-Anbieter öffnen",
+  "capabilities": {
+   "text": "Texte schreiben",
+   "image": "Bilder",
+   "video": "Videos",
+   "audio": "Stimme und Ton",
+   "stt": "Sprache zu Text"
+  }
+ },
+ "summary": {
+  "done": "{count, plural, =0 {Nichts fertig} one {# fertig} other {# fertig}}",
+  "failed": "{count, plural, one {# fehlgeschlagen} other {# fehlgeschlagen}}",
+  "stopped": "{count, plural, one {# gestoppt} other {# gestoppt}}",
+  "showFailed": "Fehlgeschlagene zeigen",
+  "dismiss": "Schließen"
+ },
+ "search": {
+  "title": "Block suchen",
+  "placeholder": "Name des Blocks oder der Gruppe…",
+  "none": "Kein passender Block."
+ },
+ "lightbox": {
+  "open": "Größer ansehen",
+  "title": "Ergebnisse von {name}",
+  "version": "Version {n}",
+  "versions": "Versionen",
+  "position": "{n} von {total}",
+  "inUse": "In Verwendung",
+  "use": "Diese Version verwenden",
+  "compare": "Vergleichen",
+  "download": "Herunterladen",
+  "previous": "Zurück",
+  "next": "Weiter"
+ },
+ "shortcuts": {
+  "title": "Tastenkürzel",
+  "scroll": "Scrollen",
+  "click": "Klick",
+  "rightClick": "Rechtsklick",
+  "runSelection": "Auswahl ausführen (oder alles)",
+  "stop": "Lauf stoppen",
+  "undo": "Rückgängig",
+  "redo": "Wiederholen",
+  "copy": "Kopieren",
+  "paste": "Am Zeiger einfügen",
+  "duplicate": "Duplizieren",
+  "delete": "Löschen",
+  "selectAll": "Alles auswählen",
+  "group": "Gruppieren",
+  "search": "Block suchen",
+  "fit": "An Bildschirm anpassen",
+  "tidy": "Aufräumen",
+  "pan": "Verschieben",
+  "zoom": "Zoomen (oder Zwei-Finger-Geste)",
+  "multi": "Zur Auswahl hinzufügen",
+  "menu": "Weitere Aktionen",
+  "help": "Diese Liste"
+ },
+ "a11y": {
+  "block": "{name}, Block {kind}, {state}",
+  "link": "Verbindung von {from} zu {to} ({port})",
+  "nodeHelp": "Enter oder Leertaste wählt den Block aus, Entf löscht ihn, Escape bricht ab.",
+  "nodeHelpKeyboard": "Enter oder Leertaste wählt den Block aus, mit den Pfeiltasten verschiebst du ihn. Entf löscht, Escape bricht ab.",
+  "edgeHelp": "Enter oder Leertaste wählt die Verbindung aus, Entf entfernt sie.",
+  "controls": "Zoom-Steuerung",
+  "zoomIn": "Vergrößern",
+  "zoomOut": "Verkleinern",
+  "fitView": "An Bildschirm anpassen",
+  "minimap": "Übersichtskarte",
+  "handle": "Verbindungspunkt"
+ },
+ "inspector": {
+  "inputs": "Eingänge",
+  "noInputs": "Noch nichts verbunden: Ziehe ein Ergebnis auf einen Eingang links an diesem Block.",
+  "unlink": "Verbindung von {name} entfernen"
  }
 }

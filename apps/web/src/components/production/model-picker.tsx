@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Select } from "@/components/ui";
 import { api } from "@/lib/api";
+import { credits } from "@/lib/ai";
 import { usd } from "./meta";
 import type { Estimate, PickerGroup } from "./types";
 
@@ -52,8 +53,10 @@ export function ModelPicker({ capability, value, fallback, estimate, onChange, d
       {!groups.length && <span className="text-xs text-muted">{t("inspector.noModels")}</span>}
       {estimate && (
         <span className="text-xs text-muted">
-          {estimate.cost > 0 ? t("inspector.estimate", { cost: usd(estimate.cost) }) : t("inspector.free")}
-          {estimate.model ? <span className="font-mono" dir="ltr"> · {estimate.model}</span> : null}
+          {estimate.cost > 0
+            ? t("inspector.estimate", { cost: estimate.credits != null ? `${t("creditsAmount", { amount: credits(estimate.credits) })} (${usd(estimate.cost)})` : usd(estimate.cost) })
+            : t("inspector.free")}
+          {estimate.model ? <> · <bdi className="font-mono" dir="ltr">{estimate.model}</bdi></> : null}
         </span>
       )}
     </div>

@@ -20,6 +20,7 @@ function fail(err: unknown): never {
 export function useBoard(boardId: number) {
   const qc = useQueryClient();
   const key = useMemo(() => boardKey(boardId), [boardId]);
+  // React Query keeps the identity of unchanged parts (structural sharing), so memoised blocks skip re-rendering
   const query = useQuery({ queryKey: key, queryFn: () => api.get<Graph>(`/production/boards/${boardId}`) });
   const busy = !!query.data?.busy;
 
@@ -120,7 +121,7 @@ export function useBoard(boardId: number) {
       setGraph((g) => ({ ...g, groups: g.groups.map((x) => (x.id === id ? group : x)) }));
     },
     async ungroup(id: number) {
-      await api.delete(`/production/groups/${id}`).catch(fail);
+      await api.delete<number[]>(`/production/groups/${id}`).catch(fail);
       setGraph((g) => ({
         ...g,
         groups: g.groups.filter((x) => x.id !== id),
@@ -148,8 +149,13 @@ export function useBoard(boardId: number) {
         return fail(err);
       }
     },
-    estimate(nodeIds?: number[] | null, force = false) {
-      return api.get<RunEstimate>(`/production/boards/${boardId}/estimate`, { node_ids: nodeIds || undefined, force });
+    estimate(nodeIds?: number[] | null, opts: { force?: boolean; downstream?: boolean } = {}) {
+      return api.get<RunEstimate>(`/production/boards/${boardId}/estimate`, {
+        node_ids: nodeIds || undefined, force: !!opts.force, downstream: opts.downstream ?? true,
+      });
+    },
+    async stop() {
+      replaceGraph(await api.post<Graph>(`/production/boards/${boardId}/stop`).catch(fail));
     },
     async selectOutput(nodeId: number, outputId: number) {
       putNode(await api.post<BlockNode>(`/production/nodes/${nodeId}/select-output`, { output_id: outputId }).catch(fail));

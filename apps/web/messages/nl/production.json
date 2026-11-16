@@ -15,6 +15,173 @@
   "ownSound": "Maakt zelf geluid",
   "euLimited": "Mogelijk niet beschikbaar in de EU",
   "voiceOver": "Het geluid van het model vervangen door een ElevenLabs-voice-over",
-  "voiceOverHint": "Het eigen geluid van de clip wordt vervangen door een voice-over die voor je idee is geschreven."
+  "voiceOverHint": "Het eigen geluid van de clip wordt vervangen door een voice-over die voor je idee is geschreven.",
+  "costCredits": "≈ {amount} credits voor {seconds} s"
+ },
+ "states": {
+  "idle": "Klaar",
+  "queued": "In de wachtrij",
+  "running": "Bezig",
+  "waiting": "Wacht op goedkeuring",
+  "done": "Gereed",
+  "failed": "Mislukt"
+ },
+ "creditsAmount": "{amount} credits",
+ "approxCredits": "≈ {amount} credits",
+ "spent": "Kosten van de laatste run",
+ "estimateHint": "Geschatte prijs van één run",
+ "openSettings": "AI-instellingen openen",
+ "addBlock": "Blok toevoegen",
+ "toolbar": "Blokken",
+ "stop": "Stoppen",
+ "stopHint": "De run stoppen (Esc Esc)",
+ "stopped": "Run gestopt.",
+ "progress": "{done}/{total} gereed",
+ "progressRunning": "{count} bezig",
+ "runOnlyHint": "Alleen dit blok uitvoeren, zonder de blokken erna",
+ "clipboardUnavailable": "Kopiëren is niet beschikbaar in deze browser.",
+ "nothingToPaste": "Niets om te plakken: selecteer eerst blokken en druk op Ctrl+C.",
+ "emptyTextViewer": "Nog geen blokken. Iemand met bewerkrechten kan ze toevoegen.",
+ "empty": {
+  "addText": "Een tekstblok toevoegen",
+  "template": "Beginnen met een sjabloon",
+  "dragHint": "…of sleep een blok uit de balk hieronder, of zet hier een foto of video neer.",
+  "dragHintPhone": "…of tik hieronder op ‘Blok toevoegen’."
+ },
+ "tip": {
+  "link": "Blokken koppelen: sleep van de stip rechts van een blok (het resultaat) naar een invoer links van een ander blok.",
+  "ok": "Begrepen"
+ },
+ "handles": {
+  "out": "Resultaat — sleep het naar een invoer van een ander blok"
+ },
+ "wallet": {
+  "available": "{amount} credits",
+  "unlimited": "Onbeperkte AI",
+  "hint": "Beschikbare AI-credits — meer kopen",
+  "notEnough": "Niet genoeg AI-credits voor deze run — meer kopen"
+ },
+ "kindDescriptions": {
+  "text": "Een onderwerp, script of bijschrift",
+  "llm": "Schrijft of herschrijft tekst",
+  "upload": "Je eigen foto, video of audio",
+  "image": "Maakt of bewerkt een afbeelding",
+  "video": "Maakt een video of animeert een afbeelding",
+  "audio": "Voice-over, geluidseffect of muziek",
+  "merge": "Zet audiosporen op een video of afbeelding",
+  "design": "Kop en logo in je huisstijl",
+  "template": "Plaatst een foto in een merksjabloon",
+  "reframe": "Past het formaat aan voor elk netwerk",
+  "captions": "Transcribeert en brandt ondertitels in",
+  "approval": "Iemand keurt goed voordat het verdergaat",
+  "post": "Maakt, plant of publiceert het bericht"
+ },
+ "menu": {
+  "label": "Blokacties",
+  "runOnly": "Alleen dit uitvoeren",
+  "runOnlyThese": "{count, plural, one {Alleen dit blok uitvoeren} other {Alleen deze # blokken uitvoeren}}",
+  "openResult": "Resultaat openen",
+  "tidy": "Opruimen",
+  "pasteHere": "Hier plakken",
+  "addBlock": "Hier een blok toevoegen",
+  "selectAll": "Alles selecteren",
+  "fit": "Passend maken"
+ },
+ "picker": {
+  "linkTitle": "Gekoppeld blok toevoegen",
+  "none": "Hier kan geen blok worden gekoppeld."
+ },
+ "preflight": {
+  "titleAll": "Het hele bord uitvoeren?",
+  "titleFrom": "Vanaf hier uitvoeren?",
+  "titleOnly": "{count, plural, one {Alleen dit blok uitvoeren?} other {Alleen deze # blokken uitvoeren?}}",
+  "run": "Uitvoeren",
+  "runAnyway": "Toch uitvoeren",
+  "cost": "Geschatte prijs",
+  "blocks": "Uit te voeren blokken",
+  "available": "Beschikbaar: {amount} credits",
+  "unlimited": "De AI in je abonnement is onbeperkt.",
+  "buy": "Credits kopen",
+  "notEnough": "Deze run heeft meer AI-credits nodig dan je nog hebt: hij stopt wanneer ze op zijn.",
+  "emptyText": "{count, plural, one {# tekstblok is leeg} other {# tekstblokken zijn leeg}}",
+  "show": "Tonen",
+  "missingTitle": "Er ontbreekt een AI-provider",
+  "missingText": "Sommige blokken hebben een AI-provider nodig die deze taak kan doen. Voeg er een toe in de AI-instellingen en voer opnieuw uit.",
+  "missingTextMember": "Sommige blokken hebben een AI-provider nodig die deze taak kan doen. Vraag een beheerder van de werkruimte er een toe te voegen.",
+  "openProviders": "AI-providers openen",
+  "capabilities": {
+   "text": "Tekst schrijven",
+   "image": "Afbeeldingen",
+   "video": "Video's",
+   "audio": "Stem en geluid",
+   "stt": "Spraak naar tekst"
+  }
+ },
+ "summary": {
+  "done": "{count, plural, =0 {Niets gereed} one {# gereed} other {# gereed}}",
+  "failed": "{count, plural, one {# mislukt} other {# mislukt}}",
+  "stopped": "{count, plural, one {# gestopt} other {# gestopt}}",
+  "showFailed": "Mislukte tonen",
+  "dismiss": "Sluiten"
+ },
+ "search": {
+  "title": "Blok zoeken",
+  "placeholder": "Naam van blok of groep…",
+  "none": "Geen blok gevonden."
+ },
+ "lightbox": {
+  "open": "Groter bekijken",
+  "title": "Resultaten van {name}",
+  "version": "Versie {n}",
+  "versions": "Versies",
+  "position": "{n} van {total}",
+  "inUse": "In gebruik",
+  "use": "Deze versie gebruiken",
+  "compare": "Vergelijken",
+  "download": "Downloaden",
+  "previous": "Vorige",
+  "next": "Volgende"
+ },
+ "shortcuts": {
+  "title": "Sneltoetsen",
+  "scroll": "Scrollen",
+  "click": "Klik",
+  "rightClick": "Rechtsklik",
+  "runSelection": "Selectie uitvoeren (of alles)",
+  "stop": "De run stoppen",
+  "undo": "Ongedaan maken",
+  "redo": "Opnieuw",
+  "copy": "Kopiëren",
+  "paste": "Plakken bij de aanwijzer",
+  "duplicate": "Dupliceren",
+  "delete": "Verwijderen",
+  "selectAll": "Alles selecteren",
+  "group": "Groeperen",
+  "search": "Blok zoeken",
+  "fit": "Passend maken",
+  "tidy": "Opruimen",
+  "pan": "Verschuiven",
+  "zoom": "Zoomen (of knijpen)",
+  "multi": "Aan selectie toevoegen",
+  "menu": "Meer acties",
+  "help": "Deze lijst"
+ },
+ "a11y": {
+  "block": "{name}, blok {kind}, {state}",
+  "link": "Koppeling van {from} naar {to} ({port})",
+  "nodeHelp": "Druk op Enter of spatie om het blok te selecteren, Delete om het te verwijderen, Escape om te annuleren.",
+  "nodeHelpKeyboard": "Druk op Enter of spatie om het blok te selecteren en verplaats het met de pijltjestoetsen. Delete verwijdert, Escape annuleert.",
+  "edgeHelp": "Druk op Enter of spatie om de koppeling te selecteren en daarna op Delete om haar te verwijderen.",
+  "controls": "Zoomknoppen",
+  "zoomIn": "Inzoomen",
+  "zoomOut": "Uitzoomen",
+  "fitView": "Passend maken",
+  "minimap": "Overzichtskaart",
+  "handle": "Koppelpunt"
+ },
+ "inspector": {
+  "inputs": "Invoer",
+  "noInputs": "Nog niets gekoppeld: sleep een resultaat naar een invoer links van dit blok.",
+  "unlink": "Koppeling met {name} verwijderen"
  }
 }

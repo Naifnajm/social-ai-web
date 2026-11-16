@@ -1,22 +1,11 @@
 "use client";
-import { createContext, useContext } from "react";
-import type { BoardActions } from "./use-board";
-import type { Graph } from "./types";
-
-export type CanvasApi = {
-  graph: Graph;
-  actions: BoardActions;
-  readOnly: boolean;
-  select: (ids: number[]) => void;
-  openDesign: (nodeId: number) => void;
-  pickFile: (nodeId: number) => void;
-  runNode: (nodeId: number, force?: boolean) => void;
-};
-
-export const CanvasContext = createContext<CanvasApi | null>(null);
+/** Convenience hook for panels (inspector, approval, top bar): the graph, the API actions and the canvas callbacks.
+ * Blocks on the canvas subscribe to narrower slices of `useCanvasStore` instead. */
+import { useShallow } from "zustand/react/shallow";
+import { useCanvasStore } from "./store";
 
 export function useCanvas() {
-  const value = useContext(CanvasContext);
-  if (!value) throw new Error("useCanvas outside the production canvas");
-  return value;
+  const value = useCanvasStore(useShallow((s) => ({ graph: s.graph, actions: s.actions, readOnly: s.readOnly, ui: s.ui })));
+  if (!value.graph || !value.actions) throw new Error("useCanvas outside the production canvas");
+  return { ...value, graph: value.graph, actions: value.actions };
 }

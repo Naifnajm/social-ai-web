@@ -2,8 +2,20 @@
 import type { Shot } from "@/lib/ai";
 
 export type MediaRef = { id: number; filename: string; mimetype: string; kind: string; url: string; width?: number | null; height?: number | null };
-export type Estimate = { cost: number; model?: string | null };
-export type RunEstimate = { cost: number; reused: number; blocks: number };
+export type Estimate = { cost: number; model?: string | null; credits?: number | null };
+export type MissingProvider = { capability: string; node_ids: number[] };
+/** What a run would do (`GET /boards/{id}/estimate`, and `graph.run_all` for "run all"). */
+export type RunEstimate = {
+  cost: number;
+  reused: number;
+  blocks: number;
+  /** total in AI credits when the platform's AI is used, else null */
+  credits?: number | null;
+  /** AI credits the workspace can still spend (null: unlimited or own keys) */
+  credits_available?: number | null;
+  missing?: MissingProvider[];
+  empty_text?: number[];
+};
 export type OutputItem = {
   id: number;
   run: number;
@@ -141,4 +153,6 @@ export type VideoModelOption = {
   audio: boolean;
   eu_limited: boolean;
   recommended: boolean;
+  /** the price in AI credits when the platform's AI makes the clip */
+  credits?: number | null;
 };

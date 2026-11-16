@@ -329,6 +329,14 @@ def estimate(board_id: int, node_ids: list[int] | None = Query(default=None), do
     return engine.estimate_run(BoardGraph(ctx.db, board), node_ids, downstream, force)
 
 
+@router.post("/boards/{board_id}/stop", response_model=GraphOut)
+def stop(board_id: int, ctx: Ctx = Depends(editor)):
+    """Stop the running and queued blocks of the board."""
+    board = service.get_board(ctx.db, ctx.workspace.id, board_id)
+    engine.stop(ctx.db, board)
+    return _graph(ctx, board)
+
+
 @router.post("/boards/{board_id}/run", response_model=GraphOut)
 def run(board_id: int, data: RunIn, ctx: Ctx = Depends(editor)):
     """Run the board (or the given blocks and what depends on them). Unchanged blocks are reused for free

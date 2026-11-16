@@ -149,7 +149,8 @@ def node_dict(g: BoardGraph, node: Node, *, with_estimate: bool = True, user_id:
         "notice": node.notice, "output_text": node.output_text, "output": media_ref(g.media(node.output_media_id)),
         "outputs": [output_dict(g, node, o) for o in outputs], "run_no": node.run_no or 0, "post_id": node.post_id,
         "post_state": post_state, "out_type": engine.out_type(g, node), "cost": round(node.cost or 0, 4),
-        "estimate": {"cost": float(est.get("cost") or 0), "model": est.get("model")} if est else None,
+        "estimate": {"cost": float(est.get("cost") or 0), "model": est.get("model"),
+                     "credits": est.get("credits")} if est else None,
         "fresh": node.state == "done" and node.done_hash == engine.input_hash(g, node),
     }
 

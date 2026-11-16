@@ -21,12 +21,22 @@ class MediaRef(BaseModel):
 class Estimate(BaseModel):
     cost: float = 0.0
     model: str | None = None
+    credits: float | None = None  # the price in AI credits (platform AI)
+
+
+class MissingProvider(BaseModel):
+    capability: str
+    node_ids: list[int] = []
 
 
 class RunEstimate(BaseModel):
     cost: float = 0.0
     reused: int = 0
     blocks: int = 0
+    credits: float | None = None            # total in AI credits when the platform's AI is used
+    credits_available: float | None = None  # plan allowance left + bought credits (None: unlimited / own keys)
+    missing: list[MissingProvider] = []     # jobs no AI provider can do: the run would fail
+    empty_text: list[int] = []              # empty text blocks the run needs
 
 
 class OutputOut(BaseModel):

@@ -201,14 +201,20 @@ def inputs(g: BoardGraph, node: Node) -> tuple[list[str], list[Media]]:
     return texts, media
 
 
-def refresh_text_state(g: BoardGraph, node: Node) -> None:
+def refresh_text_state(g: BoardGraph, node: Node, *, running: bool = False) -> None:
+    """A text block is done as soon as it has text. An empty one waits quietly (idle, with a hint) and only
+    fails when a run needs it."""
     if node.kind != "text":
         return
     ok = bool((node.text_value or "").strip())
     node.output_text = apply_vars(g.board, node.text_value) if ok else None
-    node.state = "done" if ok else "failed"
-    node.error = None if ok else _("Write some text.")
     node.progress = 100 if ok else 0
+    if ok:
+        node.state, node.error = "done", None
+    elif running:
+        node.state, node.error, node.notice = "failed", _("Write some text."), None
+    else:
+        node.state, node.error, node.notice = "idle", None, _("Write some text.")
 
 
 def has_result(node: Node) -> bool:
@@ -283,15 +289,62 @@ def estimate(g: BoardGraph, node: Node) -> dict | None:
     count = variations(node)
     if count > 1 and result.get("cost"):
         result = dict(result, cost=round(float(result["cost"]) * count, 6))
+        if result.get("credits") is not None:
+            result["credits"] = round(float(result["credits"]) * count, 2)
     return result
 
 
 def estimate_run(g: BoardGraph, node_ids: list[int] | None = None, downstream: bool = True,
                  force: bool = False) -> dict:
+    """What a run would do: cost ($ and AI credits), reused blocks, and what stops it before it starts
+    (jobs without an AI provider, empty text blocks)."""
     selection, dirty = plan(g, node_ids, downstream, force)
-    cost = sum(float((estimate(g, g.nodes[i]) or {}).get("cost") or 0) for i in dirty if g.nodes[i].kind in CAPABILITY)
+    cost, credit_cost, uses_credits = 0.0, 0.0, False
+    for node_id in dirty:
+        node = g.nodes[node_id]
+        if node.kind not in CAPABILITY:
+            continue
+        est = estimate(g, node) or {}
+        cost += float(est.get("cost") or 0)
+        if est.get("credits") is not None:
+            uses_credits = True
+            credit_cost += float(est["credits"])
     reused = len([n for n in selection if n.kind in CAPABILITY and n.id not in dirty])
-    return {"cost": round(cost, 4), "reused": reused, "blocks": len(dirty)}
+    missing: dict[str, list[int]] = {}
+    for node in selection:
+        capability = CAPABILITY.get(node.kind)
+        if capability and node.id in dirty and not ai_service.has_provider(g.db, g.board.workspace_id, capability):
+            missing.setdefault(capability, []).append(node.id)
+    empty = [n.id for n in selection if n.kind == "text" and not (n.text_value or "").strip()]
+    out = {"cost": round(cost, 4), "reused": reused, "blocks": len(dirty),
+           "missing": [{"capability": c, "node_ids": ids} for c, ids in missing.items()], "empty_text": empty,
+           "credits": round(credit_cost, 1) if uses_credits else None, "credits_available": None}
+    if uses_credits:
+        from app.modules.billing import credits
+        info = credits.available(g.db, g.board.workspace_id)
+        if info["available_usd"] is not None:
+            out["credits_available"] = round(info["available_usd"] * info["credits_per_usd"])
+    return out
+
+
+def stop(db: Session, board: Board) -> int:
+    """Stop a run: queued blocks go back to idle, running ones stop waiting (late results only go to their
+    history) and their unfinished AI jobs are cancelled on our side. Returns how many blocks were stopped."""
+    stopped = 0
+    for node in db.scalars(select(Node).where(Node.board_id == board.id, Node.active.is_(True),
+                                              Node.state.in_(("queued", "running")))):
+        if node.state == "running":
+            for job_id in node.run_job_ids or []:
+                job = db.get(MediaJob, job_id)
+                if job and job.state == "running":
+                    job.state, job.error, job.next_check_at = "failed", _("Stopped."), None
+            node.run_no = (node.run_no or 0) + 1  # results of the stopped run are not applied
+            node.run_job_ids = []
+        node.state, node.progress, node.error, node.force_run = "idle", 0, None, False
+        node.notice = _("Stopped.")
+        stopped += 1
+    db.flush()
+    return stopped
 
 
 def variations(node: Node) -> int:
@@ -309,7 +362,7 @@ def run(db: Session, board: Board, node_ids: list[int] | None = None, downstream
         if node.state in ("queued", "running"):
             continue
         if node.kind == "text":
-            refresh_text_state(g, node)
+            refresh_text_state(g, node, running=True)
             continue
         node.state, node.error, node.notice, node.progress, node.force_run = "queued", None, None, 0, False
         if force and node_ids and node.id in node_ids:

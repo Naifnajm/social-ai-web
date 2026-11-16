@@ -232,7 +232,8 @@ def test_estimates_per_block_and_run(api, fake_ai):
     llm = api.node(board, "llm", 300, 300, prompt="Slogan")
     api.connect(board, text["id"], image["id"])
     graph = api.graph(board)
-    assert api.by_id(graph, image["id"])["estimate"] == {"cost": pytest.approx(0.12), "model": "fake-image"}
+    assert api.by_id(graph, image["id"])["estimate"] == {"cost": pytest.approx(0.12), "model": "fake-image",
+                                                         "credits": None}
     assert api.by_id(graph, llm["id"])["estimate"]["cost"] == pytest.approx(0.001)
     assert api.by_id(graph, text["id"])["estimate"] is None
     assert graph["run_all"] == {"cost": pytest.approx(0.121), "reused": 0, "blocks": 2}

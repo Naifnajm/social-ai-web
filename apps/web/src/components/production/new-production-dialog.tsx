@@ -9,7 +9,7 @@ import { Icon } from "@/components/icon";
 import { Badge, Button, EmptyState, Field, Modal, Spinner, Switch, Textarea, cx, toast } from "@/components/ui";
 import { Link, useRouter } from "@/i18n/navigation";
 import { ApiError, api } from "@/lib/api";
-import { money } from "@/lib/ai";
+import { credits, money } from "@/lib/ai";
 import { useSession } from "@/lib/session";
 import type { BoardCard, BoardTemplate, VideoModelOption } from "./types";
 
@@ -89,7 +89,9 @@ export function NewProductionDialog({ template, onClose }: { template: BoardTemp
                       </span>
                       <span className="mt-0.5 block truncate text-xs text-muted" dir="auto">{m.provider}</span>
                       <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                        <span className="whitespace-nowrap text-xs font-medium text-text-2">{t("cost", { amount: money(m.cost), seconds })}</span>
+                        <span className="whitespace-nowrap text-xs font-medium text-text-2" title={m.credits != null ? money(m.cost) : undefined}>
+                          {m.credits != null ? t("costCredits", { amount: credits(m.credits), seconds }) : t("cost", { amount: money(m.cost), seconds })}
+                        </span>
                         {m.audio && <Badge className="whitespace-nowrap"><Icon name="graphic_eq" size={12} />{t("ownSound")}</Badge>}
                       </span>
                       {m.eu_limited && (

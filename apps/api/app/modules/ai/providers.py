@@ -312,6 +312,13 @@ def spent_by_provider(db: Session, workspace_id: int) -> dict[int, tuple[float, 
 
 def wallet(db: Session, provider: AIProvider, spent_month: float | None = None) -> dict:
     """What to show next to a model picker: the real balance, the budget left, or the spending."""
+    if provider.managed:  # platform AI: the plan's allowance left + bought credits, in credits
+        from app.modules.billing import credits
+        info = credits.available(db, provider.workspace_id)
+        cpu = info["credits_per_usd"]
+        return {"kind": "credits", "unit": "credits", "budget": None,
+                "amount": None if info["available_usd"] is None else round(info["available_usd"] * cpu),
+                "spent": round(info["included_used"] * cpu)}
     if spent_month is None:
         spent_month = spent(db, provider.workspace_id, provider.id, month_start())
     if provider.balance_checked_at and provider.balance is not None:
@@ -327,7 +334,8 @@ def wallet(db: Session, provider: AIProvider, spent_month: float | None = None) 
 def check_spend(db: Session, provider: AIProvider, cost: float, user_id: int | None = None) -> None:
     """Refuse a task that would exceed the provider's monthly budget, the plan's AI credits or the member's limit."""
     if provider.managed:
-        # The platform pays: the real cost must fit what is left of the plan's AI credits this month.
+        # The platform pays: the price (cost + platform markup, already in ``cost`` when it comes from
+        # estimate_task) must fit the plan's monthly AI allowance plus the bought credits.
         limits.check(db, provider.workspace_id, "ai_credits", amount=max(float(cost or 0), 0.0001))
         limits.check_member_ai(db, provider.workspace_id, user_id, float(cost or 0))
         return
@@ -356,14 +364,34 @@ def record_usage(db: Session, provider: AIProvider | None, model_name: str | Non
                     capability=capability, tokens_in=int(tokens_in or 0), tokens_out=int(tokens_out or 0),
                     units=float(units or chars or seconds or 0), cost=round(float(cost or 0.0), 6),
                     purpose=(purpose or "")[:160] or None, user_id=user_id)
+    platform_paid = provider is None or provider.managed
+    if platform_paid:
+        from app.modules.billing import credits
+        usage.price = credits.price_of(db, usage.cost)
     db.add(usage)
     db.flush()
+    if platform_paid and usage.price:
+        from app.modules.billing import credits
+        credits.charge_usage(db, usage)
     return usage
 
 
 def estimate_task(db: Session, workspace_id: int, capability: str, *, prompt: str = "", seconds: float = 0,
                   audio_mode: str = "speech", model_id: int | None = None, provider_id: int | None = None) -> dict:
-    """Cost estimate shown before running something, plus the wallet of the provider."""
+    """Cost estimate shown before running something, plus the wallet of the provider. On the platform's AI the
+    estimate is the price the workspace pays (cost + markup) and is also given in credits."""
+    out = _estimate(db, workspace_id, capability, prompt=prompt, seconds=seconds, audio_mode=audio_mode,
+                    model_id=model_id, provider_id=provider_id)
+    provider = db.get(AIProvider, out["provider_id"]) if out.get("provider_id") else None
+    if provider is not None and provider.managed:
+        from app.modules.billing import credits
+        out["cost"] = round(credits.price_of(db, out["cost"]), 4)
+        out["credits"] = round(out["cost"] * credits.credits_per_usd(db), 2)
+    return out
+
+
+def _estimate(db: Session, workspace_id: int, capability: str, *, prompt: str = "", seconds: float = 0,
+              audio_mode: str = "speech", model_id: int | None = None, provider_id: int | None = None) -> dict:
     try:
         provider, model, name = resolve(db, workspace_id, capability, model_id=model_id, provider_id=provider_id)
     except AppError:
@@ -388,10 +416,19 @@ def picker(db: Session, workspace_id: int, capability: str) -> list[dict]:
     """Models for a dropdown, grouped by provider, with price and wallet."""
     spent_map = spent_by_provider(db, workspace_id)
     groups = []
-    for provider in list_providers(db, workspace_id, capability, active_only=True):
+    providers = list_providers(db, workspace_id, capability, active_only=True)
+    if not providers:  # no own key: the platform's AI, priced with the markup and paid with credits
+        managed = platform_provider(db, workspace_id, capability)
+        providers = [managed] if managed else []
+    for provider in providers:
         default_name = default_model_name(provider, capability)
-        options = [{"id": m.id, "name": m.name, "label": m.label, "unit": m.unit, "price": m.price,
-                    "price_in": m.price_in, "price_out": m.price_out, "price_label": pricing.price_label(m),
+        factor = 1.0
+        if provider.managed:
+            from app.modules.billing import credits
+            factor = 1 + credits.markup(db) / 100
+        options = [{"id": m.id, "name": m.name, "label": m.label, "unit": m.unit, "price": m.price * factor,
+                    "price_in": m.price_in * factor, "price_out": m.price_out * factor,
+                    "price_label": pricing.price_label(m, factor),
                     "default": m.name == default_name}
                    for m in provider_models(db, provider, capability)]
         groups.append({"provider_id": provider.id, "provider": provider.name, "provider_type": provider.provider_type,

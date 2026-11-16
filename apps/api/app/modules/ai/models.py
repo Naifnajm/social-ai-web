@@ -71,9 +71,16 @@ class AIUsage(WorkspaceMixin, Base):
     tokens_in: Mapped[int] = mapped_column(Integer, default=0)
     tokens_out: Mapped[int] = mapped_column(Integer, default=0)
     units: Mapped[float] = mapped_column(Float, default=0.0)
-    cost: Mapped[float] = mapped_column(Float, default=0.0)
+    cost: Mapped[float] = mapped_column(Float, default=0.0)  # what the provider charges
+    # what the workspace pays when the platform's key was used (cost + the platform markup); None for own keys
+    price: Mapped[float | None] = mapped_column(Float)
     purpose: Mapped[str | None] = mapped_column(String(160))  # "inbox reply", "post caption", "board 12 / node 4"…
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+
+    @property
+    def charged(self) -> float:
+        """What the workspace is charged for this call."""
+        return float(self.price if self.price is not None else self.cost or 0.0)
 
 
 class MediaJob(WorkspaceMixin, Base):
@@ -91,6 +98,9 @@ class MediaJob(WorkspaceMixin, Base):
     seconds: Mapped[int] = mapped_column(Integer, default=8)
     audio_mode: Mapped[str] = mapped_column(String(10), default="speech")  # speech | sfx | music
     voice: Mapped[str | None] = mapped_column(String(120))
+    shot: Mapped[dict | None] = mapped_column(JSON)  # camera settings (see camera.py)
+    brand_kit_id: Mapped[int | None] = mapped_column(ForeignKey("brand_kits.id", ondelete="SET NULL"))
+    brand_score: Mapped[int | None] = mapped_column(Integer)  # colour match with the brand palette (images)
     input_media_ids: Mapped[list | None] = mapped_column(JSON)  # reference images / image to animate
     state: Mapped[str] = mapped_column(String(10), default="running", index=True)  # running | done | failed
     progress: Mapped[int] = mapped_column(Integer, default=0)

@@ -2,6 +2,7 @@
 suspend/reactivate, extend trial, manual plan changes, platform stats and platform-wide settings."""
 from datetime import datetime, timedelta
 
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
@@ -215,6 +216,25 @@ def change_plan(workspace_id: int, data: AdminPlanIn, admin: User = Depends(supe
     return _row(db, workspace)
 
 
+class CreditGrantIn(BaseModel):
+    credits: float
+    note: str | None = None
+
+
+@router.post("/workspaces/{workspace_id}/credits")
+def grant_credits(workspace_id: int, data: CreditGrantIn, admin: User = Depends(superadmin),
+                  db: Session = Depends(get_db)):
+    """Add (or with a negative number remove) AI credits: goodwill, bank transfers, corrections."""
+    from . import credits
+    workspace = _workspace(db, workspace_id)
+    if not data.credits:
+        raise AppError(_("Enter a number of credits."), code="bad_credits")
+    row = credits.add(db, workspace.id, "grant" if data.credits > 0 else "adjust", data.credits,
+                      note=data.note or None, user_id=admin.id)
+    _audit(db, workspace, admin, "admin.credits", f"{data.credits:+g} credits", {"note": data.note})
+    return {"balance": round(row.balance_after, 2)}
+
+
 # ---------------------------------------------------------------- platform settings
 def _settings_out(db: Session) -> PlatformSettingsOut:
     return PlatformSettingsOut(
@@ -247,6 +267,15 @@ def write_settings(data: PlatformSettingsIn, admin: User = Depends(superadmin), 
         try:
             if kind == "int":
                 value = int(value)
+            elif kind == "float":
+                value = float(value)
+                if value < 0:
+                    raise ValueError
+            elif kind == "list":
+                if not isinstance(value, list):
+                    raise ValueError
+                value = [{"usd": float(v["usd"]), "credits": int(v["credits"])} for v in value
+                         if float(v["usd"]) > 0 and int(v["credits"]) > 0]
             elif kind == "bool":
                 value = bool(value)
             elif kind == "dict":
@@ -255,14 +284,13 @@ def write_settings(data: PlatformSettingsIn, admin: User = Depends(superadmin), 
                 value = {str(k): str(v).strip() for k, v in value.items() if v}
             else:
                 value = str(value).strip()
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, KeyError):
             raise AppError(_("Invalid value for {key}.", key=key), code="bad_setting") from None
         platform.set_setting(db, key, value, admin.id)
     return _settings_out(db)
 
 
 # ------------------------------------------------------------------ users
-from pydantic import BaseModel  # noqa: E402
 
 
 class AdminUserOut(BaseModel):

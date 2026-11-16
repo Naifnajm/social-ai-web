@@ -72,7 +72,7 @@ def generate_text_with_usage(db: Session, workspace_id: int, system: str, user: 
     usage = prov.record_usage(db, provider, client.model, catalog.TEXT, tokens_in=tokens_in, tokens_out=tokens_out,
                               purpose=purpose or (user or "")[:80], user_id=user_id)
     return text, Usage(provider_id=provider.id, model=client.model, tokens_in=tokens_in, tokens_out=tokens_out,
-                       cost=usage.cost, provider=provider.name, usage_id=usage.id)
+                       cost=usage.charged, provider=provider.name, usage_id=usage.id)
 
 
 JSON_INSTRUCTION = ("\n\nAnswer with ONLY one valid JSON object (no code fence, no comments, no text before or "

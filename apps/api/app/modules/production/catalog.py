@@ -44,7 +44,7 @@ AUDIO_MODES = ("speech", "sfx", "music")
 PUBLISH_MODES = ("draft", "now", "best", "at")
 FORMATS = ("9:16", "4:5", "1:1", "16:9")
 # parameters that change the result of a block (unchanged blocks reuse their result for free)
-HASH_FIELDS = ("kind", "text_value", "aspect", "style", "seconds", "audio_mode", "variations", "formats", "fit_mode",
+HASH_FIELDS = ("kind", "shot", "text_value", "aspect", "style", "seconds", "audio_mode", "variations", "formats", "fit_mode",
                "caption_position", "caption_size", "caption_language", "publish_mode", "publish_at", "design",
                "template_ref")
 # preferred formats per network, best first

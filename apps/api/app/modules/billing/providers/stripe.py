@@ -12,7 +12,7 @@ Flow:
 
 Configure the webhook endpoint in Stripe with these events: checkout.session.completed,
 customer.subscription.created, customer.subscription.updated, customer.subscription.deleted,
-invoice.paid, invoice.payment_failed.
+invoice.paid, invoice.payment_failed, and for AI credit packs checkout.session.async_payment_succeeded.
 """
 import hashlib
 import hmac
@@ -135,6 +135,29 @@ class StripeProvider(PaymentProvider):
                                 })
         return CheckoutResult(url=session.get("url"))
 
+    def checkout_credits(self, db, workspace, sub, pack: dict, user, success_url: str, cancel_url: str) -> str:
+        """Hosted page for a one-time payment of an AI credit pack."""
+        customer = self._customer(db, workspace, sub, user)
+        session = self._request("POST", "/v1/checkout/sessions", workspace_id=workspace.id,
+                                operation="Create credits checkout", data={
+                                    "mode": "payment",
+                                    "customer": customer,
+                                    "client_reference_id": str(workspace.id),
+                                    "line_items[0][quantity]": "1",
+                                    "line_items[0][price_data][currency]": "usd",
+                                    "line_items[0][price_data][unit_amount]": str(int(round(pack["usd"] * 100))),
+                                    "line_items[0][price_data][product_data][name]": "%s AI credits" % f"{pack['credits']:,}",
+                                    "success_url": success_url,
+                                    "cancel_url": cancel_url,
+                                    "invoice_creation[enabled]": "true",
+                                    "locale": "ar" if (workspace.locale or "ar") == "ar" else "auto",
+                                    "metadata[workspace_id]": str(workspace.id),
+                                    "metadata[kind]": "credits",
+                                    "metadata[credits]": str(pack["credits"]),
+                                    "metadata[user_id]": str(user.id),
+                                })
+        return session.get("url")
+
     def _change_price(self, db, workspace, sub, plan_code, interval, price) -> CheckoutResult:
         current = self._request("GET", f"/v1/subscriptions/{sub.provider_subscription_id}",
                                 workspace_id=workspace.id, operation="Read subscription")
@@ -243,9 +266,29 @@ class StripeProvider(PaymentProvider):
         if status == "past_due" and not sub.past_due_since:
             sub.past_due_since = service.utcnow()
 
+    def _credits_paid(self, db: Session, obj: dict, metadata: dict) -> int | None:
+        from .. import credits
+        if obj.get("payment_status") != "paid":
+            return None  # bank payments confirm later (async_payment_succeeded)
+        try:
+            workspace_id, amount = int(metadata.get("workspace_id")), int(metadata.get("credits"))
+        except (TypeError, ValueError):
+            return None
+        ref = "stripe:%s" % obj.get("id")
+        if not db.get(Workspace, workspace_id) or credits.already(db, ref):
+            return workspace_id
+        user_id = metadata.get("user_id")
+        credits.add(db, workspace_id, "purchase", amount, ref=ref, paid=(obj.get("amount_total") or 0) / 100,
+                    currency=(obj.get("currency") or "usd").upper(), note="Stripe",
+                    user_id=int(user_id) if str(user_id or "").isdigit() else None)
+        return workspace_id
+
     def handle_event(self, db: Session, event: WebhookEvent) -> int | None:
         obj = event.data
         metadata = obj.get("metadata") or {}
+        if event.type in ("checkout.session.completed", "checkout.session.async_payment_succeeded") \
+                and metadata.get("kind") == "credits":
+            return self._credits_paid(db, obj, metadata)
         if event.type == "checkout.session.completed":
             if obj.get("mode") != "subscription":
                 return None

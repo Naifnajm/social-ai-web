@@ -1,5 +1,6 @@
 """Brand kits: logo (a media id), colours, font, tone, rules, hashtags, visual style and voice."""
 import re
+from typing import Literal
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -24,7 +25,13 @@ FONTS = ["system-ui", "'IBM Plex Sans Arabic', sans-serif", "'Cairo', sans-serif
 COLOR_FIELDS = ("color_primary", "color_secondary", "color_text", "color_accent", "color_background")
 NULLABLE = ("logo_media_id", "tagline", "tone", "guidelines", "hashtags", "visual_style", "voice", "color_accent",
             "color_background", "font_heading", "description", "industry", "audience", "personality",
-            "language_style", "emoji_style", "cta", "banned_words", "sample_posts", "website")
+            "language_style", "emoji_style", "cta", "banned_words", "sample_posts", "website",
+            "photo_style", "visual_rules")
+def _shot_value(value):
+    from app.modules.ai import camera
+    return camera.clean(value)
+
+
 COLOR = re.compile(r"^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")
 
 
@@ -57,6 +64,9 @@ class BrandKitOut(BaseModel):
     guidelines: str | None = None
     hashtags: str | None = None
     visual_style: str | None = None
+    guard_mode: str = "guide"
+    photo_style: dict | None = None
+    visual_rules: str | None = None
     voice: str | None = None
     color_accent: str | None = None
     color_background: str | None = None
@@ -87,6 +97,9 @@ class BrandKitIn(BaseModel):
     guidelines: str | None = Field(default=None, max_length=8000)
     hashtags: str | None = Field(default=None, max_length=500)
     visual_style: str | None = Field(default=None, max_length=4000)
+    guard_mode: Literal["off", "guide", "strict"] = "guide"
+    photo_style: dict | None = None
+    visual_rules: str | None = Field(default=None, max_length=2000)
     voice: str | None = Field(default=None, max_length=120)
     color_accent: str | None = None
     color_background: str | None = None
@@ -106,6 +119,7 @@ class BrandKitIn(BaseModel):
 
     _colors = field_validator(*COLOR_FIELDS)(_color)
     _codes = field_validator("language_style", "emoji_style")(lambda v, info: _code(v, info.field_name))
+    _shot = field_validator("photo_style")(lambda v: _shot_value(v))
 
 
 class BrandKitUpdate(BaseModel):
@@ -120,6 +134,9 @@ class BrandKitUpdate(BaseModel):
     guidelines: str | None = Field(default=None, max_length=8000)
     hashtags: str | None = Field(default=None, max_length=500)
     visual_style: str | None = Field(default=None, max_length=4000)
+    guard_mode: Literal["off", "guide", "strict"] | None = None
+    photo_style: dict | None = None
+    visual_rules: str | None = Field(default=None, max_length=2000)
     voice: str | None = Field(default=None, max_length=120)
     color_accent: str | None = None
     color_background: str | None = None
@@ -139,6 +156,7 @@ class BrandKitUpdate(BaseModel):
 
     _colors = field_validator(*COLOR_FIELDS)(_color)
     _codes = field_validator("language_style", "emoji_style")(lambda v, info: _code(v, info.field_name))
+    _shot = field_validator("photo_style")(lambda v: _shot_value(v))
 
 
 class BrandOptions(BaseModel):
@@ -276,3 +294,29 @@ def delete(kit_id: int, ctx: Ctx = Depends(workspace_ctx(Role.admin))):
         rest = service.list_kits(ctx.db, ctx.workspace.id, active_only=True)
         if rest:
             service.set_default(ctx.db, rest[0])
+
+
+class BrandCheckIn(BaseModel):
+    brand_kit_id: int | None = None
+    text: str | None = Field(default=None, max_length=20000)
+    media_id: int | None = None
+
+
+@router.post("/check")
+def check(data: BrandCheckIn, ctx: Ctx = Depends(workspace_ctx())):
+    """Does a text or an image follow the brand? (banned words, emojis, colour match with the palette)"""
+    from app.core.storage import read_media
+
+    from . import guard
+    kit = service.get_kit(ctx.db, ctx.workspace.id, data.brand_kit_id) if data.brand_kit_id \
+        else service.default_kit(ctx.db, ctx.workspace.id)
+    if not kit:
+        raise NotFound(_("Brand kit not found."), code="not_found")
+    out: dict = {"brand_kit_id": kit.id, "mode": guard.mode(kit), "issues": guard.text_issues(kit, data.text or "")}
+    if data.media_id:
+        media = ctx.db.get(Media, data.media_id)
+        if not media or media.workspace_id != ctx.workspace.id:
+            raise NotFound(_("File not found."))
+        out["colors"] = guard.color_match(kit, read_media(media)) if (media.mimetype or "").startswith("image/") \
+            else None
+    return out

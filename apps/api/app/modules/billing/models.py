@@ -1,7 +1,7 @@
 """Subscriptions (one per workspace), processed payment-provider events and platform-wide settings."""
 from datetime import datetime
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.crypto import EncryptedString
@@ -31,6 +31,22 @@ class Subscription(WorkspaceMixin, Base):
     limit_overrides: Mapped[dict | None] = mapped_column(JSON)  # {"social_accounts": 100, ...} (enterprise deals)
     reminders: Mapped[dict | None] = mapped_column(JSON)  # e-mails/notifications already sent {"trial_3d": true}
     note: Mapped[str | None] = mapped_column(Text)  # platform admin note
+    credit_balance: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")  # bought AI credits
+
+
+class CreditTransaction(WorkspaceMixin, Base):
+    """AI credits ledger: purchases, platform grants and usage beyond the plan's monthly AI allowance."""
+
+    __tablename__ = "credit_transactions"
+
+    kind: Mapped[str] = mapped_column(String(10))  # purchase | usage | grant | refund | adjust
+    credits: Mapped[float] = mapped_column(Float)  # + added, - used
+    balance_after: Mapped[float] = mapped_column(Float, default=0.0)
+    amount_paid: Mapped[float | None] = mapped_column(Float)  # money paid (purchases)
+    currency: Mapped[str | None] = mapped_column(String(3))
+    ref: Mapped[str | None] = mapped_column(String(160), index=True)  # checkout session / usage id
+    note: Mapped[str | None] = mapped_column(String(300))
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
 
 
 class BillingEvent(TimestampMixin, Base):

@@ -91,7 +91,7 @@ def job_out(db, job: MediaJob) -> MediaJobOut:
     title = (job.prompt or "").strip().splitlines()[0][:60] if job.prompt else job.kind
     return MediaJobOut(
         id=job.id, kind=job.kind, state=job.state, progress=job.progress or 0, prompt=job.prompt, title=title,
-        aspect=job.aspect, style=job.style, seconds=job.seconds, audio_mode=job.audio_mode, voice=job.voice,
+        aspect=job.aspect, style=job.style, shot=job.shot, brand_score=job.brand_score, seconds=job.seconds, audio_mode=job.audio_mode, voice=job.voice,
         provider_id=job.provider_id, provider=provider.name if provider else None, model_name=job.model_name,
         input_media_ids=job.input_media_ids or [], media_id=job.media_id,
         media=JobMedia(id=file.id, filename=file.filename, mimetype=file.mimetype, url=f"/api/media/{file.id}/file",
@@ -284,11 +284,17 @@ def _platforms(ctx: Ctx, data: WriteIn) -> list[str]:
     return sorted(set(platforms))
 
 
-def _brand_profile(ctx: Ctx, brand_kit_id: int | None) -> str:
+def _brand_kit(ctx: Ctx, brand_kit_id: int | None):
     from app.modules.brand import service as brand
-    kit = brand.get_kit(ctx.db, ctx.workspace.id, brand_kit_id) if brand_kit_id \
+    return brand.get_kit(ctx.db, ctx.workspace.id, brand_kit_id) if brand_kit_id \
         else brand.default_kit(ctx.db, ctx.workspace.id)
-    return kit.llm_profile() if kit else ""
+
+
+@router.get("/camera")
+def camera_options(ctx: Ctx = Depends(workspace_ctx())):
+    """Camera, lens, aperture, angle, light… options (with icons) and presets for images and videos."""
+    from . import camera
+    return camera.options()
 
 
 @router.post("/text", response_model=WriteOut)
@@ -297,7 +303,8 @@ def write(data: WriteIn, ctx: Ctx = Depends(workspace_ctx(Role.editor))):
     if not data.brief.strip() and not data.current_text.strip():
         raise AppError(_("Describe what the post is about."), code="empty_brief")
     platforms = _platforms(ctx, data)
-    profile = _brand_profile(ctx, data.brand_kit_id)
+    kit = _brand_kit(ctx, data.brand_kit_id)
+    profile = kit.llm_profile() if kit else ""
     tailor = data.preset == "post" and data.tailor and len(platforms) > 1
     if data.preset == "post" and not data.system:
         system, user = prompts.build_prompts(profile, data.brief, data.tone, data.language, data.length, platforms,
@@ -319,8 +326,13 @@ def write(data: WriteIn, ctx: Ctx = Depends(workspace_ctx(Role.editor))):
                                                   purpose, (data.brief or data.current_text)[:100]),
                                               user_id=ctx.user.id)
     main, variants = prompts.parse_answer(text, tailor=tailor, platforms=platforms)
+    from app.modules.brand import guard
+    main, notes = guard.enforce_text(ctx.db, ctx.workspace.id, kit, main, ctx.user.id)
+    for platform, variant in list(variants.items()):
+        variants[platform], _notes = guard.enforce_text(ctx.db, ctx.workspace.id, kit, variant, ctx.user.id)
     return WriteOut(text=main, variants=variants, provider=usage.provider, model=usage.model,
-                    cost=round(usage.cost, 6), tokens_in=usage.tokens_in, tokens_out=usage.tokens_out)
+                    cost=round(usage.cost, 6), tokens_in=usage.tokens_in, tokens_out=usage.tokens_out,
+                    brand_notes=notes)
 
 
 @router.post("/suggest-visual", response_model=SuggestVisualOut)
@@ -329,9 +341,10 @@ def suggest_visual(data: SuggestVisualIn, ctx: Ctx = Depends(workspace_ctx(Role.
     system = prompts.VISUAL_SYSTEM.format(kind="video" if data.kind == "video" else "image")
     if data.kind == "video":
         system += " Describe camera movement and what happens in 5-8 seconds."
-    if data.brand_kit_id:
-        from app.modules.brand import service as brand
-        hint = brand.get_kit(ctx.db, ctx.workspace.id, data.brand_kit_id).visual_hint()
+    from app.modules.brand import guard
+    kit = guard.kit_for(ctx.db, ctx.workspace.id, data.brand_kit_id)
+    if kit:
+        hint = guard.visual_rules(kit, data.kind)
         if hint:
             system += " Respect the brand: %s" % hint
     text, usage = ai.generate_text_with_usage(ctx.db, ctx.workspace.id, system, "Social media post:\n%s" % data.text,
@@ -347,7 +360,7 @@ def start_media(data: MediaJobIn, ctx: Ctx = Depends(workspace_ctx(Role.editor))
     job = media.start_job(ctx.db, ctx.workspace.id, data.kind, data.prompt, provider_id=data.provider_id,
                           model_id=data.model_id, aspect=data.aspect, style=data.style, seconds=data.seconds,
                           audio_mode=data.audio_mode, voice=data.voice, inputs=data.input_media_ids,
-                          user_id=ctx.user.id, brand_kit_id=data.brand_kit_id)
+                          user_id=ctx.user.id, brand_kit_id=data.brand_kit_id, shot=data.shot)
     return job_out(ctx.db, job)
 
 

@@ -22,7 +22,10 @@ SETTINGS_SCHEMA: dict[str, str] = {
     **{f"ai.{name}_api_key": "secret" for name in AI_PROVIDERS},
     "billing.trial_days": "int",
     "billing.grace_days": "int",
-    "billing.stripe_prices": "dict",       # {"pro_month": "price_..."} — overrides the environment
+    "billing.stripe_prices": "dict",
+    "billing.ai_markup_percent": "float",   # margin on platform-paid AI (default 10%), shown in every price
+    "billing.credits_per_usd": "int",       # credits per $1 (default 100: 1 credit = 1 cent)
+    "billing.credit_packs": "list",         # [{"usd": 10, "credits": 1000}, …] packs to buy       # {"pro_month": "price_..."} — overrides the environment
     "platform.announcement": "str",
     "listening.x_bearer_token": "secret",   # radar: X recent search (pay per post read)
     "listening.youtube_api_key": "secret",  # radar: YouTube search (Google API key)        # optional banner text shown to every workspace

@@ -55,6 +55,7 @@ class Node(WorkspaceMixin, Base):
     model_id: Mapped[int | None] = mapped_column(ForeignKey("ai_models.id", ondelete="SET NULL"))
     aspect: Mapped[str] = mapped_column(String(5), default="1:1")
     style: Mapped[str | None] = mapped_column(String(30))
+    shot: Mapped[dict | None] = mapped_column(JSON)  # camera settings for image / video blocks
     seconds: Mapped[int] = mapped_column(Integer, default=8)
     audio_mode: Mapped[str] = mapped_column(String(10), default="speech")  # speech | sfx | music
     design: Mapped[dict | None] = mapped_column(JSON)  # layers of the design editor

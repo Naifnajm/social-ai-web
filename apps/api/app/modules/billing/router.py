@@ -147,3 +147,51 @@ def onboarding(ctx: Ctx = Depends(workspace_ctx())):
 def dismiss_onboarding(ctx: Ctx = Depends(workspace_ctx(Role.admin))):
     set_setting(ctx.db, ctx.workspace.id, "billing.onboarding_dismissed", True)
     return onboarding(ctx)
+
+
+# ---------------------------------------------------------------- AI credits
+from pydantic import BaseModel  # noqa: E402
+
+
+class CreditPackIn(BaseModel):
+    pack_id: int
+
+
+@router.get("/billing/credits")
+def credits_summary(ctx: Ctx = Depends(workspace_ctx())):
+    """AI credits: balance, the plan's monthly AI left, packs to buy and the latest movements."""
+    from . import credits
+    info = credits.available(ctx.db, ctx.workspace.id)
+    cpu = info["credits_per_usd"]
+    as_credits = (lambda usd: None if usd is None else round(usd * cpu))
+    return {
+        "balance": round(info["balance"]), "credits_per_usd": cpu,
+        "included": as_credits(info["included"]), "included_used": as_credits(info["included_used"]),
+        "included_left": as_credits(info["included_left"]), "available": as_credits(info["available_usd"]),
+        "packs": credits.packs(ctx.db), "currency": "USD",
+        "can_buy": ctx.can(Role.owner) and get_provider().configured(ctx.db),
+        "history": [{"id": t.id, "kind": t.kind, "credits": round(t.credits, 2), "balance_after": round(t.balance_after),
+                     "amount_paid": t.amount_paid, "currency": t.currency, "note": t.note, "created_at": t.created_at}
+                    for t in credits.history(ctx.db, ctx.workspace.id, 30)],
+    }
+
+
+@router.post("/billing/credits/checkout", response_model=CheckoutOut)
+def buy_credits(data: CreditPackIn, ctx: Ctx = Depends(workspace_ctx(Role.owner))):
+    """One-time payment for a credit pack; the credits are added when the payment provider confirms it."""
+    from . import credits
+    pack = next((p for p in credits.packs(ctx.db) if p["id"] == data.pack_id), None)
+    if pack is None:
+        raise AppError(_("This credit pack does not exist."), code="bad_pack")
+    if ctx.workspace.status != "active":
+        raise AppError(_("This workspace is suspended. Please contact support."), code="workspace_suspended",
+                       status_code=403)
+    sub = ensure_subscription(ctx.db, ctx.workspace)
+    provider = get_provider()
+    if not hasattr(provider, "checkout_credits"):
+        raise AppError(_("Online payments are not configured yet. Please contact support."),
+                       code="billing_not_configured")
+    url = provider.checkout_credits(ctx.db, ctx.workspace, sub, pack, ctx.user,
+                                    success_url=_return_url(ctx, "?credits=success"),
+                                    cancel_url=_return_url(ctx, "?credits=cancel"))
+    return CheckoutOut(url=url, updated=False)

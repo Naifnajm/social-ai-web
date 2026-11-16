@@ -197,18 +197,18 @@ def model_capability(model) -> str:
     return getattr(model, "capability", "") or ""
 
 
-def price_label(model) -> str:
-    """Short human price, e.g. "$0.25 / $2 per 1M" or "$0.042 / image"."""
+def price_label(model, factor: float = 1.0) -> str:
+    """Short human price, e.g. "$0.25 / $2 per 1M" or "$0.042 / image" (``factor``: platform markup)."""
     if model.unit == "free":
         return "free"
     if model.unit == "tokens":
         if not (model.price_in or model.price_out):
             return ""
-        return "$%s / $%s per 1M" % (fmt(model.price_in or 0), fmt(model.price_out or 0))
+        return "$%s / $%s per 1M" % (fmt((model.price_in or 0) * factor), fmt((model.price_out or 0) * factor))
     if not model.price:
         return ""
     suffix = {"image": "image", "second": "second", "1k_chars": "1K chars", "minute": "minute"}.get(model.unit, model.unit)
-    return "$%s / %s" % (fmt(model.price), suffix)
+    return "$%s / %s" % (fmt(model.price * factor), suffix)
 
 
 def fmt(value: float) -> str:

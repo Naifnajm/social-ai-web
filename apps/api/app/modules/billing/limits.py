@@ -121,7 +121,7 @@ def _platform_paid():
 def ai_spend_month(db: Session, workspace_id: int, user_id: int | None = None) -> float:
     """$ of platform-paid AI this month in the workspace (of one member when ``user_id`` is given)."""
     from app.modules.ai.models import AIUsage
-    query = select(func.coalesce(func.sum(AIUsage.cost), 0.0)).where(
+    query = select(func.coalesce(func.sum(func.coalesce(AIUsage.price, AIUsage.cost)), 0.0)).where(
         AIUsage.workspace_id == workspace_id, _platform_paid(), AIUsage.created_at >= month_start())
     if user_id is not None:
         query = query.where(AIUsage.user_id == user_id)
@@ -208,6 +208,17 @@ def check(db: Session, workspace_id: int, resource: str, amount: float = 1) -> N
     current = used(db, workspace_id, resource)
     if current + amount <= limit + 1e-9:
         return
+    if resource == "ai_credits" and amount > 0:
+        # beyond the plan's monthly AI allowance the workspace's bought credits are used
+        from . import credits
+        need = credits.need_from_balance(db, workspace_id, amount, current, limit)
+        if credits.balance(db, workspace_id) / credits.credits_per_usd(db) >= need - 1e-9:
+            return
+        raise LimitReached(_("Your {plan} plan includes {limit} of AI each month (used: {used}). Buy AI credits "
+                             "to continue.", plan=plan_label(state.plan.code), limit=_fmt(resource, limit),
+                             used=_fmt(resource, current)), code="credits_needed", reason="credits", resource=resource,
+                           limit=limit, used=current, plan=state.plan.code, upgrade=upgrade_for(state.plan),
+                           buy_credits=True)
     upgrade = upgrade_for(state.plan, resource, current + amount)
     values = dict(plan=plan_label(state.plan.code), limit=_fmt(resource, limit),
                   resource=_(RESOURCE_LABELS[resource]), used=_fmt(resource, current))

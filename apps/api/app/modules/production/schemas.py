@@ -56,6 +56,7 @@ class NodeOut(BaseModel):
     model_label: str | None = None
     aspect: str = "1:1"
     style: str | None = None
+    shot: dict | None = None
     seconds: int = 8
     audio_mode: str = "speech"
     design: dict | None = None
@@ -275,6 +276,7 @@ class NodeParams(BaseModel):
     model_id: int | None = None
     aspect: Aspect | None = None
     style: str | None = None
+    shot: dict | None = None
     seconds: int | None = Field(default=None, ge=1, le=120)
     audio_mode: Literal["speech", "sfx", "music"] | None = None
     variations: int | None = Field(default=None, ge=1, le=4)

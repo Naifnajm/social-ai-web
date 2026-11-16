@@ -1,4 +1,8 @@
 {
- "Brand kit not found.": "هوية العلامة غير موجودة.",
- "File not found.": "الملف غير موجود."
+  "Brand kit not found.": "هوية العلامة غير موجودة.",
+  "File not found.": "الملف غير موجود.",
+  "Uses words the brand never uses: {words}": "يستخدم كلمات لا تستخدمها الهوية: {words}",
+  "The brand does not use emojis.": "الهوية لا تستخدم الإيموجي.",
+  "Brand guard fixed: {issues}": "حارس الهوية صحّح: {issues}",
+  "Brand guard": "حارس الهوية"
 }

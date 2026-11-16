@@ -168,7 +168,7 @@ def test_brand_kit_applies_everywhere(api, fake_ai, db, auth):
     system = fake_ai.texts[0]["system"]
     assert "Warm and short" in system and "No emojis" in system
     image_job = next(j for j in fake_ai.jobs if j["kind"] == "image")
-    assert "Soft daylight" in image_job["prompt"] and "#111111" in image_job["prompt"]
+    assert image_job["brand_kit_id"] == kit.id  # the media layer adds the brand (brand/guard.py)
     assert next(j for j in fake_ai.jobs if j["kind"] == "audio")["voice"] == "nova"
     assert all(api.by_id(graph, n["id"])["state"] == "done" for n in (llm, image, voice))
     # changing the kit invalidates the results

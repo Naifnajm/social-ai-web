@@ -30,6 +30,7 @@ from app.core.storage import read_media, save_media
 from app.modules.ai import media as ai_media
 from app.modules.ai import service as ai_service
 from app.modules.ai.models import AIModel, MediaJob
+from app.modules.brand import guard as brand_guard
 from app.modules.brand.models import BrandKit
 from app.modules.social import service as social
 from app.modules.social.models import Post, PostMedia, SocialAccount
@@ -228,7 +229,8 @@ def input_hash(g: BoardGraph, node: Node) -> str:
     values = {f: getattr(node, f) for f in HASH_FIELDS}
     data = [values, apply_vars(g.board, node.prompt or ""), node.provider_id, node.model_id,
             sorted(node.account_ids or []), links,
-            [kit.id, kit.llm_profile(), kit.visual_hint(), kit.voice] if kit else None]
+            [kit.id, kit.llm_profile(), kit.visual_hint(), kit.voice, kit.guard_mode, kit.photo_style,
+             kit.visual_rules] if kit else None]
     if node.kind == "upload":
         data.append(node.output_media_id)
     if node.kind == "template" and node.template_ref and hasattr(frame, "fingerprint"):
@@ -478,11 +480,6 @@ def _prompt_with_inputs(g: BoardGraph, node: Node, texts: list[str]) -> str:
     return "\n\n".join(p for p in [_prompt(g, node), *texts] if p)
 
 
-def _with_brand(g: BoardGraph, prompt: str) -> str:
-    hint = g.kit.visual_hint() if g.kit else ""
-    return "%s\n\n%s" % (prompt, hint) if prompt and hint else prompt
-
-
 def clean_text(text: str) -> str:
     text = (text or "").strip()
     if text.startswith("```") and text.endswith("```"):
@@ -523,7 +520,10 @@ def _run_llm(g: BoardGraph, node: Node) -> None:
             db, node.workspace_id, system, ask, model_id=model.id if model else None, provider_id=provider_id,
             purpose="Production: %s" % node.name, user_id=g.board.user_id)
         total += float(getattr(usage, "cost", 0) or 0)
-        add_output(g, node, text=clean_text(text), cost=float(getattr(usage, "cost", 0) or 0),
+        text, notes = brand_guard.enforce_text(db, node.workspace_id, kit, clean_text(text), g.board.user_id)
+        if notes:
+            node.notice = "; ".join(notes)[:500]
+        add_output(g, node, text=text, cost=float(getattr(usage, "cost", 0) or 0),
                    select_it=index == 0, model_label=getattr(usage, "model", None) or None)
     node.cost = round(total, 6)
     _done_with(g, node, record=False)
@@ -549,6 +549,8 @@ def _start_job(g: BoardGraph, node: Node, kind: str, prompt: str, media_inputs: 
                 db, node.workspace_id, kind, prompt, provider_id=node.provider_id, model_id=model_id,
                 aspect=node.aspect or "1:1", style=node.style, seconds=node.seconds or 8,
                 inputs=[m.id for m in media_inputs or []], callback=CALLBACK,
+                brand_kit_id=kit.id if kit and kind in ("image", "video") else None,
+                shot=node.shot if kind in ("image", "video") else None,
                 callback_context={"node_id": node.id, "run_no": node.run_no}, user_id=g.board.user_id, **kwargs)
         except (AppError, ApiError) as exc:
             if not node.run_job_ids:
@@ -624,7 +626,7 @@ def on_media_job(db: Session, job: MediaJob) -> None:
 def _run_image(g: BoardGraph, node: Node) -> None:
     texts, media = inputs(g, node)
     refs = [m for m in media if media_kind(m) == "image"]
-    _start_job(g, node, "image", _with_brand(g, _prompt_with_inputs(g, node, texts)), refs)
+    _start_job(g, node, "image", _prompt_with_inputs(g, node, texts), refs)
 
 
 def _run_video(g: BoardGraph, node: Node) -> None:
@@ -633,7 +635,7 @@ def _run_video(g: BoardGraph, node: Node) -> None:
     prompt = _prompt_with_inputs(g, node, texts)
     if not prompt.strip() and images:
         prompt = "Bring this image to life with subtle natural motion."
-    _start_job(g, node, "video", _with_brand(g, prompt), images)
+    _start_job(g, node, "video", prompt, images)
 
 
 def _run_audio(g: BoardGraph, node: Node) -> None:

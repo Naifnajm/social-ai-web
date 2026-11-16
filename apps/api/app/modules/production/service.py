@@ -36,10 +36,10 @@ from .catalog import (
 from .engine import BoardGraph
 from .models import Board, Edge, Group, Node, Output
 
-PARAM_FIELDS = ("name", "x", "y", "prompt", "text_value", "provider_id", "model_id", "aspect", "style", "seconds",
+PARAM_FIELDS = ("name", "x", "y", "prompt", "text_value", "provider_id", "model_id", "aspect", "style", "shot", "seconds",
                 "audio_mode", "variations", "formats", "fit_mode", "caption_position", "caption_size",
                 "caption_language", "template_ref", "approver_id", "account_ids", "publish_mode", "publish_at")
-COPY_FIELDS = ("kind", "name", "prompt", "text_value", "provider_id", "model_id", "aspect", "style", "seconds",
+COPY_FIELDS = ("kind", "name", "prompt", "text_value", "provider_id", "model_id", "aspect", "style", "shot", "seconds",
                "audio_mode", "design", "variations", "formats", "fit_mode", "caption_position", "caption_size",
                "caption_language", "template_ref", "approver_id", "account_ids", "publish_mode", "publish_at",
                "output_text", "output_media_id", "cost")
@@ -134,7 +134,8 @@ def node_dict(g: BoardGraph, node: Node, *, with_estimate: bool = True, user_id:
         "id": node.id, "board_id": node.board_id, "kind": node.kind, "name": node.name or kind_label(node.kind),
         "x": node.x, "y": node.y, "group_id": node.group_id, "prompt": node.prompt or "",
         "text_value": node.text_value or "", "provider_id": node.provider_id, "model_id": node.model_id,
-        "model_label": model_label, "aspect": node.aspect or "1:1", "style": node.style, "seconds": node.seconds or 8,
+        "model_label": model_label, "aspect": node.aspect or "1:1", "style": node.style, "shot": node.shot,
+        "seconds": node.seconds or 8,
         "audio_mode": node.audio_mode or "speech", "design": node.design, "variations": engine.variations(node),
         "formats": [f for f in (node.formats or "").split(",") if f], "fit_mode": node.fit_mode or "blur",
         "caption_position": node.caption_position or "bottom", "caption_size": node.caption_size or "m",
@@ -346,6 +347,9 @@ def apply_params(db: Session, board: Board, node: Node, values: dict) -> None:
         values["formats"] = ",".join(dict.fromkeys(formats))
     if "style" in values and values["style"] and values["style"] not in STYLES:
         values["style"] = None
+    if "shot" in values:
+        from app.modules.ai import camera
+        values["shot"] = camera.clean(values["shot"])
     if "variations" in values:
         values["variations"] = max(1, min(4, int(values["variations"] or 1)))
     if "template_ref" in values:

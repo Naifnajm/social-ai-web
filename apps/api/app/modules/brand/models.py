@@ -1,6 +1,6 @@
 """Brand kits (logo, colours, font, tone, rules, visual style, voice) — shared by AI writing, templates,
 the inbox assistant and production."""
-from sqlalchemy import Boolean, ForeignKey, String, Text
+from sqlalchemy import JSON, Boolean, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base, WorkspaceMixin
@@ -43,6 +43,10 @@ class BrandKit(WorkspaceMixin, Base):
     banned_words: Mapped[str | None] = mapped_column(Text)
     sample_posts: Mapped[str | None] = mapped_column(Text)
     website: Mapped[str | None] = mapped_column(String(300))
+    # brand guard: off | guide | strict (see guard.py), the approved camera settings and do/don't rules for visuals
+    guard_mode: Mapped[str] = mapped_column(String(10), default="guide", server_default="guide")
+    photo_style: Mapped[dict | None] = mapped_column(JSON)
+    visual_rules: Mapped[str | None] = mapped_column(Text)
     is_default: Mapped[bool] = mapped_column(Boolean, default=False)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
 

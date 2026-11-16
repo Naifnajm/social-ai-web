@@ -6,6 +6,8 @@
     # image/audio jobs are usually done when start_job returns (job.state == "done", job.media_id set);
     # video jobs stay "running" and are polled by a periodic task; the callback is called when they finish.
     ai_media.estimate(db, ws_id, "video", prompt, seconds=8, model_id=None) -> {"cost": 0.8, "model": "..."}
+    # shot={"lens": "85", "light": "golden_hour", …} adds camera settings (camera.py); the brand guard
+    # (brand/guard.py) applies the picked kit, or the default kit when its guard is strict.
     ai_media.transcribe(db, ws_id, media_id, language="ar") -> {"segments": [...], "duration": 12.3, "cost": 0.001}
 
 The callback is a dotted path to ``fn(db, job)``; it is called once when the job is ``done`` or ``failed`` — also
@@ -59,9 +61,13 @@ def _now() -> datetime:
 
 
 def full_prompt(job: MediaJob) -> str:
+    parts = [job.prompt]
     if job.kind in ("image", "video") and job.style and job.style in STYLE_PROMPTS:
-        return "%s\n\nStyle: %s" % (job.prompt, STYLE_PROMPTS[job.style])
-    return job.prompt
+        parts.append("Style: %s" % STYLE_PROMPTS[job.style])
+    if job.kind in ("image", "video"):
+        from . import camera
+        parts.append(camera.describe(job.shot, job.kind))
+    return "\n\n".join(p for p in parts if p)
 
 
 # ------------------------------------------------------------------ public contract
@@ -69,7 +75,7 @@ def start_job(db: Session, workspace_id: int, kind: str, prompt: str, *, provide
               model_id: int | None = None, aspect: str = "1:1", style: str | None = None, seconds: int = 8,
               audio_mode: str = "speech", voice: str | None = None, inputs: list[int] | None = None,
               callback: str | None = None, callback_context: dict | None = None,
-              user_id: int | None = None, brand_kit_id: int | None = None) -> MediaJob:
+              user_id: int | None = None, brand_kit_id: int | None = None, shot: dict | None = None) -> MediaJob:
     if kind not in KINDS:
         raise AppError(_("Unknown media type."), code="bad_kind")
     prompt = (prompt or "").strip()
@@ -81,15 +87,21 @@ def start_job(db: Session, workspace_id: int, kind: str, prompt: str, *, provide
     input_ids = _check_inputs(db, workspace_id, inputs)
     if callback and not CALLBACK_PATH.match(callback):
         raise AppError(_("Invalid callback."), code="bad_callback")
-    if brand_kit_id:
-        prompt, voice = _apply_brand(db, workspace_id, brand_kit_id, kind, audio_mode, prompt, voice)
+    from app.modules.brand import guard
+    kit = guard.kit_for(db, workspace_id, brand_kit_id)  # the picked kit, or the default one when it is strict
+    camera_shot = None
+    if kind in ("image", "video"):
+        prompt, camera_shot = guard.visual(kit, kind, prompt, shot)
+    elif kind == "audio" and audio_mode == "speech" and not voice and kit and kit.voice:
+        voice = kit.voice
 
     provider, model, model_name = prov.resolve(db, workspace_id, kind, model_id=model_id, provider_id=provider_id)
     quote = prov.estimate_task(db, workspace_id, kind, prompt=prompt, seconds=seconds, audio_mode=audio_mode,
                                model_id=model.id if model else None, provider_id=provider.id)
     prov.check_spend(db, provider, quote["cost"], user_id)
 
-    job = MediaJob(workspace_id=workspace_id, kind=kind, prompt=prompt, provider_id=provider.id,
+    job = MediaJob(workspace_id=workspace_id, kind=kind, prompt=prompt, provider_id=provider.id, shot=camera_shot,
+                   brand_kit_id=kit.id if kit else None,
                    model_id=model.id if model else None, model_name=model_name or None, aspect=aspect,
                    style=style or None, seconds=seconds, audio_mode=audio_mode, voice=voice or None,
                    input_media_ids=input_ids or None, state="running", progress=0, callback=callback,
@@ -246,20 +258,6 @@ def _check_inputs(db: Session, workspace_id: int, inputs: list[int] | None) -> l
     return ids
 
 
-def _apply_brand(db, workspace_id, brand_kit_id, kind, audio_mode, prompt, voice):
-    from app.modules.brand.models import BrandKit
-    kit = db.get(BrandKit, brand_kit_id)
-    if not kit or kit.workspace_id != workspace_id:
-        raise NotFound(_("Brand kit not found."))
-    if kind in ("image", "video"):
-        hint = kit.visual_hint()
-        if hint and hint not in prompt:
-            prompt = "%s\n\n%s" % (prompt, hint)
-    elif kind == "audio" and audio_mode == "speech" and not voice and kit.voice:
-        voice = kit.voice
-    return prompt, voice
-
-
 def _inputs(db: Session, job: MediaJob, kinds=("image",)) -> list[MediaInput]:
     refs = []
     for media_id in job.input_media_ids or []:
@@ -297,10 +295,25 @@ def _handle(db: Session, job: MediaJob, provider: AIProvider, result: dict) -> N
                        source="ai", user_id=job.user_id)
     if job.kind == "video" or (job.kind == "audio" and job.audio_mode in ("sfx", "music")):
         media.duration = media.duration or float(job.seconds)
+    if job.kind == "image" and job.brand_kit_id:
+        _brand_check(db, job, content)
     job.media_id, job.state, job.progress, job.error, job.next_check_at = media.id, "done", 100, None, None
     _record_usage(db, job, provider)
     db.flush()
     _finish(db, job)
+
+
+def _brand_check(db: Session, job: MediaJob, content: bytes) -> None:
+    """Colour match of a generated image with the brand palette (a notice when it drifts)."""
+    from app.modules.brand import guard
+    from app.modules.brand.models import BrandKit
+    match = guard.color_match(db.get(BrandKit, job.brand_kit_id), content)
+    if not match:
+        return
+    job.brand_score = match["score"]
+    if match["score"] < guard.LOW_MATCH:
+        job.notice = _("The colours drift from the brand palette (match {score}%). Try again or adjust the prompt.",
+                       score=match["score"])[:500]
 
 
 def _record_usage(db: Session, job: MediaJob, provider: AIProvider) -> None:
@@ -320,7 +333,7 @@ def _record_usage(db: Session, job: MediaJob, provider: AIProvider) -> None:
     else:
         usage = prov.record_usage(db, provider, job.model_name, "audio", chars=len(job.prompt or ""),
                                   purpose=purpose, user_id=job.user_id)
-    job.cost = usage.cost
+    job.cost = usage.charged
 
 
 def _fail(db: Session, job: MediaJob, message: str) -> None:

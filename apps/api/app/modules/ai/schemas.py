@@ -41,8 +41,8 @@ class CatalogEntry(BaseModel):
 
 # ------------------------------------------------------------------ providers
 class Wallet(BaseModel):
-    kind: Literal["balance", "budget", "spent"]
-    amount: float
+    kind: Literal["balance", "budget", "spent", "credits"]
+    amount: float | None
     unit: str = "USD"
     spent: float = 0
     budget: float | None = None
@@ -217,6 +217,7 @@ class EstimateOut(BaseModel):
     provider_id: int | None = None
     wallet: Wallet | None = None
     known: bool = False
+    credits: float | None = None  # the price in AI credits (platform AI)
 
 
 class StatusOut(BaseModel):
@@ -260,6 +261,7 @@ class WriteOut(BaseModel):
     cost: float
     tokens_in: int = 0
     tokens_out: int = 0
+    brand_notes: list[str] = []  # what the brand guard found or fixed
 
 
 class SuggestVisualIn(BaseModel):
@@ -287,6 +289,7 @@ class MediaJobIn(BaseModel):
     voice: str | None = Field(default=None, max_length=120)
     input_media_ids: list[int] = []
     brand_kit_id: int | None = None
+    shot: dict | None = None  # camera settings (GET /api/ai/camera)
 
 
 class JobMedia(BaseModel):
@@ -308,6 +311,8 @@ class MediaJobOut(BaseModel):
     title: str
     aspect: str
     style: str | None = None
+    shot: dict | None = None
+    brand_score: int | None = None
     seconds: int
     audio_mode: str
     voice: str | None = None

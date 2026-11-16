@@ -19,5 +19,55 @@
     "fast": "Modèle rapide pour les traitements en masse"
    }
   }
+ },
+ "camera": {
+  "title": "Caméra",
+  "auto": "Auto",
+  "manual": "Manuel",
+  "autoHint": "La description décide de la caméra, de l’objectif et de la lumière.",
+  "manualHint": "Prenez la photo comme avec un vrai appareil. Touchez à nouveau pour effacer.",
+  "autoSummary": "Auto — la description décide",
+  "manualEmpty": "Manuel — rien de choisi",
+  "presets": "Préréglages",
+  "reset": "Tout effacer"
+ },
+ "media": {
+  "brandScore": "Correspondance couleurs de marque {score} %"
+ },
+ "picker": {
+  "creditsLeft": "{n} crédits",
+  "creditsUnlimited": "IA illimitée",
+  "approxCredits": "≈ {n} crédits",
+  "buyCredits": "Acheter des crédits"
+ },
+ "brandNotes": {
+  "title": "Garde de marque",
+  "dismiss": "Masquer"
+ },
+ "brand": {
+  "tabs": {
+   "guard": "Garde de marque"
+  },
+  "guard": {
+   "intro": "Gardez chaque texte, image et vidéo IA fidèle à cette marque.",
+   "mode": "Protection",
+   "modes": {
+    "off": "Désactivé",
+    "guide": "Guide",
+    "strict": "Strict"
+   },
+   "modeHints": {
+    "off": "Utilisé seulement quand quelqu’un choisit ce kit.",
+    "guide": "La marque est ajoutée comme guide ; vos choix de caméra priment.",
+    "strict": "Toujours appliqué : le style photo approuvé prime, les textes sont corrigés et les images notées."
+   },
+   "photoStyle": "Style photo approuvé",
+   "photoStyleGuide": "Utilisé pour les images et vidéos de la marque, sauf si la personne choisit d’autres réglages.",
+   "photoStyleStrict": "Strict : ces réglages remplacent les choix de caméra de la personne qui crée l’image ou la vidéo.",
+   "photoStyleNone": "Aucun — choix libre",
+   "visualRules": "À faire et à éviter en visuel",
+   "visualRulesHint": "Ajouté à chaque prompt d’image et de vidéo de la marque.",
+   "visualRulesPlaceholder": "Lumière naturelle, vraies personnes, produit toujours net. Pas de sourires de banque d’images, pas de néon."
+  }
  }
 }

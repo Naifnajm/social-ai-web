@@ -21,7 +21,11 @@
    "video": "No AI provider can create videos yet.",
    "audio": "No AI provider can create voice or sound yet.",
    "stt": "No AI provider can transcribe speech yet."
-  }
+  },
+  "creditsLeft": "{n} credits",
+  "creditsUnlimited": "Unlimited AI",
+  "approxCredits": "≈ {n} credits",
+  "buyCredits": "Buy credits"
  },
  "media": {
   "title": "Create with AI",
@@ -88,7 +92,8 @@
    "image": "Creating your image…",
    "video": "Creating your video… this can take a few minutes.",
    "audio": "Creating the audio…"
-  }
+  },
+  "brandScore": "Brand colour match {score}%"
  },
  "providers": {
   "adminOnly": "Only admins can manage AI providers.",
@@ -263,7 +268,8 @@
    "look": "Logo & colours",
    "type": "Fonts",
    "voice": "Personality & tone",
-   "rules": "Rules & examples"
+   "rules": "Rules & examples",
+   "guard": "Brand guard"
   },
   "industry": "Industry",
   "industryPlaceholder": "Café, clinic, perfume shop…",
@@ -325,7 +331,28 @@
   "bannedWords": "Banned words",
   "bannedWordsHint": "The AI will never use them. Separate with commas.",
   "samplePosts": "Example posts",
-  "samplePostsHint": "Posts in your brand's voice for the AI to follow. Separate with an empty line."
+  "samplePostsHint": "Posts in your brand's voice for the AI to follow. Separate with an empty line.",
+  "guard": {
+   "intro": "Keep every AI text, image and video inside this brand.",
+   "mode": "Guard",
+   "modes": {
+    "off": "Off",
+    "guide": "Guide",
+    "strict": "Strict"
+   },
+   "modeHints": {
+    "off": "Used only when someone picks this kit.",
+    "guide": "The brand is added as guidance; your camera choices win.",
+    "strict": "Always applied: the approved photo style wins, texts are auto-corrected and images scored."
+   },
+   "photoStyle": "Approved photo style",
+   "photoStyleGuide": "Used for this brand's images and videos unless the person chooses other camera settings.",
+   "photoStyleStrict": "Strict: these settings replace the camera choices of whoever creates the image or video.",
+   "photoStyleNone": "None — people choose freely",
+   "visualRules": "Visual do's and don'ts",
+   "visualRulesHint": "Added to every image and video prompt for this brand.",
+   "visualRulesPlaceholder": "Natural light, real people, product always in focus. No stock-photo smiles, no neon colours."
+  }
  },
  "costs": {
   "title": "AI costs",
@@ -359,5 +386,20 @@
   "pageOf": "{from}–{to} of {total}",
   "prev": "Previous",
   "next": "Next"
+ },
+ "camera": {
+  "title": "Camera",
+  "auto": "Auto",
+  "manual": "Manual",
+  "autoHint": "The description decides the camera, lens and light.",
+  "manualHint": "Shoot it like a real camera. Tap again to clear.",
+  "autoSummary": "Auto — the description decides",
+  "manualEmpty": "Manual — nothing chosen yet",
+  "presets": "Presets",
+  "reset": "Clear all"
+ },
+ "brandNotes": {
+  "title": "Brand guard",
+  "dismiss": "Hide"
  }
 }

@@ -29,6 +29,8 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icon";
 import { Badge, Button, Card, EmptyState, Field, IconButton, Input, Modal, SectionTitle, Segmented, Select, Spinner, Switch, Textarea, cx, toast } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
+import { CameraPanel } from "@/components/camera-panel";
+import type { Shot } from "@/lib/ai";
 import { ApiError, api, mediaUrl } from "@/lib/api";
 import { contrast, extractPalette, paletteToKit, readableOn } from "@/lib/palette";
 import { useSession } from "@/lib/session";
@@ -41,22 +43,27 @@ type BrandKit = {
   industry: string | null; audience: string | null; personality: string | null; language_style: string | null;
   emoji_style: string | null; cta: string | null; banned_words: string | null; sample_posts: string | null;
   website: string | null; is_default: boolean; active: boolean;
+  guard_mode: GuardMode; photo_style: Shot | null; visual_rules: string | null;
 };
+type GuardMode = "off" | "guide" | "strict";
 type Form = Omit<BrandKit, "id" | "logo_url">;
 type Draft = Partial<Form>;
 type Options = { fonts: string[]; language_styles: string[]; emoji_styles: string[] };
 type Palette = { colors: string[]; background: string | null };
-type Tab = "basics" | "look" | "type" | "voice" | "rules";
+type Tab = "basics" | "look" | "type" | "voice" | "rules" | "guard";
+const GUARD_MODES: { value: GuardMode; icon: string }[] = [
+  { value: "off", icon: "visibility_off" }, { value: "guide", icon: "lightbulb" }, { value: "strict", icon: "shield" },
+];
 
 const EMPTY: Form = {
   name: "", logo_media_id: null, color_primary: "#111111", color_secondary: "#71717a", color_text: "#ffffff",
   font_family: "system-ui", tagline: "", tone: "", guidelines: "", hashtags: "", visual_style: "", voice: "",
   color_accent: null, color_background: null, font_heading: null, description: "", industry: "", audience: "",
   personality: "", language_style: null, emoji_style: null, cta: "", banned_words: "", sample_posts: "", website: "",
-  is_default: false, active: true,
+  is_default: false, active: true, guard_mode: "guide", photo_style: null, visual_rules: "",
 };
 const TEXTS = ["tagline", "tone", "guidelines", "hashtags", "visual_style", "voice", "description", "industry", "audience",
-  "personality", "cta", "banned_words", "sample_posts", "website"] as const;
+  "personality", "cta", "banned_words", "sample_posts", "website", "visual_rules"] as const;
 const onError = (err: unknown) => toast.error(err instanceof ApiError ? err.message : String(err));
 const isHex = (v: string | null | undefined): v is string => !!v && /^#[0-9a-f]{6}$/i.test(v);
 
@@ -235,6 +242,7 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
     { value: "type", label: t("tabs.type"), icon: "text_fields" },
     { value: "voice", label: t("tabs.voice"), icon: "campaign" },
     { value: "rules", label: t("tabs.rules"), icon: "verified_user" },
+    { value: "guard", label: t("tabs.guard"), icon: "shield" },
   ];
 
   return (
@@ -397,6 +405,37 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
             </div>
           )}
 
+          {tab === "guard" && (
+            <div className="flex flex-col gap-4">
+              <p className="text-sm text-text-2">{t("guard.intro")}</p>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[13px] font-medium text-text-2">{t("guard.mode")}</span>
+                <div role="radiogroup" aria-label={t("guard.mode")} className="grid gap-1 rounded-2xl bg-track p-1 sm:grid-cols-3">
+                  {GUARD_MODES.map((m) => {
+                    const active = form.guard_mode === m.value;
+                    return (
+                      <button key={m.value} type="button" role="radio" aria-checked={active} onClick={() => set({ guard_mode: m.value })}
+                        className={cx("flex flex-col gap-0.5 rounded-xl px-3 py-2 text-start transition",
+                          active ? "bg-white text-text shadow-[0_1px_3px_rgba(0,0,0,.12)]" : "text-text-2 hover:text-text")}>
+                        <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold">
+                          <Icon name={m.icon} size={15} className={active && m.value === "strict" ? "text-accent-deep" : undefined} />{t(`guard.modes.${m.value}`)}
+                        </span>
+                        <span className="text-[11.5px] leading-snug text-muted">{t(`guard.modeHints.${m.value}`)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <CameraPanel kind="all" defaultOpen value={form.photo_style} onChange={(photo_style) => set({ photo_style })}
+                label={t("guard.photoStyle")} hint={form.guard_mode === "strict" ? t("guard.photoStyleStrict") : t("guard.photoStyleGuide")}
+                emptyText={t("guard.photoStyleNone")} />
+              <Field label={t("guard.visualRules")} hint={t("guard.visualRulesHint")}>
+                <Textarea rows={4} className="bidi" value={form.visual_rules ?? ""} placeholder={t("guard.visualRulesPlaceholder")}
+                  onChange={(e) => set({ visual_rules: e.target.value })} />
+              </Field>
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-5 border-t border-line pt-4">
             <Switch checked={form.is_default} onChange={(v) => set({ is_default: v })} label={t("default")} />
             <Switch checked={form.active} onChange={(v) => set({ active: v })} label={t("active")} />
@@ -447,6 +486,7 @@ export default function BrandKitsPage() {
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className="truncate font-semibold">{kit.name}</span>
                     {kit.is_default && <Badge tone="ink">{t("default")}</Badge>}
+                    {kit.guard_mode === "strict" && <Badge tone="ok"><Icon name="shield" size={11} />{t("guard.modes.strict")}</Badge>}
                     {!kit.active && <Badge>{t("inactive")}</Badge>}
                   </div>
                   {kit.industry && <span className="bidi mt-0.5 truncate text-xs text-muted">{kit.industry}</span>}

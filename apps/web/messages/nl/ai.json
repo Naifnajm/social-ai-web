@@ -19,5 +19,55 @@
     "fast": "Snel model voor bulkwerk"
    }
   }
+ },
+ "camera": {
+  "title": "Camera",
+  "auto": "Auto",
+  "manual": "Handmatig",
+  "autoHint": "De beschrijving bepaalt camera, lens en licht.",
+  "manualHint": "Fotografeer zoals met een echte camera. Tik nogmaals om te wissen.",
+  "autoSummary": "Auto — de beschrijving bepaalt",
+  "manualEmpty": "Handmatig — nog niets gekozen",
+  "presets": "Voorinstellingen",
+  "reset": "Alles wissen"
+ },
+ "media": {
+  "brandScore": "Merkkleur-match {score}%"
+ },
+ "picker": {
+  "creditsLeft": "{n} credits",
+  "creditsUnlimited": "Onbeperkte AI",
+  "approxCredits": "≈ {n} credits",
+  "buyCredits": "Credits kopen"
+ },
+ "brandNotes": {
+  "title": "Merkbewaker",
+  "dismiss": "Verbergen"
+ },
+ "brand": {
+  "tabs": {
+   "guard": "Merkbewaker"
+  },
+  "guard": {
+   "intro": "Houd elke AI-tekst, -afbeelding en -video binnen dit merk.",
+   "mode": "Bewaking",
+   "modes": {
+    "off": "Uit",
+    "guide": "Richtlijn",
+    "strict": "Strikt"
+   },
+   "modeHints": {
+    "off": "Alleen gebruikt als iemand deze kit kiest.",
+    "guide": "Het merk wordt als richtlijn toegevoegd; jouw camerakeuzes winnen.",
+    "strict": "Altijd toegepast: de goedgekeurde fotostijl wint, teksten worden gecorrigeerd en afbeeldingen beoordeeld."
+   },
+   "photoStyle": "Goedgekeurde fotostijl",
+   "photoStyleGuide": "Gebruikt voor de beelden en video's van dit merk, tenzij iemand andere camera-instellingen kiest.",
+   "photoStyleStrict": "Strikt: deze instellingen vervangen de camerakeuzes van wie de afbeelding of video maakt.",
+   "photoStyleNone": "Geen — iedereen kiest vrij",
+   "visualRules": "Visuele do's en don'ts",
+   "visualRulesHint": "Toegevoegd aan elke beeld- en videoprompt voor dit merk.",
+   "visualRulesPlaceholder": "Natuurlijk licht, echte mensen, product altijd scherp. Geen stockfoto-glimlachen, geen neonkleuren."
+  }
  }
 }

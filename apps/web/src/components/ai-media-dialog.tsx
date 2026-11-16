@@ -11,7 +11,8 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ApiError, api, mediaUrl } from "@/lib/api";
-import { ASPECTS, type Aspect, type AudioMode, type Estimate, type JobMedia, type MediaJob, type MediaKind, STYLES, money, useAiStatus } from "@/lib/ai";
+import { ASPECTS, type Aspect, type AudioMode, type Estimate, type JobMedia, type MediaJob, type MediaKind, STYLES, type Shot, money, useAiStatus } from "@/lib/ai";
+import { CameraPanel } from "./camera-panel";
 import { Icon } from "./icon";
 import { ModelPicker } from "./model-picker";
 import { Badge, Button, Field, Input, Modal, Segmented, Select, Textarea, cx, toast } from "./ui";
@@ -41,6 +42,7 @@ export function AiMediaDialog({ open, onClose, onCreated, kinds = ["image", "vid
   const [kind, setKind] = useState<MediaKind>(initialKind && kinds.includes(initialKind) ? initialKind : kinds[0]);
   const [prompt, setPrompt] = useState(initialPrompt);
   const [style, setStyle] = useState<string | null>(null);
+  const [shot, setShot] = useState<Shot | null>(null);
   const [aspect, setAspect] = useState<Aspect>(initialAspect);
   const [seconds, setSeconds] = useState(8);
   const [audioMode, setAudioMode] = useState<AudioMode>("speech");
@@ -74,7 +76,7 @@ export function AiMediaDialog({ open, onClose, onCreated, kinds = ["image", "vid
     mutationFn: () => api.post<MediaJob>("/ai/media", {
       kind, prompt, model_id: modelId, aspect, style: kind === "audio" ? null : style, seconds: effectiveSeconds || 8,
       audio_mode: kind === "audio" ? audioMode : "speech", voice: voice.trim() || null,
-      input_media_ids: kind === "audio" ? [] : refs, brand_kit_id: brandKitId,
+      input_media_ids: kind === "audio" ? [] : refs, brand_kit_id: brandKitId, shot: kind === "audio" ? null : shot,
     }),
     onSuccess: (result) => {
       setJob(result);
@@ -188,6 +190,8 @@ export function AiMediaDialog({ open, onClose, onCreated, kinds = ["image", "vid
             </Field>
           )}
 
+          {kind !== "audio" && <CameraPanel kind={kind} value={shot} onChange={setShot} />}
+
           <div className="grid gap-4 sm:grid-cols-2">
             {kind !== "audio" && (
               <Field label={t("aspect")}>
@@ -259,7 +263,15 @@ function JobView({ job }: { job: MediaJob }) {
         {job.provider && <span className="text-muted">{job.provider}{job.model_name ? ` · ${job.model_name}` : ""}</span>}
         {job.state === "done" && <span className="ms-auto text-xs text-muted" dir="ltr">{money(job.cost, true)}</span>}
       </div>
-      {job.notice && <div className="rounded-xl bg-warn-bg px-3 py-2 text-[13px] text-warn">{job.notice}</div>}
+      {job.brand_score != null && (
+        <div className="flex items-center gap-2 text-[13px]">
+          <Badge tone={job.brand_score >= 45 ? "ok" : "warn"}><Icon name="palette" size={12} /> {t("brandScore", { score: String(job.brand_score) })}</Badge>
+          <div className="h-1.5 w-28 overflow-hidden rounded-full bg-track" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={job.brand_score} aria-label={t("brandScore", { score: String(job.brand_score) })}>
+            <div className={cx("h-full rounded-full", job.brand_score >= 45 ? "bg-ink" : "bg-[#c77700]")} style={{ width: `${Math.max(job.brand_score, 3)}%` }} />
+          </div>
+        </div>
+      )}
+      {job.notice && <div className="bidi rounded-xl bg-warn-bg px-3 py-2 text-[13px] text-warn">{job.notice}</div>}
       {job.state === "running" ? (
         <div className="flex aspect-video flex-col items-center justify-center gap-4 rounded-2xl bg-fill">
           <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ink text-white">

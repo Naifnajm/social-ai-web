@@ -41,7 +41,9 @@ export default function AdminWorkspacePage() {
   const qc = useQueryClient();
   const key = ["admin-workspace", id];
   const { data } = useQuery({ queryKey: key, queryFn: () => api.get<Detail>(`/admin/workspaces/${id}`) });
-  const [dialog, setDialog] = useState<null | "suspend" | "extend" | "plan">(null);
+  const [dialog, setDialog] = useState<null | "suspend" | "extend" | "plan" | "credits">(null);
+  const [grant, setGrant] = useState({ credits: "", note: "" });
+  const [balance, setBalance] = useState<number | null>(null);
   const [reason, setReason] = useState("");
   const [days, setDays] = useState(14);
   const [planForm, setPlanForm] = useState<{ plan: string; status: string; interval: string; period_end: string; note: string; overrides: Record<string, string> }>(
@@ -55,6 +57,18 @@ export default function AdminWorkspacePage() {
       qc.invalidateQueries({ queryKey: key });
       qc.invalidateQueries({ queryKey: ["admin-workspaces"] });
       qc.invalidateQueries({ queryKey: ["admin-stats"] });
+    },
+    onError: (err) => toast.error(err instanceof ApiError ? err.message : String(err)),
+  });
+
+  const addCredits = useMutation({
+    mutationFn: () => api.post<{ balance: number }>(`/admin/workspaces/${id}/credits`, { credits: Number(grant.credits), note: grant.note.trim() || null }),
+    onSuccess: (result) => {
+      setBalance(result.balance);
+      setDialog(null);
+      setGrant({ credits: "", note: "" });
+      toast.success(t("credits.added", { balance: Math.round(result.balance).toLocaleString("en-US") }));
+      qc.invalidateQueries({ queryKey: key });
     },
     onError: (err) => toast.error(err instanceof ApiError ? err.message : String(err)),
   });
@@ -101,6 +115,7 @@ export default function AdminWorkspacePage() {
           <div className="flex flex-wrap gap-2">
             <Button size="sm" icon="event_add" onClick={() => setDialog("extend")}>{t("actions.extend")}</Button>
             <Button size="sm" icon="verified" onClick={openPlan}>{t("actions.plan")}</Button>
+            <Button size="sm" icon="toll" onClick={() => setDialog("credits")}>{t("credits.add")}</Button>
             {w.status === "active"
               ? <Button size="sm" variant="danger" icon="block" onClick={() => setDialog("suspend")}>{t("actions.suspend")}</Button>
               : <Button size="sm" variant="primary" icon="check_circle" loading={action.isPending} onClick={() => action.mutate({ path: "reactivate" })}>{t("actions.reactivate")}</Button>}
@@ -115,6 +130,7 @@ export default function AdminWorkspacePage() {
             {w.trial_ends_at && w.subscription_status === "trialing" && <Info label={t("info.trialEnds")}>{formatDate(w.trial_ends_at, locale)}</Info>}
             {w.current_period_end && <Info label={t("info.periodEnd")}>{formatDate(w.current_period_end, locale)}</Info>}
             <Info label={t("info.provider")}>{w.provider}</Info>
+            {balance != null && <Info label={t("credits.balance")}><span dir="ltr">{num(balance)}</span> {t("credits.unit")}</Info>}
             {data.provider_customer_id && <Info label={t("info.customer")}><span dir="ltr">{data.provider_customer_id}</span></Info>}
             {data.provider_subscription_id && <Info label={t("info.subscription")}><span dir="ltr">{data.provider_subscription_id}</span></Info>}
             <Info label={t("info.locale")}>{data.locale} · {data.currency}</Info>
@@ -202,6 +218,22 @@ export default function AdminWorkspacePage() {
         </>}>
         <p className="mb-4 text-sm text-text-2">{t("suspendConfirm", { name: w.name })}</p>
         <Field label={t("reason")}><Input value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
+      </Modal>
+
+      <Modal open={dialog === "credits"} onClose={() => setDialog(null)} title={t("credits.add")} size="sm"
+        footer={<>
+          <Button variant="ghost" onClick={() => setDialog(null)}>{t("cancel")}</Button>
+          <Button variant="primary" icon="toll" loading={addCredits.isPending} disabled={!Number(grant.credits)} onClick={() => addCredits.mutate()}>{t("credits.add")}</Button>
+        </>}>
+        <p className="mb-4 text-sm text-text-2">{t("credits.addHint")}</p>
+        <div className="flex flex-col gap-4">
+          <Field label={t("credits.amount")} hint={t("credits.amountHint")}>
+            <Input type="number" step={1} dir="ltr" placeholder="500" value={grant.credits} onChange={(e) => setGrant({ ...grant, credits: e.target.value })} />
+          </Field>
+          <Field label={t("credits.note")}>
+            <Input value={grant.note} placeholder={t("credits.notePlaceholder")} onChange={(e) => setGrant({ ...grant, note: e.target.value })} />
+          </Field>
+        </div>
       </Modal>
 
       <Modal open={dialog === "extend"} onClose={() => setDialog(null)} title={t("actions.extend")} size="sm"

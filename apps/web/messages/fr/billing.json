@@ -74,5 +74,41 @@
  "freeText": "{accounts} comptes et {posts} publications par mois sans carte, et l'IA avec votre propre clé. Passez à l'offre supérieure quand il vous en faut plus.",
  "resources": {
   "listening_queries": "Configurations Radar"
+ },
+ "credits": {
+  "title": "Crédits IA",
+  "subtitle": "Votre forfait inclut de l’IA chaque mois. Au-delà, l’IA utilise vos crédits ({n} crédits = {price}).",
+  "balance": "Solde de crédits",
+  "unit": "crédits",
+  "available": "Disponible maintenant (forfait + crédits) : {n}",
+  "availableUnlimited": "L’IA de votre forfait est illimitée.",
+  "included": "IA incluse dans votre forfait ce mois-ci",
+  "usedOf": "utilisés sur {n}",
+  "left": "{n} restants",
+  "unlimited": "Illimité",
+  "includedHint": "Utilisée en premier ; vos crédits prennent le relais ensuite.",
+  "includedDone": "Épuisée ce mois-ci — l’IA utilise maintenant vos crédits.",
+  "packs": "Acheter des crédits",
+  "bonus": "+{n} % bonus",
+  "buy": "Acheter des crédits",
+  "cannotBuy": "Seul le propriétaire peut acheter des crédits, une fois le paiement en ligne configuré.",
+  "history": "Historique des crédits",
+  "noHistory": "Aucun mouvement de crédits pour l’instant.",
+  "cols": {
+   "date": "Date",
+   "kind": "Type",
+   "note": "Détails",
+   "credits": "Crédits",
+   "balance": "Solde"
+  },
+  "kinds": {
+   "purchase": "Achat",
+   "usage": "Utilisation IA",
+   "grant": "Offert",
+   "refund": "Remboursement",
+   "adjust": "Ajustement"
+  },
+  "success": "Merci ! Vos crédits sont en cours d’ajout.",
+  "cancel": "Paiement annulé — rien n’a été débité."
  }
 }

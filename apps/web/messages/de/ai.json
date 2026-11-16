@@ -19,5 +19,55 @@
     "fast": "Schnelles Modell für Massenaufgaben"
    }
   }
+ },
+ "camera": {
+  "title": "Kamera",
+  "auto": "Auto",
+  "manual": "Manuell",
+  "autoHint": "Die Beschreibung bestimmt Kamera, Objektiv und Licht.",
+  "manualHint": "Fotografiere wie mit einer echten Kamera. Erneut tippen zum Entfernen.",
+  "autoSummary": "Auto — die Beschreibung entscheidet",
+  "manualEmpty": "Manuell — noch nichts gewählt",
+  "presets": "Voreinstellungen",
+  "reset": "Alles löschen"
+ },
+ "media": {
+  "brandScore": "Markenfarben-Übereinstimmung {score}%"
+ },
+ "picker": {
+  "creditsLeft": "{n} Credits",
+  "creditsUnlimited": "Unbegrenzte KI",
+  "approxCredits": "≈ {n} Credits",
+  "buyCredits": "Credits kaufen"
+ },
+ "brandNotes": {
+  "title": "Markenschutz",
+  "dismiss": "Ausblenden"
+ },
+ "brand": {
+  "tabs": {
+   "guard": "Markenschutz"
+  },
+  "guard": {
+   "intro": "Halte jeden KI-Text, jedes Bild und Video innerhalb dieser Marke.",
+   "mode": "Schutz",
+   "modes": {
+    "off": "Aus",
+    "guide": "Leitfaden",
+    "strict": "Streng"
+   },
+   "modeHints": {
+    "off": "Nur genutzt, wenn jemand dieses Kit wählt.",
+    "guide": "Die Marke wird als Leitfaden ergänzt; deine Kamerawahl gewinnt.",
+    "strict": "Immer aktiv: der freigegebene Fotostil gewinnt, Texte werden korrigiert und Bilder bewertet."
+   },
+   "photoStyle": "Freigegebener Fotostil",
+   "photoStyleGuide": "Für Bilder und Videos dieser Marke, außer jemand wählt andere Kameraeinstellungen.",
+   "photoStyleStrict": "Streng: diese Einstellungen ersetzen die Kamerawahl der Person, die das Bild oder Video erstellt.",
+   "photoStyleNone": "Keiner — freie Wahl",
+   "visualRules": "Visuelle Do's and Don'ts",
+   "visualRulesHint": "Wird jedem Bild- und Video-Prompt dieser Marke hinzugefügt.",
+   "visualRulesPlaceholder": "Natürliches Licht, echte Menschen, Produkt immer scharf. Kein Stockfoto-Lächeln, keine Neonfarben."
+  }
  }
 }

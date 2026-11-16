@@ -162,5 +162,41 @@
   }
  },
  "freeTitle": "And after the trial? It stays free.",
- "freeText": "{accounts} accounts and {posts} posts a month with no card, and AI with your own key. Upgrade when you need more."
+ "freeText": "{accounts} accounts and {posts} posts a month with no card, and AI with your own key. Upgrade when you need more.",
+ "credits": {
+  "title": "AI credits",
+  "subtitle": "Your plan includes AI each month. Beyond it, AI uses your credits ({n} credits = {price}).",
+  "balance": "Credit balance",
+  "unit": "credits",
+  "available": "Available now (plan + credits): {n}",
+  "availableUnlimited": "Your plan's AI is unlimited.",
+  "included": "AI included in your plan this month",
+  "usedOf": "used of {n}",
+  "left": "{n} left",
+  "unlimited": "Unlimited",
+  "includedHint": "Used first; your credits start when it runs out.",
+  "includedDone": "Used up this month — AI now uses your credits.",
+  "packs": "Buy credits",
+  "bonus": "+{n}% bonus",
+  "buy": "Buy credits",
+  "cannotBuy": "Only the workspace owner can buy credits, once online payment is set up.",
+  "history": "Credit history",
+  "noHistory": "No credit movements yet.",
+  "cols": {
+   "date": "Date",
+   "kind": "Type",
+   "note": "Details",
+   "credits": "Credits",
+   "balance": "Balance"
+  },
+  "kinds": {
+   "purchase": "Purchase",
+   "usage": "AI usage",
+   "grant": "Gift",
+   "refund": "Refund",
+   "adjust": "Adjustment"
+  },
+  "success": "Thank you! Your credits are being added.",
+  "cancel": "Payment canceled — nothing was charged."
+ }
 }

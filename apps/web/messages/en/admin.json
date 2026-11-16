@@ -109,7 +109,23 @@
   "prices": "Stripe price ids (override the environment)",
   "general": "General",
   "announcement": "Announcement banner (shown in every workspace)",
-  "saved": "Platform settings saved."
+  "saved": "Platform settings saved.",
+  "credits": {
+   "title": "AI pricing & credits",
+   "hint": "For AI that runs on the platform's keys.",
+   "markup": "AI markup",
+   "markupHint": "Added to the AI provider's price; customers see the final price.",
+   "perUsd": "Credits per $1",
+   "perUsdHint": "{n} credits = $1",
+   "packs": "Credit packs",
+   "packsDefault": "The default packs are offered.",
+   "price": "Price in USD",
+   "amount": "Credits",
+   "unit": "credits",
+   "bonus": "+{n}% bonus",
+   "remove": "Remove pack",
+   "addPack": "Add a pack"
+  }
  },
  "users": {
   "search": "Search by name, e-mail or username",
@@ -154,5 +170,16 @@
    "redis": "Redis",
    "worker": "Background worker"
   }
+ },
+ "credits": {
+  "add": "Add credits",
+  "addHint": "Goodwill, bank transfers or corrections. A negative number removes credits.",
+  "amount": "Credits",
+  "amountHint": "For example 500 (or -200 to remove).",
+  "note": "Note",
+  "notePlaceholder": "Shown in the workspace's credit history",
+  "added": "Credits updated. New balance: {balance}",
+  "balance": "AI credits",
+  "unit": "credits"
  }
 }

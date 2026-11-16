@@ -7,6 +7,7 @@ import { type ChangeEvent, Suspense, useEffect, useMemo, useRef, useState } from
 import { Icon, PlatformBadge } from "@/components/icon";
 import { ConnectDialog } from "@/components/publishing/connect-dialog";
 import { AiMediaDialog } from "@/components/ai-media-dialog";
+import { BrandNotes } from "@/components/brand-notes";
 import { MediaPicker, MediaThumb } from "@/components/publishing/media-picker";
 import { PostPreview } from "@/components/publishing/preview";
 import { ResultsDialog } from "@/components/publishing/results-dialog";
@@ -45,6 +46,7 @@ function StudioComposer() {
   const [aiOpen, setAiOpen] = useState(false);
   const [ai, setAi] = useState({ tone: "friendly", language: "auto", length: "medium", hashtags: true, emojis: true, tailor: false });
   const [generating, setGenerating] = useState(false);
+  const [brandNotes, setBrandNotes] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [aiMediaOpen, setAiMediaOpen] = useState(false);
@@ -123,12 +125,13 @@ function StudioComposer() {
     if (!improve && !draft.brief.trim()) return toast.error(t("briefNeeded"));
     setGenerating(true);
     try {
-      const res = await api.post<{ text: string; variants?: Record<string, string> }>("/ai/text", {
+      const res = await api.post<{ text: string; variants?: Record<string, string>; brand_notes?: string[] }>("/ai/text", {
         brief: improve ? draft.brief || draft.content : draft.brief, current_text: improve ? draft.content : "",
         platforms, tone: ai.tone, language: ai.language, length: ai.length, hashtags: ai.hashtags, emojis: ai.emojis,
         tailor: ai.tailor && platforms.length > 1, purpose: "post caption",
       });
       set({ content: res.text || draft.content, variants: { ...draft.variants, ...(res.variants || {}) } });
+      setBrandNotes(res.brand_notes ?? []);
       setTab("all");
       toast.success(t("aiDone"));
     } catch (err) {
@@ -328,6 +331,7 @@ function StudioComposer() {
                   <button className="ms-auto text-xs font-medium text-muted hover:text-text" onClick={() => removeVariant(tab)}>{t("useMainText")}</button>
                 )}
               </div>
+              <BrandNotes notes={brandNotes} onDismiss={() => setBrandNotes([])} className="m-2 mt-0" />
             </div>
 
             {/* media */}

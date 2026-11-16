@@ -74,5 +74,41 @@
  "freeText": "{accounts} Konten und {posts} Beiträge im Monat ohne Karte, und KI mit deinem eigenen Schlüssel. Upgrade, wenn du mehr brauchst.",
  "resources": {
   "listening_queries": "Radar-Einrichtungen"
+ },
+ "credits": {
+  "title": "KI-Credits",
+  "subtitle": "Dein Tarif enthält jeden Monat KI. Darüber hinaus nutzt die KI deine Credits ({n} Credits = {price}).",
+  "balance": "Credit-Guthaben",
+  "unit": "Credits",
+  "available": "Jetzt verfügbar (Tarif + Credits): {n}",
+  "availableUnlimited": "Die KI in deinem Tarif ist unbegrenzt.",
+  "included": "In deinem Tarif enthaltene KI diesen Monat",
+  "usedOf": "genutzt von {n}",
+  "left": "{n} übrig",
+  "unlimited": "Unbegrenzt",
+  "includedHint": "Wird zuerst genutzt; danach deine Credits.",
+  "includedDone": "Für diesen Monat aufgebraucht — die KI nutzt jetzt deine Credits.",
+  "packs": "Credits kaufen",
+  "bonus": "+{n}% Bonus",
+  "buy": "Credits kaufen",
+  "cannotBuy": "Nur der Workspace-Inhaber kann Credits kaufen, sobald Online-Zahlung eingerichtet ist.",
+  "history": "Credit-Verlauf",
+  "noHistory": "Noch keine Credit-Bewegungen.",
+  "cols": {
+   "date": "Datum",
+   "kind": "Art",
+   "note": "Details",
+   "credits": "Credits",
+   "balance": "Saldo"
+  },
+  "kinds": {
+   "purchase": "Kauf",
+   "usage": "KI-Nutzung",
+   "grant": "Gutschrift",
+   "refund": "Erstattung",
+   "adjust": "Korrektur"
+  },
+  "success": "Danke! Deine Credits werden gutgeschrieben.",
+  "cancel": "Zahlung abgebrochen — es wurde nichts berechnet."
  }
 }

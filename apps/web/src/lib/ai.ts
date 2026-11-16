@@ -7,6 +7,7 @@
  *   const job = await api.post<MediaJob>("/ai/media", { kind: "image", prompt });
  */
 import { useQuery } from "@tanstack/react-query";
+import { useLocale } from "next-intl";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 
@@ -15,7 +16,8 @@ export type MediaKind = "image" | "video" | "audio";
 export type AudioMode = "speech" | "sfx" | "music";
 export type Aspect = "1:1" | "4:5" | "9:16" | "16:9";
 
-export type Wallet = { kind: "balance" | "budget" | "spent"; amount: number; unit: string; spent: number; budget?: number | null };
+/** `credits`: the platform's AI, paid from the plan's monthly AI and bought credits (amount null = unlimited). */
+export type Wallet = { kind: "balance" | "budget" | "spent" | "credits"; amount: number | null; unit: string; spent: number; budget?: number | null };
 
 export type PickerModel = {
   id: number; name: string; label: string; unit: string; price: number; price_in: number; price_out: number;
@@ -27,16 +29,24 @@ export type PickerGroup = {
 };
 export type Estimate = {
   cost: number; detail: string; model: string; model_id: number | null; provider: string; provider_id: number | null;
-  wallet: Wallet | null; known: boolean;
+  wallet: Wallet | null; known: boolean; credits?: number | null;
 };
 
 export type JobMedia = { id: number; filename: string; mimetype: string; url: string; width?: number | null; height?: number | null; duration?: number | null };
 export type MediaJob = {
   id: number; kind: MediaKind; state: "running" | "done" | "failed"; progress: number; prompt: string; title: string;
-  aspect: string; style?: string | null; seconds: number; audio_mode: AudioMode; voice?: string | null;
+  aspect: string; style?: string | null; shot?: Shot | null; brand_score?: number | null; seconds: number; audio_mode: AudioMode; voice?: string | null;
   provider_id?: number | null; provider?: string | null; model_name?: string | null; media_id?: number | null;
   media?: JobMedia | null; error?: string | null; notice?: string | null; cost: number; created_at: string;
 };
+
+/** Camera settings of an image/video ("shoot it like a real camera"), see GET /api/ai/camera.
+ * `{mode: "auto"}` lets the description decide; manual adds `<group>: <option key>` and maybe a preset. */
+export type Shot = { mode: "auto" | "manual"; preset?: string } & Record<string, string | undefined>;
+export type CameraOption = { key: string; label: string; icon: string };
+export type CameraGroup = { key: string; label: string; icon: string; kinds: ("image" | "video")[]; options: CameraOption[] };
+export type CameraPreset = { key: string; label: string; icon: string; values: Record<string, string> };
+export type CameraOptions = { groups: CameraGroup[]; presets: CameraPreset[] };
 
 export type AiStatus = { text: boolean; image: boolean; video: boolean; audio: boolean; stt: boolean; default_provider?: string | null };
 
@@ -48,6 +58,17 @@ export function useAiPicker(capability: Capability, enabled = true) {
     queryFn: () => api.get<{ capability: Capability; groups: PickerGroup[] }>("/ai/pickers", { capability }).then((r) => r.groups),
     enabled,
     staleTime: 30_000,
+  });
+}
+
+/** Camera groups/options/presets with icons (labels come translated by the API). */
+export function useCameraOptions(enabled = true) {
+  const locale = useLocale();
+  return useQuery({
+    queryKey: ["ai", "camera", locale],
+    queryFn: () => api.get<CameraOptions>("/ai/camera"),
+    enabled,
+    staleTime: Infinity,
   });
 }
 
@@ -86,6 +107,8 @@ const whole = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 // wrapped in Unicode LTR isolates so "$12.50" stays intact inside Arabic sentences
 export const money = (value: number, precise = false) => `\u2066${(precise && Math.abs(value) < 1 ? usd4 : usd2).format(value || 0)}\u2069`;
 export const count = (value: number) => whole.format(value || 0);
+/** Credits (whole numbers, or one decimal under 10). */
+export const credits = (value: number) => (Math.abs(value) < 10 && value % 1 ? value.toFixed(1) : whole.format(Math.round(value || 0)));
 
 export const ASPECTS: Aspect[] = ["1:1", "4:5", "9:16", "16:9"];
 export const STYLES = ["photo", "illustration", "3d", "minimal", "cinematic", "product"] as const;

@@ -1,4 +1,5 @@
 /** Types of the Production API (`/api/production/...`), mirroring apps/api/app/modules/production/schemas.py. */
+import type { Shot } from "@/lib/ai";
 
 export type MediaRef = { id: number; filename: string; mimetype: string; kind: string; url: string; width?: number | null; height?: number | null };
 export type Estimate = { cost: number; model?: string | null };
@@ -32,6 +33,7 @@ export type BlockNode = {
   model_label?: string | null;
   aspect: string;
   style?: string | null;
+  shot?: Shot | null;
   seconds: number;
   audio_mode: string;
   design?: Record<string, unknown> | null;

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormatter, useTranslations } from "next-intl";
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { Icon, PlatformBadge } from "@/components/icon";
+import { BrandNotes } from "@/components/brand-notes";
 import type { Choice, MediaItem, PostResult, PublishAs, QuickData, QuickPreview } from "@/components/templates/types";
 import { Avatar, Badge, Button, Card, EmptyState, Input, Modal, PageHeader, Segmented, Spinner, Textarea, cx, toast } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
@@ -27,6 +28,7 @@ export default function QuickPublishPage() {
   const [choiceKey, setChoiceKey] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [content, setContent] = useState("");
+  const [brandNotes, setBrandNotes] = useState<string[]>([]);
   const [brief, setBrief] = useState("");
   const [accountIds, setAccountIds] = useState<number[] | null>(null);
   const [publishAs, setPublishAs] = useState<PublishAs>("feed_story");
@@ -104,11 +106,11 @@ export default function QuickPublishPage() {
 
   // ------------------------------------------------------------ AI caption
   const writeAi = useMutation({
-    mutationFn: () => api.post<{ text: string }>("/ai/text", {
+    mutationFn: () => api.post<{ text: string; brand_notes?: string[] }>("/ai/text", {
       brief: [brief || content, text].filter(Boolean).join(" — "), length: "short", account_ids: selected,
       hashtags: true, emojis: true,
     }),
-    onSuccess: (res) => setContent(res.text),
+    onSuccess: (res) => { setContent(res.text); setBrandNotes(res.brand_notes ?? []); },
     onError: (err) => toast.error(err instanceof ApiError ? err.message : String(err)),
   });
 
@@ -253,6 +255,7 @@ export default function QuickPublishPage() {
             {/* 3 · caption */}
             <Step n={3} title={t("quick.caption")}>
               <Textarea rows={4} value={content} onChange={(e) => setContent(e.target.value)} placeholder={t("quick.captionPlaceholder")} />
+              <BrandNotes notes={brandNotes} onDismiss={() => setBrandNotes([])} />
               {d.has_ai && (
                 <div className="flex items-center gap-2 rounded-2xl bg-fill p-1.5 ps-3">
                   <Icon name="wand_stars" size={18} className="shrink-0 text-text-2" />

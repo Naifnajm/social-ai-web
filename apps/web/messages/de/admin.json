@@ -1,0 +1,31 @@
+{
+ "settings": {
+  "credits": {
+   "title": "KI-Preise & Credits",
+   "hint": "Für KI, die über die Schlüssel der Plattform läuft.",
+   "markup": "KI-Aufschlag",
+   "markupHint": "Wird auf den Preis des KI-Anbieters aufgeschlagen; Kunden sehen den Endpreis.",
+   "perUsd": "Credits pro 1 $",
+   "perUsdHint": "{n} Credits = 1 $",
+   "packs": "Credit-Pakete",
+   "packsDefault": "Die Standardpakete werden angeboten.",
+   "price": "Preis in USD",
+   "amount": "Credits",
+   "unit": "Credits",
+   "bonus": "+{n}% Bonus",
+   "remove": "Paket entfernen",
+   "addPack": "Paket hinzufügen"
+  }
+ },
+ "credits": {
+  "add": "Credits hinzufügen",
+  "addHint": "Für Kulanz, Überweisungen oder Korrekturen. Eine negative Zahl zieht Credits ab.",
+  "amount": "Credits",
+  "amountHint": "Zum Beispiel 500 (oder -200 zum Abziehen).",
+  "note": "Notiz",
+  "notePlaceholder": "Wird im Credit-Verlauf angezeigt",
+  "added": "Credits aktualisiert. Neues Guthaben: {balance}",
+  "balance": "KI-Credits",
+  "unit": "Credits"
+ }
+}

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Suspense, useEffect, useRef } from "react";
+import { CreditsCard } from "@/components/billing/credits-card";
 import { PricingTable } from "@/components/billing/pricing";
 import { Icon } from "@/components/icon";
 import { Badge, Button, Card, EmptyState, SectionTitle, Spinner, cx, toast } from "@/components/ui";
@@ -88,9 +89,18 @@ function BillingContent() {
 
   useEffect(() => {
     const result = params.get("checkout");
-    if (!result || handled.current) return;
+    const creditsResult = params.get("credits");
+    if ((!result && !creditsResult) || handled.current) return;
     handled.current = true;
-    if (result === "success") {
+    if (creditsResult) {
+      if (creditsResult === "success") {
+        toast.success(t("credits.success"));
+        // the payment webhook adds the credits a few seconds after the redirect
+        for (const ms of [1500, 5000]) setTimeout(() => qc.invalidateQueries({ queryKey: ["billing-credits"] }), ms);
+      } else {
+        toast.info(t("credits.cancel"));
+      }
+    } else if (result === "success") {
       toast.success(t("checkoutSuccess"));
       // the webhook may land a few seconds after the redirect
       for (const ms of [1500, 5000]) {
@@ -180,6 +190,8 @@ function BillingContent() {
           {RESOURCES.map((r) => <Meter key={r} resource={r} used={data.usage[r].used} limit={data.usage[r].limit} />)}
         </div>
       </Card>
+
+      <CreditsCard />
 
       <section id="plans" className="scroll-mt-20">
         {!data.payments_enabled && (

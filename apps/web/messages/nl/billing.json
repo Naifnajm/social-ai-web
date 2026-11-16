@@ -74,5 +74,41 @@
  "freeText": "{accounts} accounts en {posts} berichten per maand zonder creditcard, en AI met je eigen sleutel. Upgrade wanneer je meer nodig hebt.",
  "resources": {
   "listening_queries": "Radar-instellingen"
+ },
+ "credits": {
+  "title": "AI-credits",
+  "subtitle": "Je abonnement bevat elke maand AI. Daarna gebruikt AI je credits ({n} credits = {price}).",
+  "balance": "Creditsaldo",
+  "unit": "credits",
+  "available": "Nu beschikbaar (abonnement + credits): {n}",
+  "availableUnlimited": "De AI in je abonnement is onbeperkt.",
+  "included": "AI in je abonnement deze maand",
+  "usedOf": "gebruikt van {n}",
+  "left": "{n} over",
+  "unlimited": "Onbeperkt",
+  "includedHint": "Wordt eerst gebruikt; je credits starten als het op is.",
+  "includedDone": "Op voor deze maand — AI gebruikt nu je credits.",
+  "packs": "Credits kopen",
+  "bonus": "+{n}% bonus",
+  "buy": "Credits kopen",
+  "cannotBuy": "Alleen de eigenaar kan credits kopen, zodra online betalen is ingesteld.",
+  "history": "Creditgeschiedenis",
+  "noHistory": "Nog geen creditbewegingen.",
+  "cols": {
+   "date": "Datum",
+   "kind": "Soort",
+   "note": "Details",
+   "credits": "Credits",
+   "balance": "Saldo"
+  },
+  "kinds": {
+   "purchase": "Aankoop",
+   "usage": "AI-gebruik",
+   "grant": "Cadeau",
+   "refund": "Terugbetaling",
+   "adjust": "Correctie"
+  },
+  "success": "Bedankt! Je credits worden toegevoegd.",
+  "cancel": "Betaling geannuleerd — er is niets afgeschreven."
  }
 }

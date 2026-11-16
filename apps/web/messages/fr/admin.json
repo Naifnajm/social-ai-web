@@ -1,0 +1,31 @@
+{
+ "settings": {
+  "credits": {
+   "title": "Tarifs IA & crédits",
+   "hint": "Pour l’IA qui utilise les clés de la plateforme.",
+   "markup": "Marge IA",
+   "markupHint": "Ajoutée au prix du fournisseur IA ; les clients voient le prix final.",
+   "perUsd": "Crédits pour 1 $",
+   "perUsdHint": "{n} crédits = 1 $",
+   "packs": "Packs de crédits",
+   "packsDefault": "Les packs par défaut sont proposés.",
+   "price": "Prix en USD",
+   "amount": "Crédits",
+   "unit": "crédits",
+   "bonus": "+{n} % bonus",
+   "remove": "Supprimer le pack",
+   "addPack": "Ajouter un pack"
+  }
+ },
+ "credits": {
+  "add": "Ajouter des crédits",
+  "addHint": "Geste commercial, virement ou correction. Un nombre négatif retire des crédits.",
+  "amount": "Crédits",
+  "amountHint": "Par exemple 500 (ou -200 pour retirer).",
+  "note": "Note",
+  "notePlaceholder": "Visible dans l’historique des crédits",
+  "added": "Crédits mis à jour. Nouveau solde : {balance}",
+  "balance": "Crédits IA",
+  "unit": "crédits"
+ }
+}

@@ -68,6 +68,21 @@ export function onLimitReached(handler: (detail: LimitDetail) => void) {
   return () => window.removeEventListener(LIMIT_EVENT, listener);
 }
 
+/** AI credits (GET /api/billing/credits). Amounts are credits; `included*`/`available` null = unlimited. */
+export type CreditPack = { id: number; usd: number; credits: number; bonus: number };
+export type CreditKind = "purchase" | "usage" | "grant" | "refund" | "adjust";
+export type CreditRow = {
+  id: number; kind: CreditKind; credits: number; balance_after: number; amount_paid: number | null; currency: string | null;
+  note: string | null; created_at: string;
+};
+export type CreditsSummary = {
+  balance: number; credits_per_usd: number; included: number | null; included_used: number | null; included_left: number | null;
+  available: number | null; packs: CreditPack[]; can_buy: boolean; currency: string; history: CreditRow[];
+};
+
+export const useCredits = (enabled = true) =>
+  useQuery({ queryKey: ["billing-credits"], queryFn: () => api.get<CreditsSummary>("/billing/credits"), enabled, staleTime: 30_000 });
+
 export const usePlans = () =>
   useQuery({ queryKey: ["billing-plans"], queryFn: () => api.get<PlansResponse>("/billing/plans"), staleTime: 3600_000 });
 

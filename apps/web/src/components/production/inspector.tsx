@@ -2,6 +2,7 @@
 /** Right-hand panel: the settings, approval, publishing and results history of the selected block. */
 import { useTranslations } from "next-intl";
 import { type ReactNode, useState } from "react";
+import { CameraPanel } from "@/components/camera-panel";
 import { Icon, PlatformBadge } from "@/components/icon";
 import { Button, Field, IconButton, Input, Segmented, Select, Textarea, cx, toast } from "@/components/ui";
 import { useRouter } from "@/i18n/navigation";
@@ -94,6 +95,9 @@ export function Inspector({ node, onClose }: { node: BlockNode; onClose: () => v
                   {graph.styles.map((s) => <option key={s} value={s}>{t(`styles.${s}`)}</option>)}
                 </Select>
               </Field>
+            )}
+            {(node.kind === "image" || node.kind === "video") && (
+              <CameraPanel kind={node.kind} value={node.shot} disabled={readOnly} onChange={(shot) => update({ shot })} />
             )}
           </Section>
         )}

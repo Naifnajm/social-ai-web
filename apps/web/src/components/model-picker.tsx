@@ -12,7 +12,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 import { Link } from "@/i18n/navigation";
-import { type AudioMode, type Capability, type Estimate, type Wallet, money, count, useAiEstimate, useAiPicker } from "@/lib/ai";
+import { type AudioMode, type Capability, type Estimate, type Wallet, count, credits, money, useAiEstimate, useAiPicker } from "@/lib/ai";
 import { useSession } from "@/lib/session";
 import { Icon } from "./icon";
 import { Select, Spinner, cx } from "./ui";
@@ -34,6 +34,7 @@ type Props = {
 
 export function walletLevel(wallet?: Wallet | null) {
   if (!wallet || wallet.kind === "spent") return "neutral";
+  if (wallet.amount == null) return "ok"; // unlimited
   if (wallet.kind === "budget") return wallet.amount <= 0 ? "empty" : wallet.budget && wallet.amount < wallet.budget * 0.15 ? "low" : "ok";
   return wallet.amount <= 0 ? "empty" : "ok";
 }
@@ -43,11 +44,13 @@ export function WalletChip({ wallet, title }: { wallet?: Wallet | null; title?: 
   if (!wallet) return null;
   const level = walletLevel(wallet);
   let text: string;
-  if (wallet.kind === "balance") {
-    const amount = wallet.unit === "USD" ? money(wallet.amount) : `${count(wallet.amount)} ${t.has(`units.${wallet.unit}`) ? t(`units.${wallet.unit}`) : wallet.unit}`;
+  if (wallet.kind === "credits") {
+    text = wallet.amount == null ? t("creditsUnlimited") : t("creditsLeft", { n: credits(wallet.amount) });
+  } else if (wallet.kind === "balance") {
+    const amount = wallet.unit === "USD" ? money(wallet.amount ?? 0) : `${count(wallet.amount ?? 0)} ${t.has(`units.${wallet.unit}`) ? t(`units.${wallet.unit}`) : wallet.unit}`;
     text = t("balance", { amount });
   } else if (wallet.kind === "budget") {
-    text = t("left", { left: money(wallet.amount), budget: money(wallet.budget ?? 0) });
+    text = t("left", { left: money(wallet.amount ?? 0), budget: money(wallet.budget ?? 0) });
   } else {
     text = t("spent", { amount: money(wallet.spent) });
   }
@@ -55,7 +58,7 @@ export function WalletChip({ wallet, title }: { wallet?: Wallet | null; title?: 
     <span title={title} className={cx("inline-flex h-6 items-center gap-1 whitespace-nowrap rounded-full px-2.5 text-[11.5px] font-medium",
       level === "neutral" && "bg-fill-2 text-text-2", level === "ok" && "bg-ok-bg text-ok",
       level === "low" && "bg-warn-bg text-warn", level === "empty" && "bg-bad-bg text-bad")}>
-      <Icon name="account_balance" size={13} />
+      <Icon name={wallet.kind === "credits" ? "toll" : "account_balance"} size={13} />
       <span dir="auto">{text}</span>
     </span>
   );
@@ -74,6 +77,7 @@ export function CostChip({ estimate, over }: { estimate?: Estimate | null; over?
       over ? "border-transparent bg-bad-bg text-bad" : "border-line bg-white/70 text-text")}>
       <Icon name="payments" size={13} />
       {estimate.known || estimate.cost ? <>{t("estimated")} <b className="font-semibold" dir="ltr">{text}</b></> : text}
+      {estimate.credits ? <span className="text-text-2">· {t("approxCredits", { n: credits(estimate.credits) })}</span> : null}
       {estimate.detail && (estimate.known || estimate.cost) ? <span className="hidden text-[10.5px] text-muted sm:inline" dir="ltr">({estimate.detail})</span> : null}
     </span>
   );
@@ -93,7 +97,9 @@ export function ModelPicker({ capability, value, onChange, prompt = "", seconds 
     return list.find((g) => g.provider_id === (estimate.data?.provider_id ?? providerId)) ?? list[0];
   })();
   const wallet = estimate.data?.wallet ?? selectedGroup?.wallet;
-  const notEnough = Boolean(estimate.data && wallet && wallet.unit === "USD" && wallet.kind !== "spent" && estimate.data.cost > wallet.amount);
+  const notEnough = Boolean(estimate.data && wallet && wallet.amount != null && (
+    wallet.kind === "credits" ? (estimate.data.credits ?? 0) > wallet.amount
+      : wallet.unit === "USD" && wallet.kind !== "spent" && estimate.data.cost > wallet.amount));
 
   useEffect(() => {
     onEstimate?.(estimate.data, notEnough);
@@ -133,6 +139,9 @@ export function ModelPicker({ capability, value, onChange, prompt = "", seconds 
       {notEnough && (
         <div className="flex items-center gap-1 text-xs text-bad">
           <Icon name="warning" size={14} /> {t("notEnough")}
+          {wallet?.kind === "credits" && can("owner") && (
+            <Link href="/settings/billing#credits" className="ms-1 font-semibold underline-offset-2 hover:underline">{t("buyCredits")}</Link>
+          )}
         </div>
       )}
     </div>

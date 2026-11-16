@@ -1,0 +1,31 @@
+{
+ "settings": {
+  "credits": {
+   "title": "AI-prijzen & credits",
+   "hint": "Voor AI die op de sleutels van het platform draait.",
+   "markup": "AI-opslag",
+   "markupHint": "Bovenop de prijs van de AI-provider; klanten zien de eindprijs.",
+   "perUsd": "Credits per $1",
+   "perUsdHint": "{n} credits = $1",
+   "packs": "Creditpakketten",
+   "packsDefault": "De standaardpakketten worden aangeboden.",
+   "price": "Prijs in USD",
+   "amount": "Credits",
+   "unit": "credits",
+   "bonus": "+{n}% bonus",
+   "remove": "Pakket verwijderen",
+   "addPack": "Pakket toevoegen"
+  }
+ },
+ "credits": {
+  "add": "Credits toevoegen",
+  "addHint": "Voor goodwill, bankoverschrijvingen of correcties. Een negatief getal haalt credits weg.",
+  "amount": "Credits",
+  "amountHint": "Bijvoorbeeld 500 (of -200 om af te trekken).",
+  "note": "Notitie",
+  "notePlaceholder": "Zichtbaar in de creditgeschiedenis",
+  "added": "Credits bijgewerkt. Nieuw saldo: {balance}",
+  "balance": "AI-credits",
+  "unit": "credits"
+ }
+}

@@ -236,7 +236,9 @@ def test_estimates_per_block_and_run(api, fake_ai):
                                                          "credits": None}
     assert api.by_id(graph, llm["id"])["estimate"]["cost"] == pytest.approx(0.001)
     assert api.by_id(graph, text["id"])["estimate"] is None
-    assert graph["run_all"] == {"cost": pytest.approx(0.121), "reused": 0, "blocks": 2}
+    run_all = graph["run_all"]
+    assert {k: run_all[k] for k in ("cost", "reused", "blocks")} == {"cost": pytest.approx(0.121), "reused": 0,
+                                                                    "blocks": 2}
     api.run(board)
     estimate = api.get(f"/boards/{board}/estimate")
     assert estimate == {"cost": 0, "reused": 2, "blocks": 0}

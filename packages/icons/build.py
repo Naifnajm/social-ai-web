@@ -1,8 +1,11 @@
 """Build packages/icons/icons.json: semantic icon keys -> Solar icon SVG bodies (24x24), "linear" and "duo".
 
-Solar icon set by 480 Design (CC BY 4.0). Source: npm pack @iconify-json/solar
-Usage: python3 packages/icons/build.py path/to/icons.json
-To add an icon: add "key": "solar-name" to MAP (and to DUO for a bold-duotone variant), then rebuild.
+Solar icon set by 480 Design (CC BY 4.0). Source: npm pack @iconify-json/solar@1.2.16 (later versions may redraw a few icons)
+Usage: python3 packages/icons/build.py path/to/package/icons.json
+       cp packages/icons/icons.json apps/web/src/components/icons.json   # the web app's copy
+To add an icon: add "key": "solar-name" to MAP (and to DUO for a bold-duotone variant), then rebuild and copy.
+Never edit the web copy by hand: `node apps/web/scripts/check-icons.mjs` checks that it matches and that every
+icon name used in the web app and the API exists here.
 """
 import json
 import sys
@@ -44,13 +47,49 @@ MAP = {
     "smartphone": "smartphone", "chat": "chat-square", "menu_book": "book-bookmark", "visibility_off": "eye-closed",
     "block": "forbidden-circle", "event_add": "calendar-add", "trending_up": "graph-new-up", "auto_awesome": "stars",
     "add_photo": "gallery-add", "inbox": "import", "group_off": "widget-add", "people_check": "user-check", "visibility": "eye", "wand_stars": "magic-stick-3", "warning": "danger-triangle",
+    # UI
+    "add_circle": "add-circle", "business_center": "case", "menu": "hamburger-menu", "help": "question-circle",
+    # camera panel (apps/api/app/modules/ai/camera.py: GROUPS, PRESETS, GROUP_ICONS)
+    "360": "refresh-circle", "3d_rotation": "camera-rotate", "ac_unit": "snowflake",
+    "accessibility_new": "user-hand-up", "animation": "videocamera-record", "arrow_forward": "arrow-right",
+    "back_hand": "hand", "blur_circular": "circle-dot-dashed", "blur_on": "radial-blur", "brightness_7": "sun",
+    "camera": "camera-minimalistic", "camera_enhance": "camera-square", "camera_roll": "reel",
+    "center_focus_strong": "target", "change_history": "face-scan-circle", "cloud": "cloud",
+    "colorize": "pipette", "contrast": "contrast", "crop_3_2": "crop-minimalistic", "crop_free": "crop",
+    "crop_portrait": "face-scan-square", "dark_mode": "moon", "deblur": "circle-dot",
+    "directions_walk": "walking", "face": "user-circle", "filter_b_and_w": "filters",
+    "filter_center_focus": "magnifer-bug", "flash_on": "flashlight-on", "flight": "airplane",
+    "grid_view": "widget", "height": "arrow-up-from-line", "highlight": "flashlight", "inventory_2": "box",
+    "landscape": "mountains", "lens_blur": "circle-dashed", "light": "lamp", "light_mode": "sun-2",
+    "local_cafe": "cup-hot", "local_fire_department": "fire", "location_city": "city", "motion_blur": "wind",
+    "nature": "leaf", "nightlife": "lightbulb-bolt", "nights_stay": "moon-stars", "north": "arrow-up",
+    "panorama_wide_angle": "panorama", "pause_circle": "pause-circle", "photo_camera": "camera",
+    "portrait": "user-rounded", "radio_button_checked": "record-circle", "receipt_long": "bill-list",
+    "restaurant": "chef-hat", "rotate_right": "rotate-clockwise", "savings": "money-bag",
+    "shield": "shield-check", "shutter_speed": "stopwatch", "south": "arrow-down",
+    "sports_motorsports": "running", "street_view": "streets", "swap_horiz": "transfer-horizontal",
+    "swap_vert": "transfer-vertical", "timelapse": "hourglass", "toll": "wallet-money", "tune": "tuning-2",
+    "videocam": "videocamera", "visibility_lock": "eye-scan", "wb_sunny": "sun", "wb_twilight": "sunset",
+    "window": "window-frame", "zoom_in": "magnifer-zoom-in", "zoom_in_map": "maximize-square",
+    "zoom_out": "magnifer-zoom-out",
 }
 DUO = ["text_fields", "wand_stars", "upload", "image", "movie", "mic", "call_merge", "brush", "send",
        "campaign", "visibility", "favorite", "percent", "play_circle", "add", "format_quote", "music_note",
        "account_tree", "error", "link_off", "event_upcoming", "rocket_launch", "schedule", "sync_alt",
        "lightbulb", "trophy", "key", "show_chart", "tag", "aspect_ratio", "subtitles", "verified_user",
        "forum", "smart_toy", "photo_frame", "recycle", "photo_library", "description", "shopping_cart", "storefront",
-       "bolt", "smartphone", "chat", "menu_book", "trending_up", "auto_awesome", "flag", "mood", "mood_bad", "inbox"]
+       "bolt", "smartphone", "chat", "menu_book", "trending_up", "auto_awesome", "flag", "mood", "mood_bad", "inbox",
+       "360", "3d_rotation", "ac_unit", "accessibility_new", "animation", "arrow_forward", "back_hand",
+       "blur_circular", "blur_on", "brightness_7", "camera", "camera_enhance", "camera_roll",
+       "center_focus_strong", "change_history", "cloud", "colorize", "contrast", "crop_3_2", "crop_free",
+       "crop_portrait", "dark_mode", "deblur", "directions_walk", "face", "filter_b_and_w",
+       "filter_center_focus", "flash_on", "flight", "grid_view", "height", "highlight", "inventory_2",
+       "landscape", "lens_blur", "light", "light_mode", "local_cafe", "local_fire_department", "location_city",
+       "motion_blur", "nature", "nightlife", "nights_stay", "north", "panorama_wide_angle", "pause_circle",
+       "photo_camera", "portrait", "radio_button_checked", "receipt_long", "restaurant", "rotate_right",
+       "savings", "shield", "shutter_speed", "south", "sports_motorsports", "street_view", "swap_horiz",
+       "swap_vert", "timelapse", "toll", "tune", "videocam", "visibility_lock", "wb_sunny", "wb_twilight",
+       "window", "zoom_in", "zoom_in_map", "zoom_out", "add_circle", "business_center"]
 
 
 def main(source):

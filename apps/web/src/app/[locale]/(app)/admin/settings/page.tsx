@@ -170,7 +170,8 @@ function SettingsForm({ initial }: { initial: SettingsOut }) {
                       value={pack.credits} onChange={(e) => setPack(i, { credits: e.target.value })} />
                     <span className="pointer-events-none absolute inset-y-0 end-3 flex items-center text-xs text-muted">{t("credits.unit")}</span>
                   </div>
-                  {bonus > 0 && <Badge tone="ok">{t("credits.bonus", { n: bonus })}</Badge>}
+                  {/* fixed-width slot: the delete button stays in the same column with or without a bonus */}
+                  <span className="flex w-28 shrink-0">{bonus > 0 && <Badge tone="ok">{t("credits.bonus", { n: bonus })}</Badge>}</span>
                   <IconButton icon="delete" label={t("credits.remove")} onClick={() => setForm((f) => ({ ...f, packs: f.packs.filter((_, j) => j !== i) }))} />
                 </li>
               );

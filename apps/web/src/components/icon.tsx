@@ -25,8 +25,13 @@ export function Icon({
   className?: string;
   title?: string;
 }) {
-  const entry = ICONS[name];
-  if (!entry) return null;
+  let entry = ICONS[name];
+  if (!entry) {
+    // Unknown key (e.g. an icon name sent by the API that is not in packages/icons): draw a neutral question mark
+    // instead of nothing, so the layout holds and the gap is easy to spot.
+    if (process.env.NODE_ENV !== "production") console.warn(`Icon: unknown name "${name}"`);
+    entry = ICONS.help;
+  }
   const body = (duo && entry.duo) || entry.linear;
   return (
     <svg

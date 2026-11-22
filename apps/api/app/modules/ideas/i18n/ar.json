@@ -31,5 +31,6 @@
  "Choose at least one account to publish on.": "اختر حساباً واحداً على الأقل للنشر عليه.",
  "Choose a date and time.": "اختر التاريخ والوقت.",
  "{count} new ideas for today": "{count} أفكار جديدة لليوم",
- "These accounts need a photo or a video. Add one in the studio, or choose other accounts.": "هذه الحسابات تحتاج صورة أو فيديو. أضفها من الاستوديو، أو اختر حسابات أخرى."
+ "These accounts need a photo or a video. Add one in the studio, or choose other accounts.": "هذه الحسابات تحتاج صورة أو فيديو. أضفها من الاستوديو، أو اختر حسابات أخرى.",
+ "Someone said: “{text}”": "قال أحدهم: «{text}»"
 }

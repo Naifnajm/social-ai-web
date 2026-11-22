@@ -66,6 +66,7 @@ def _radar(db: Session, workspace: Workspace) -> dict:
     voice = radar.voice(db, workspace, query, days=14)
     questions = db.scalars(select(Mention).where(
         Mention.query_id == query.id, Mention.brand.is_(None), Mention.published_at >= since,
+        Mention.status != "spam",
         Mention.intent.in_(("question", "purchase"))).order_by(Mention.published_at.desc()).limit(40)).all()
     by_topic: dict[str, list] = {}
     for m in questions:
@@ -74,7 +75,18 @@ def _radar(db: Session, workspace: Workspace) -> dict:
                                                  RadarEvent.kind.in_(("opportunity", "rising", "competitor")))
                         .order_by(RadarEvent.started_at.desc()).limit(5)).all()
     praised = [w for w in voice.get("words") or [] if w["sentiment"] == "positive"][:6]
+    # what people say on every source (reviews, YouTube/TikTok/Threads comments, forums, news…), best first
+    loud = db.scalars(select(Mention).where(
+        Mention.query_id == query.id, Mention.brand.is_(None), Mention.published_at >= since,
+        Mention.status.not_in(("spam", "muted")), Mention.sentiment == "positive")
+        .order_by(Mention.engagement.desc(), Mention.author_followers.desc()).limit(3)).all()
+    sources: dict[str, int] = {}
+    for source in db.scalars(select(Mention.source).where(Mention.query_id == query.id, Mention.brand.is_(None),
+                                                          Mention.published_at >= since, Mention.status != "spam")):
+        sources[source] = sources.get(source, 0) + 1
     return {
+        "voices": [{"key": f"voice:{m.id}", "source": m.source, "text": (m.text or "")[:200]} for m in loud],
+        "sources": sources,
         "questions": [{"key": f"question:{topic or '-'}", "topic": topic or None, "count": len(rows),
                        "examples": [(m.text or "")[:160] for m in rows[:3]]}
                       for topic, rows in sorted(by_topic.items(), key=lambda kv: -len(kv[1]))[:3]],

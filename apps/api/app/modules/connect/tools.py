@@ -324,7 +324,9 @@ def get_analytics(tc: ToolCtx, args: dict) -> dict:
        "intent": {"type": "string", "enum": ["question", "purchase", "complaint", "praise", "news", "other"]},
        "brand": {"type": "string", "maxLength": 120, "default": "own",
                  "description": "own (default), all, or the name of a competitor followed by Radar."},
-       "status": {"type": "string", "enum": ["new", "reviewed", "muted", "converted"]},
+       "status": {"type": "string", "enum": ["new", "reviewed", "muted", "converted", "spam"]},
+       "source": {"type": "string", "maxLength": 20,
+                  "description": "Only one source (see list_radar_sources), e.g. x, threads, tiktok, web, news."},
        "search": {"type": "string", "maxLength": 80},
        "limit": {"type": "integer", "minimum": 1, "maximum": MAX_LIST, "default": 20}},
       feature="listening")
@@ -333,18 +335,35 @@ def list_radar_mentions(tc: ToolCtx, args: dict) -> dict:
     query = svc.get_query(tc.db, tc.ws, args.get("query_id"))
     rows, total = svc.list_mentions(tc.db, query, days=int(args.get("days") or 7), sentiment=args.get("sentiment"),
                                     intent=args.get("intent"), brand=args.get("brand") or "own",
+                                    source=args.get("source"),
                                     status=args.get("status"), q=args.get("search"),
                                     limit=int(args.get("limit") or 20))
     items = []
     for m in rows:
         data = _json(svc.mention_out(m))
-        items.append({"id": data["id"], "platform": data["platform"], "url": data["url"],
+        items.append({"id": data["id"], "source": data["source"], "platform": data["platform"], "url": data["url"],
                       "published_at": data["published_at"], "brand": data["brand"], "reach": data["reach"],
+                      "reach_estimated": data["reach_estimated"],
                       "engagement": data["engagement"], "sentiment": data["sentiment"], "intent": data["intent"],
                       "topic": data["topic"], "status": data["status"], "lang": data["lang"],
                       **untrusted({"author_name": data["author_name"], "author_handle": data["author_handle"],
                                    "text": data["text"]})})
     return {"radar": {"id": query.id, "name": query.name}, "total": total, "mentions": items}
+
+
+@tool("list_radar_sources", "Radar sources",
+      "Every place Radar can listen to (your accounts, public search, data providers) with its status for this "
+      "workspace (ready, needs a connection, a key, a permission, out of credits…), what fixes it and what it costs.",
+      {"query_id": {"type": "integer", "description": "A Radar setup; default: the first one."}},
+      feature="listening")
+def list_radar_sources(tc: ToolCtx, args: dict) -> dict:
+    from app.modules.listening.router import list_sources
+    data = _json(list_sources(query_id=args.get("query_id"), ctx=tc.ctx))
+    return {"query_id": data["query_id"], "spend_this_month": data["spend"],
+            "sources": [{"key": s["key"], "label": s["label"], "access": s["access"], "beta": s["beta"],
+                         "used_by_setup": s["in_query"], "status": s["health"]["status"],
+                         "message": s["health"]["message"], "fix": s["health"]["action"], "cost": s["cost"],
+                         "usage_this_month": s["usage"], "quota": s["quota"]} for s in data["sources"]]}
 
 
 @tool("list_radar_alerts", "Radar alerts",

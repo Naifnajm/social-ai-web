@@ -49,6 +49,8 @@ def _reason_labels(context: dict) -> dict[str, dict]:
                                                       word=r["word"], count=r["count"])}
     for e in radar.get("events") or []:
         out[e["key"]] = {"kind": "event", "label": e["title"]}
+    for v in radar.get("voices") or []:
+        out[v["key"]] = {"kind": "voice", "label": _("Someone said: “{text}”", text=v["text"][:120])}
     for p in context.get("pillars") or []:
         out[p["key"]] = {"kind": "pillar", "label": _("Your “{name}” pillar is behind: {share}% of posts, target "
                                                       "{target}%", name=p["name"], share=round(p["share"]),

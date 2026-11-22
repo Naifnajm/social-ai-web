@@ -176,6 +176,12 @@
     {% for e in r.radar.events %}
     <p style="margin: 8px 0 0;"><strong>{{ e.title }}</strong><br><span style="color: #52525b;">{{ e.what }}</span></p>
     {% endfor %}
+    {% if r.radar.highlights %}
+    <p style="margin: 12px 0 4px; font-weight: 600;">{{ _("Mentions picked by the team") }}</p>
+    {% for h in r.radar.highlights %}
+    <p style="margin: 6px 0 0; padding: 8px 10px; background: #f4f4f5; border-radius: 8px;"><span dir="auto">“{{ h.text }}”</span><br><span style="color: #71717a; font-size: 12px;">{{ h.author or "" }} · {{ h.source }}</span></p>
+    {% endfor %}
+    {% endif %}
   </div>
   {% endif %}
 

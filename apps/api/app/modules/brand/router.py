@@ -26,7 +26,7 @@ COLOR_FIELDS = ("color_primary", "color_secondary", "color_text", "color_accent"
 NULLABLE = ("logo_media_id", "tagline", "tone", "guidelines", "hashtags", "visual_style", "voice", "color_accent",
             "color_background", "font_heading", "description", "industry", "audience", "personality",
             "language_style", "emoji_style", "cta", "banned_words", "sample_posts", "website",
-            "photo_style", "visual_rules")
+            "photo_style", "visual_rules", "logo_dark_media_id", "reference_media_ids")
 def _shot_value(value):
     from app.modules.ai import camera
     return camera.clean(value)
@@ -55,6 +55,9 @@ class BrandKitOut(BaseModel):
     name: str
     logo_media_id: int | None = None
     logo_url: str | None = None
+    logo_dark_media_id: int | None = None
+    logo_dark_url: str | None = None
+    reference_media_ids: list[int] | None = None
     color_primary: str
     color_secondary: str
     color_text: str
@@ -88,6 +91,7 @@ class BrandKitOut(BaseModel):
 class BrandKitIn(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     logo_media_id: int | None = None
+    logo_dark_media_id: int | None = None
     color_primary: str = "#111111"
     color_secondary: str = "#71717a"
     color_text: str = "#ffffff"
@@ -125,6 +129,7 @@ class BrandKitIn(BaseModel):
 class BrandKitUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=120)
     logo_media_id: int | None = None
+    logo_dark_media_id: int | None = None
     color_primary: str | None = None
     color_secondary: str | None = None
     color_text: str | None = None
@@ -205,6 +210,7 @@ class BrandDraft(BaseModel):
 def kit_out(kit: BrandKit) -> BrandKitOut:
     out = BrandKitOut.model_validate(kit)
     out.logo_url = f"/api/media/{kit.logo_media_id}/file" if kit.logo_media_id else None
+    out.logo_dark_url = f"/api/media/{kit.logo_dark_media_id}/file" if kit.logo_dark_media_id else None
     return out
 
 
@@ -241,6 +247,7 @@ def default(ctx: Ctx = Depends(workspace_ctx())):
 @router.post("", response_model=BrandKitOut, status_code=201)
 def create(data: BrandKitIn, ctx: Ctx = Depends(workspace_ctx(Role.admin))):
     _check_logo(ctx, data.logo_media_id)
+    _check_logo(ctx, data.logo_dark_media_id)
     values = data.model_dump()
     want_default = values.pop("is_default")
     kit = BrandKit(workspace_id=ctx.workspace.id, **values)
@@ -260,8 +267,9 @@ def one(kit_id: int, ctx: Ctx = Depends(workspace_ctx())):
 def update(kit_id: int, data: BrandKitUpdate, ctx: Ctx = Depends(workspace_ctx(Role.admin))):
     kit = service.get_kit(ctx.db, ctx.workspace.id, kit_id)
     values = data.model_dump(exclude_unset=True)
-    if "logo_media_id" in values:
-        _check_logo(ctx, values["logo_media_id"])
+    for key in ("logo_media_id", "logo_dark_media_id"):
+        if key in values:
+            _check_logo(ctx, values[key])
     want_default = values.pop("is_default", None)
     for key, value in values.items():
         if value is None and key not in NULLABLE:
@@ -320,3 +328,8 @@ def check(data: BrandCheckIn, ctx: Ctx = Depends(workspace_ctx())):
         out["colors"] = guard.color_match(kit, read_media(media)) if (media.mimetype or "").startswith("image/") \
             else None
     return out
+
+
+from .router_import import router as _import_router  # noqa: E402  (import, brand health, suggestions, fonts)
+
+router.include_router(_import_router)

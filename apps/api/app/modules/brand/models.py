@@ -1,6 +1,8 @@
 """Brand kits (logo, colours, font, tone, rules, visual style, voice) — shared by AI writing, templates,
 the inbox assistant and production."""
-from sqlalchemy import JSON, Boolean, ForeignKey, String, Text
+from datetime import datetime
+
+from sqlalchemy import JSON, BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base, WorkspaceMixin
@@ -47,6 +49,9 @@ class BrandKit(WorkspaceMixin, Base):
     guard_mode: Mapped[str] = mapped_column(String(10), default="guide", server_default="guide")
     photo_style: Mapped[dict | None] = mapped_column(JSON)
     visual_rules: Mapped[str | None] = mapped_column(Text)
+    # the logo variant for dark backgrounds and brand reference images (both optional, e.g. from a design system)
+    logo_dark_media_id: Mapped[int | None] = mapped_column(ForeignKey("media.id", ondelete="SET NULL"))
+    reference_media_ids: Mapped[list | None] = mapped_column(JSON)
     is_default: Mapped[bool] = mapped_column(Boolean, default=False)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -71,3 +76,34 @@ class BrandKit(WorkspaceMixin, Base):
         if colors:
             parts.append("Brand colours: " + ", ".join(colors) + ".")
         return " ".join(parts)
+
+
+class BrandFont(WorkspaceMixin, Base):
+    """A font file of a brand kit (imported from a design system). The renderers use the file whose family is
+    the kit's heading / body font (``fonts.py``); Tajawal draws what the file has no glyphs for."""
+
+    __tablename__ = "brand_fonts"
+
+    brand_kit_id: Mapped[int] = mapped_column(ForeignKey("brand_kits.id", ondelete="CASCADE"), index=True)
+    media_id: Mapped[int] = mapped_column(ForeignKey("media.id", ondelete="CASCADE"))
+    family: Mapped[str] = mapped_column(String(120))
+    weight: Mapped[int] = mapped_column(Integer, default=400)
+    style: Mapped[str] = mapped_column(String(10), default="normal")  # normal | italic
+    role: Mapped[str] = mapped_column(String(10), default="other")  # heading | body | other
+    has_arabic: Mapped[bool | None] = mapped_column(Boolean)
+
+
+class BrandImport(WorkspaceMixin, Base):
+    """An uploaded design system waiting for the person to choose what to keep (short-lived, see importer.py).
+    The file itself sits in the storage folder under ``storage_key``; ``draft`` is what the preview found."""
+
+    __tablename__ = "brand_imports"
+
+    token: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    filename: Mapped[str] = mapped_column(String(255))
+    kind: Mapped[str] = mapped_column(String(10))  # zip | md | json | css
+    size: Mapped[int] = mapped_column(BigInteger, default=0)
+    storage_key: Mapped[str] = mapped_column(String(500))
+    draft: Mapped[dict | None] = mapped_column(JSON)
+    created_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)

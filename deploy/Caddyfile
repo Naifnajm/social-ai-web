@@ -6,6 +6,17 @@
 	handle @api {
 		reverse_proxy api:8000
 	}
+	# Sign-in for AI assistants (OAuth 2.1 + discovery) and the remote MCP server (streamed, never buffered)
+	@connect path /oauth2/* /.well-known/oauth-authorization-server* /.well-known/oauth-protected-resource*
+	handle @connect {
+		reverse_proxy api:8000
+	}
+	@mcp path /mcp /mcp/
+	handle @mcp {
+		reverse_proxy api:8000 {
+			flush_interval -1
+		}
+	}
 	handle {
 		reverse_proxy web:3000
 	}

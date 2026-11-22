@@ -32,3 +32,12 @@ Roll back: `git checkout <previous commit> && bash deploy/server/deploy.sh`; res
 `pg_restore -U stravica -d stravica --clean` from `/var/backups/stravica-social`.
 
 Ports 3110 / 8110 were free in the last server snapshot; `deploy.sh` stops if they are taken.
+
+## AI assistants (Claude, ChatGPT) and the MCP endpoint
+
+The API serves the remote MCP server at `https://<domain>/mcp` and its own OAuth 2.1 sign-in at `/oauth2/*` with
+discovery documents at `/.well-known/oauth-authorization-server` and `/.well-known/oauth-protected-resource[/mcp]`.
+The nginx site above routes these to the API (with buffering off for `/mcp`); after pulling, re-run `deploy.sh` (or
+copy the site file and `nginx -t && systemctl reload nginx`). `SAI_PUBLIC_API_URL` must be the public https origin
+(it is the OAuth issuer and the MCP resource identifier). Nothing else to configure: customers add the URL as a custom
+connector in Claude or ChatGPT and sign in with their Stravica account (Settings › Connected apps & API explains it).

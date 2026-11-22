@@ -1,0 +1,116 @@
+{
+  "authorize": {
+    "title": "<b>{client}</b> souhaite se connecter à votre compte Stravica Social",
+    "signedInAs": "Connecté en tant que {name}",
+    "verifiedBy": "Identité confirmée par {host}",
+    "selfDeclared": "L’application a choisi ce nom elle-même : vérifiez l’adresse vers laquelle vous revenez.",
+    "returnTo": "Après votre choix, vous revenez vers",
+    "loopbackWarning": "Cette application tourne sur un ordinateur (retour vers {host}). Ne continuez que si vous venez vous-même de lancer la connexion.",
+    "workspace": "Espace de travail",
+    "workspaceHint": "L’application ne voit et n’agit que dans cet espace de travail.",
+    "planMissing": "non inclus dans cette offre",
+    "noWorkspace": "Aucun de vos espaces de travail n’inclut encore les assistants IA. Passez à l’offre Pro pour en connecter un.",
+    "permissions": "Ce que l’application peut faire",
+    "required": "Toujours",
+    "publicWarning": "Peut publier publiquement",
+    "peopleWarning": "Peut écrire à de vraies personnes",
+    "scope": {
+      "read": "Lire",
+      "write": "Créer des brouillons et des médias",
+      "publish": "Programmer et publier",
+      "inbox": "Messagerie"
+    },
+    "viewerNote": "Votre rôle dans cet espace est lecteur : l’application peut seulement lire, quoi que vous autorisiez ici.",
+    "roleNote": "L’application n’obtient jamais plus de droits que votre propre rôle ({role}).",
+    "roles": {
+      "viewer": "lecteur",
+      "editor": "éditeur",
+      "approver": "approbateur",
+      "admin": "administrateur",
+      "owner": "propriétaire"
+    },
+    "approve": "Autoriser l’accès",
+    "deny": "Refuser",
+    "redirecting": "Retour vers {host}…",
+    "footer": "Vous pouvez la déconnecter à tout moment dans Paramètres › Applications connectées & API. Votre mot de passe n’est jamais partagé.",
+    "errorTitle": "Cette connexion ne peut pas continuer",
+    "errors": {
+      "invalid_client": "L’application qui vous a envoyé ici n’est pas connue de Stravica Social. Recommencez depuis l’application.",
+      "invalid_redirect_uri": "L’application a demandé à revenir vers une adresse qu’elle n’a pas enregistrée. Pour votre sécurité, nous nous arrêtons ici.",
+      "request_expired": "Cette demande de connexion a expiré. Recommencez depuis l’application que vous utilisiez.",
+      "generic": "Un problème est survenu. Recommencez depuis l’application que vous utilisiez."
+    },
+    "back": "Aller sur Stravica Social"
+  },
+  "page": {
+    "title": "Applications connectées & API",
+    "subtitle": "Utilisez Stravica Social depuis Claude, ChatGPT et d’autres assistants IA, ou depuis vos propres automatisations.",
+    "connectTitle": "Connecter Claude ou ChatGPT",
+    "connectText": "Votre assistant lit vos comptes, votre kit de marque et vos résultats, rédige des brouillons avec la voix de votre marque et ne programme des publications ou ne répond aux messages que si vous l’autorisez. Vous vous connectez avec votre compte Stravica : aucune clé à copier. L’assistant réfléchit et écrit avec votre propre abonnement.",
+    "planLocked": "La connexion des assistants IA est incluse dans l’offre Pro et au-delà.",
+    "upgrade": "Voir les offres",
+    "serverUrl": "URL du serveur MCP",
+    "copy": "Copier",
+    "copied": "Copié",
+    "copyFailed": "La copie n’a pas fonctionné : sélectionnez le texte et copiez-le.",
+    "clients": {
+      "claude": "Claude",
+      "chatgpt": "ChatGPT",
+      "other": "Autres clients MCP"
+    },
+    "steps": {
+      "claude": [
+        "Dans Claude (web ou bureau), ouvrez Paramètres › Connecteurs.",
+        "Choisissez « Ajouter un connecteur personnalisé », nommez-le Stravica Social et collez l’URL ci-dessus.",
+        "Cliquez sur Connecter, connectez-vous avec votre compte Stravica et choisissez l’espace de travail et ce que Claude peut faire."
+      ],
+      "chatgpt": [
+        "Dans ChatGPT, ouvrez Paramètres › Applications et connecteurs (activez le mode développeur dans Avancé si votre offre le demande).",
+        "Créez un connecteur : nom Stravica Social, collez l’URL ci-dessus et choisissez la connexion OAuth.",
+        "Connectez-vous avec votre compte Stravica et choisissez l’espace de travail et ce que ChatGPT peut faire."
+      ],
+      "other": [
+        "Ajoutez l’URL dans votre client comme serveur MCP distant (Streamable HTTP).",
+        "Il ouvre lui-même la connexion Stravica, ou envoyez une clé API personnelle (ci-dessous) sous la forme « Authorization: Bearer … »."
+      ]
+    },
+    "scopes": {
+      "read": "Lecture",
+      "write": "Écriture",
+      "publish": "Publication",
+      "inbox": "Messagerie"
+    },
+    "scopesNote": "Vous choisissez ces droits lors de la connexion. La publication et la messagerie restent désactivées si vous ne les activez pas, et les validations de l’espace s’appliquent toujours.",
+    "appsTitle": "Applications connectées",
+    "appsEmpty": "Aucune application connectée",
+    "appsEmptyText": "Les applications que vous connectez apparaissent ici avec leurs droits. Vous pouvez les déconnecter à tout moment.",
+    "connectedOn": "Connectée le {date}",
+    "by": "par {name}",
+    "lastUsed": "utilisée {when}",
+    "lastUsedOn": "utilisée le {date}",
+    "neverUsed": "pas encore utilisée",
+    "disconnect": "Déconnecter",
+    "disconnectConfirm": "Déconnecter {name} ? Elle perd l’accès immédiatement.",
+    "disconnected": "Déconnectée",
+    "cancel": "Annuler",
+    "keysTitle": "Clés API",
+    "keysText": "Pour les développeurs et les outils d’automatisation (Zapier, n8n, vos scripts) : envoyez la clé sous la forme « Authorization: Bearer … » à l’URL du serveur MCP. Une clé agit en votre nom, avec votre rôle dans cet espace.",
+    "adminOnly": "Seuls les administrateurs de l’espace peuvent gérer les clés API.",
+    "newKey": "Nouvelle clé API",
+    "keyName": "Nom",
+    "keyNamePlaceholder": "ex. automatisations n8n",
+    "keyScopes": "Droits",
+    "keyExpiry": "Expire après",
+    "days": "{n} jours",
+    "create": "Créer la clé",
+    "keyCreatedTitle": "Copiez votre nouvelle clé",
+    "keyCreatedText": "C’est la seule fois que la clé s’affiche. Conservez-la en lieu sûr ; si vous la perdez, révoquez-la et créez-en une nouvelle.",
+    "done": "Terminé",
+    "keysEmpty": "Aucune clé API.",
+    "expires": "expire le {date}",
+    "expired": "Expirée",
+    "revoke": "Révoquer",
+    "revokeConfirm": "Révoquer la clé « {name} » ? Les outils qui l’utilisent cesseront de fonctionner.",
+    "revoked": "Clé révoquée"
+  }
+}

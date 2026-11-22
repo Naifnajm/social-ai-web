@@ -1,0 +1,116 @@
+{
+  "authorize": {
+    "title": "<b>{client}</b> wil verbinding maken met je Stravica Social-account",
+    "signedInAs": "Ingelogd als {name}",
+    "verifiedBy": "Identiteit bevestigd door {host}",
+    "selfDeclared": "De app heeft deze naam zelf gekozen: controleer het adres waarnaar je terugkeert.",
+    "returnTo": "Na je keuze keer je terug naar",
+    "loopbackWarning": "Deze app draait op een computer (je keert terug naar {host}). Ga alleen verder als je het koppelen zojuist zelf hebt gestart.",
+    "workspace": "Werkruimte",
+    "workspaceHint": "De app ziet en handelt alleen in deze werkruimte.",
+    "planMissing": "niet in dit abonnement",
+    "noWorkspace": "Geen van je werkruimtes bevat al AI-assistenten. Upgrade naar Pro om er een te koppelen.",
+    "permissions": "Wat de app mag doen",
+    "required": "Altijd",
+    "publicWarning": "Kan openbaar posten",
+    "peopleWarning": "Kan echte mensen berichten sturen",
+    "scope": {
+      "read": "Lezen",
+      "write": "Concepten en media maken",
+      "publish": "Plannen en publiceren",
+      "inbox": "Inbox"
+    },
+    "viewerNote": "Je rol in deze werkruimte is kijker: de app kan alleen lezen, wat je hier ook toestaat.",
+    "roleNote": "De app krijgt nooit meer rechten dan je eigen rol ({role}).",
+    "roles": {
+      "viewer": "kijker",
+      "editor": "redacteur",
+      "approver": "goedkeurder",
+      "admin": "beheerder",
+      "owner": "eigenaar"
+    },
+    "approve": "Toegang geven",
+    "deny": "Weigeren",
+    "redirecting": "Je gaat terug naar {host}…",
+    "footer": "Je kunt de koppeling altijd verbreken via Instellingen › Gekoppelde apps & API. Je wachtwoord wordt nooit gedeeld.",
+    "errorTitle": "Deze koppeling kan niet verder",
+    "errors": {
+      "invalid_client": "De app die je hierheen stuurde is onbekend bij Stravica Social. Begin opnieuw vanuit de app.",
+      "invalid_redirect_uri": "De app wilde terugkeren naar een adres dat ze niet heeft geregistreerd. Voor je veiligheid stoppen we hier.",
+      "request_expired": "Dit aanmeldverzoek is verlopen. Begin opnieuw met koppelen vanuit de app die je gebruikte.",
+      "generic": "Er ging iets mis. Begin opnieuw met koppelen vanuit de app die je gebruikte."
+    },
+    "back": "Naar Stravica Social"
+  },
+  "page": {
+    "title": "Gekoppelde apps & API",
+    "subtitle": "Gebruik Stravica Social vanuit Claude, ChatGPT en andere AI-assistenten, of vanuit je eigen automatiseringen.",
+    "connectTitle": "Koppelen met Claude of ChatGPT",
+    "connectText": "Je assistent leest je accounts, brand kit en resultaten, schrijft concepten in de stem van je merk en plant posts of beantwoordt berichten alleen als jij dat toestaat. Je logt in met je Stravica-account: geen sleutels kopiëren. De assistent denkt en schrijft met je eigen abonnement.",
+    "planLocked": "AI-assistenten koppelen zit in het Pro-abonnement en hoger.",
+    "upgrade": "Abonnementen bekijken",
+    "serverUrl": "URL van de MCP-server",
+    "copy": "Kopiëren",
+    "copied": "Gekopieerd",
+    "copyFailed": "Kopiëren lukte niet: selecteer de tekst en kopieer hem zelf.",
+    "clients": {
+      "claude": "Claude",
+      "chatgpt": "ChatGPT",
+      "other": "Andere MCP-clients"
+    },
+    "steps": {
+      "claude": [
+        "Open in Claude (web of desktop) Instellingen › Connectors.",
+        "Kies ‘Aangepaste connector toevoegen’, noem hem Stravica Social en plak de URL hierboven.",
+        "Klik op Verbinden, log in met je Stravica-account en kies de werkruimte en wat Claude mag doen."
+      ],
+      "chatgpt": [
+        "Open in ChatGPT Instellingen › Apps & Connectors (zet de ontwikkelaarsmodus aan onder Geavanceerd als je abonnement dat vraagt).",
+        "Maak een connector: naam Stravica Social, plak de URL hierboven en kies inloggen met OAuth.",
+        "Log in met je Stravica-account en kies de werkruimte en wat ChatGPT mag doen."
+      ],
+      "other": [
+        "Voeg de URL in je client toe als externe MCP-server (Streamable HTTP).",
+        "Die opent zelf de Stravica-aanmelding, of stuur een persoonlijke API-sleutel (hieronder) als ‘Authorization: Bearer …’."
+      ]
+    },
+    "scopes": {
+      "read": "Lezen",
+      "write": "Schrijven",
+      "publish": "Publiceren",
+      "inbox": "Inbox"
+    },
+    "scopesNote": "Je kiest deze rechten bij het koppelen. Publiceren en de inbox staan uit tenzij je ze aanzet, en goedkeuringen in de werkruimte blijven gelden.",
+    "appsTitle": "Gekoppelde apps",
+    "appsEmpty": "Nog geen app gekoppeld",
+    "appsEmptyText": "Apps die je koppelt verschijnen hier met wat ze mogen doen. Je kunt ze altijd ontkoppelen.",
+    "connectedOn": "Gekoppeld op {date}",
+    "by": "door {name}",
+    "lastUsed": "gebruikt {when}",
+    "lastUsedOn": "gebruikt op {date}",
+    "neverUsed": "nog niet gebruikt",
+    "disconnect": "Ontkoppelen",
+    "disconnectConfirm": "{name} ontkoppelen? De app verliest meteen toegang.",
+    "disconnected": "Ontkoppeld",
+    "cancel": "Annuleren",
+    "keysTitle": "API-sleutels",
+    "keysText": "Voor ontwikkelaars en automatiseringstools (Zapier, n8n, eigen scripts): stuur de sleutel als ‘Authorization: Bearer …’ naar de URL van de MCP-server. Een sleutel handelt als jou, met je rol in deze werkruimte.",
+    "adminOnly": "Alleen beheerders van de werkruimte kunnen API-sleutels beheren.",
+    "newKey": "Nieuwe API-sleutel",
+    "keyName": "Naam",
+    "keyNamePlaceholder": "bijv. n8n-automatiseringen",
+    "keyScopes": "Rechten",
+    "keyExpiry": "Verloopt na",
+    "days": "{n} dagen",
+    "create": "Sleutel maken",
+    "keyCreatedTitle": "Kopieer je nieuwe sleutel",
+    "keyCreatedText": "Dit is de enige keer dat de sleutel wordt getoond. Bewaar hem veilig; ben je hem kwijt, trek hem dan in en maak een nieuwe.",
+    "done": "Klaar",
+    "keysEmpty": "Nog geen API-sleutels.",
+    "expires": "verloopt op {date}",
+    "expired": "Verlopen",
+    "revoke": "Intrekken",
+    "revokeConfirm": "De sleutel ‘{name}’ intrekken? Tools die hem gebruiken werken dan niet meer.",
+    "revoked": "Sleutel ingetrokken"
+  }
+}

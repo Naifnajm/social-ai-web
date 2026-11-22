@@ -66,7 +66,8 @@
   "priority_support": "دعم ذو أولوية",
   "custom_branding": "علامة تجارية مخصّصة",
   "listening": "الرادار: رصد الشبكات الاجتماعية",
-  "listening_x": "الرادار: مصدر X"
+  "listening_x": "الرادار: مصدر X",
+  "mcp": "المساعدات الذكية والواجهة البرمجية (Claude وChatGPT)"
  },
  "monthly": "شهري",
  "yearly": "سنوي",

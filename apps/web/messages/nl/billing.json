@@ -46,7 +46,8 @@
   "priority_support": "Support met voorrang",
   "custom_branding": "Eigen huisstijl",
   "listening": "Radar: social listening",
-  "listening_x": "Radar: X als bron"
+  "listening_x": "Radar: X als bron",
+  "mcp": "AI-assistenten & API (Claude, ChatGPT)"
  },
  "monthly": "Maandelijks",
  "yearly": "Jaarlijks",

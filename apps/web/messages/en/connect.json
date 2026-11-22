@@ -1,0 +1,116 @@
+{
+  "authorize": {
+    "title": "<b>{client}</b> wants to connect to your Stravica Social account",
+    "signedInAs": "Signed in as {name}",
+    "verifiedBy": "Identity confirmed by {host}",
+    "selfDeclared": "The app chose this name itself: check the address it returns to.",
+    "returnTo": "After your choice you return to",
+    "loopbackWarning": "This app runs on a computer (it returns to {host}). Only continue if you started connecting it yourself just now.",
+    "workspace": "Workspace",
+    "workspaceHint": "The app only sees and acts in this workspace.",
+    "planMissing": "not in this plan",
+    "noWorkspace": "None of your workspaces includes AI assistants yet. Upgrade to Pro to connect one.",
+    "permissions": "What the app may do",
+    "required": "Always",
+    "publicWarning": "Can post publicly",
+    "peopleWarning": "Can message real people",
+    "scope": {
+      "read": "Read",
+      "write": "Create drafts and media",
+      "publish": "Schedule and publish",
+      "inbox": "Inbox"
+    },
+    "viewerNote": "Your role in this workspace is viewer: the app can only read, whatever you allow here.",
+    "roleNote": "The app never gets more rights than your own role ({role}).",
+    "roles": {
+      "viewer": "viewer",
+      "editor": "editor",
+      "approver": "approver",
+      "admin": "admin",
+      "owner": "owner"
+    },
+    "approve": "Allow access",
+    "deny": "Deny",
+    "redirecting": "Taking you back to {host}…",
+    "footer": "You can disconnect it at any time in Settings › Connected apps & API. Your password is never shared.",
+    "errorTitle": "This connection cannot continue",
+    "errors": {
+      "invalid_client": "The app that sent you here is not known to Stravica Social. Start again from the app.",
+      "invalid_redirect_uri": "The app asked to return to an address it did not register. For your safety we stopped here.",
+      "request_expired": "This sign-in request has expired. Start connecting again from the app you were using.",
+      "generic": "Something went wrong. Start connecting again from the app you were using."
+    },
+    "back": "Go to Stravica Social"
+  },
+  "page": {
+    "title": "Connected apps & API",
+    "subtitle": "Use Stravica Social from Claude, ChatGPT and other AI assistants, or from your own automations.",
+    "connectTitle": "Connect to Claude or ChatGPT",
+    "connectText": "Your assistant reads your accounts, brand kit and results, writes drafts in your brand's voice and — only when you allow it — schedules posts and answers messages. You sign in with your Stravica account: no keys to copy. The assistant thinks and writes with your own subscription.",
+    "planLocked": "Connecting AI assistants is included in the Pro plan and above.",
+    "upgrade": "See plans",
+    "serverUrl": "MCP server URL",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyFailed": "Copying did not work: select the text and copy it.",
+    "clients": {
+      "claude": "Claude",
+      "chatgpt": "ChatGPT",
+      "other": "Other MCP clients"
+    },
+    "steps": {
+      "claude": [
+        "In Claude (web or desktop) open Settings › Connectors.",
+        "Choose “Add custom connector”, name it Stravica Social and paste the URL above.",
+        "Click Connect, sign in with your Stravica account, pick the workspace and what Claude may do."
+      ],
+      "chatgpt": [
+        "In ChatGPT open Settings › Apps & Connectors (turn on developer mode under Advanced if your plan asks for it).",
+        "Create a connector: name it Stravica Social, paste the URL above and choose OAuth sign-in.",
+        "Sign in with your Stravica account, pick the workspace and what ChatGPT may do."
+      ],
+      "other": [
+        "Add the URL as a remote MCP server (Streamable HTTP) in your client.",
+        "It opens the Stravica sign-in by itself, or send a personal API key (below) as “Authorization: Bearer …”."
+      ]
+    },
+    "scopes": {
+      "read": "Read",
+      "write": "Write",
+      "publish": "Publish",
+      "inbox": "Inbox"
+    },
+    "scopesNote": "You choose these permissions when you connect. Publishing and the inbox are off unless you turn them on, and workspace approvals still apply.",
+    "appsTitle": "Connected apps",
+    "appsEmpty": "No app connected yet",
+    "appsEmptyText": "Apps you connect appear here with what they may do. You can disconnect them at any time.",
+    "connectedOn": "Connected {date}",
+    "by": "by {name}",
+    "lastUsed": "used {when}",
+    "lastUsedOn": "used {date}",
+    "neverUsed": "not used yet",
+    "disconnect": "Disconnect",
+    "disconnectConfirm": "Disconnect {name}? It loses access right away.",
+    "disconnected": "Disconnected",
+    "cancel": "Cancel",
+    "keysTitle": "API keys",
+    "keysText": "For developers and automation tools (Zapier, n8n, your own scripts): send the key as “Authorization: Bearer …” to the MCP server URL. A key acts as you, with your role in this workspace.",
+    "adminOnly": "Only workspace admins can manage API keys.",
+    "newKey": "New API key",
+    "keyName": "Name",
+    "keyNamePlaceholder": "e.g. n8n automations",
+    "keyScopes": "Permissions",
+    "keyExpiry": "Expires after",
+    "days": "{n} days",
+    "create": "Create key",
+    "keyCreatedTitle": "Copy your new key",
+    "keyCreatedText": "This is the only time the key is shown. Store it somewhere safe; if you lose it, revoke it and create a new one.",
+    "done": "Done",
+    "keysEmpty": "No API keys yet.",
+    "expires": "expires {date}",
+    "expired": "Expired",
+    "revoke": "Revoke",
+    "revokeConfirm": "Revoke the key “{name}”? Tools that use it stop working.",
+    "revoked": "Key revoked"
+  }
+}

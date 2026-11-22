@@ -66,7 +66,8 @@
   "priority_support": "Priority support",
   "custom_branding": "Custom branding",
   "listening": "Radar: social listening",
-  "listening_x": "Radar: X source"
+  "listening_x": "Radar: X source",
+  "mcp": "AI assistants & API (Claude, ChatGPT)"
  },
  "monthly": "Monthly",
  "yearly": "Yearly",

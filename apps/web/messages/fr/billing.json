@@ -46,7 +46,8 @@
   "priority_support": "Support prioritaire",
   "custom_branding": "Image de marque personnalisée",
   "listening": "Radar : écoute sociale",
-  "listening_x": "Radar : source X"
+  "listening_x": "Radar : source X",
+  "mcp": "Assistants IA & API (Claude, ChatGPT)"
  },
  "monthly": "Mensuel",
  "yearly": "Annuel",

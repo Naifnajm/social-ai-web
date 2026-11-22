@@ -46,7 +46,8 @@
   "priority_support": "Bevorzugter Support",
   "custom_branding": "Eigenes Branding",
   "listening": "Radar: Social Listening",
-  "listening_x": "Radar: Quelle X"
+  "listening_x": "Radar: Quelle X",
+  "mcp": "KI-Assistenten & API (Claude, ChatGPT)"
  },
  "monthly": "Monatlich",
  "yearly": "Jährlich",

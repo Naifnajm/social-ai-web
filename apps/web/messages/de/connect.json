@@ -1,0 +1,116 @@
+{
+  "authorize": {
+    "title": "<b>{client}</b> möchte sich mit deinem Stravica-Social-Konto verbinden",
+    "signedInAs": "Angemeldet als {name}",
+    "verifiedBy": "Identität bestätigt durch {host}",
+    "selfDeclared": "Die App hat diesen Namen selbst gewählt: Prüfe die Adresse, zu der du zurückkehrst.",
+    "returnTo": "Nach deiner Entscheidung kehrst du zurück zu",
+    "loopbackWarning": "Diese App läuft auf einem Computer (Rückkehr zu {host}). Fahre nur fort, wenn du die Verbindung gerade selbst gestartet hast.",
+    "workspace": "Arbeitsbereich",
+    "workspaceHint": "Die App sieht und handelt nur in diesem Arbeitsbereich.",
+    "planMissing": "nicht in diesem Tarif",
+    "noWorkspace": "Noch keiner deiner Arbeitsbereiche enthält KI-Assistenten. Wechsle zu Pro, um einen zu verbinden.",
+    "permissions": "Was die App darf",
+    "required": "Immer",
+    "publicWarning": "Kann öffentlich posten",
+    "peopleWarning": "Kann echten Menschen schreiben",
+    "scope": {
+      "read": "Lesen",
+      "write": "Entwürfe und Medien erstellen",
+      "publish": "Planen und veröffentlichen",
+      "inbox": "Posteingang"
+    },
+    "viewerNote": "Deine Rolle in diesem Arbeitsbereich ist Betrachter: Die App kann nur lesen, egal was du hier erlaubst.",
+    "roleNote": "Die App erhält nie mehr Rechte als deine eigene Rolle ({role}).",
+    "roles": {
+      "viewer": "Betrachter",
+      "editor": "Redakteur",
+      "approver": "Freigeber",
+      "admin": "Administrator",
+      "owner": "Inhaber"
+    },
+    "approve": "Zugriff erlauben",
+    "deny": "Ablehnen",
+    "redirecting": "Du wirst zu {host} zurückgeleitet…",
+    "footer": "Du kannst die Verbindung jederzeit unter Einstellungen › Verbundene Apps & API trennen. Dein Passwort wird nie geteilt.",
+    "errorTitle": "Diese Verbindung kann nicht fortgesetzt werden",
+    "errors": {
+      "invalid_client": "Die App, die dich hierher geschickt hat, ist Stravica Social nicht bekannt. Starte erneut in der App.",
+      "invalid_redirect_uri": "Die App wollte zu einer Adresse zurück, die sie nicht registriert hat. Zu deiner Sicherheit haben wir hier angehalten.",
+      "request_expired": "Diese Anmeldeanfrage ist abgelaufen. Starte die Verbindung erneut in der App, die du verwendet hast.",
+      "generic": "Etwas ist schiefgelaufen. Starte die Verbindung erneut in der App, die du verwendet hast."
+    },
+    "back": "Zu Stravica Social"
+  },
+  "page": {
+    "title": "Verbundene Apps & API",
+    "subtitle": "Nutze Stravica Social aus Claude, ChatGPT und anderen KI-Assistenten oder aus deinen eigenen Automatisierungen.",
+    "connectTitle": "Mit Claude oder ChatGPT verbinden",
+    "connectText": "Dein Assistent liest deine Konten, dein Brand Kit und deine Ergebnisse, schreibt Entwürfe in der Stimme deiner Marke und plant Beiträge oder beantwortet Nachrichten nur, wenn du es erlaubst. Du meldest dich mit deinem Stravica-Konto an: keine Schlüssel kopieren. Der Assistent denkt und schreibt mit deinem eigenen Abo.",
+    "planLocked": "KI-Assistenten verbinden ist im Pro-Tarif und höher enthalten.",
+    "upgrade": "Tarife ansehen",
+    "serverUrl": "URL des MCP-Servers",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "copyFailed": "Kopieren hat nicht geklappt: Markiere den Text und kopiere ihn selbst.",
+    "clients": {
+      "claude": "Claude",
+      "chatgpt": "ChatGPT",
+      "other": "Andere MCP-Clients"
+    },
+    "steps": {
+      "claude": [
+        "Öffne in Claude (Web oder Desktop) Einstellungen › Connectors.",
+        "Wähle „Benutzerdefinierten Connector hinzufügen“, nenne ihn Stravica Social und füge die URL oben ein.",
+        "Klicke auf Verbinden, melde dich mit deinem Stravica-Konto an und wähle den Arbeitsbereich und was Claude darf."
+      ],
+      "chatgpt": [
+        "Öffne in ChatGPT Einstellungen › Apps & Connectors (aktiviere unter Erweitert den Entwicklermodus, falls dein Tarif das verlangt).",
+        "Erstelle einen Connector: Name Stravica Social, URL oben einfügen und Anmeldung per OAuth wählen.",
+        "Melde dich mit deinem Stravica-Konto an und wähle den Arbeitsbereich und was ChatGPT darf."
+      ],
+      "other": [
+        "Füge die URL in deinem Client als Remote-MCP-Server (Streamable HTTP) hinzu.",
+        "Er öffnet die Stravica-Anmeldung selbst, oder sende einen persönlichen API-Schlüssel (unten) als „Authorization: Bearer …“."
+      ]
+    },
+    "scopes": {
+      "read": "Lesen",
+      "write": "Schreiben",
+      "publish": "Veröffentlichen",
+      "inbox": "Posteingang"
+    },
+    "scopesNote": "Diese Rechte wählst du beim Verbinden. Veröffentlichen und der Posteingang sind aus, bis du sie einschaltest, und Freigaben im Arbeitsbereich gelten weiter.",
+    "appsTitle": "Verbundene Apps",
+    "appsEmpty": "Noch keine App verbunden",
+    "appsEmptyText": "Apps, die du verbindest, erscheinen hier mit ihren Rechten. Du kannst sie jederzeit trennen.",
+    "connectedOn": "Verbunden am {date}",
+    "by": "von {name}",
+    "lastUsed": "genutzt {when}",
+    "lastUsedOn": "genutzt am {date}",
+    "neverUsed": "noch nicht genutzt",
+    "disconnect": "Trennen",
+    "disconnectConfirm": "{name} trennen? Die App verliert sofort den Zugriff.",
+    "disconnected": "Getrennt",
+    "cancel": "Abbrechen",
+    "keysTitle": "API-Schlüssel",
+    "keysText": "Für Entwickler und Automatisierungstools (Zapier, n8n, eigene Skripte): Sende den Schlüssel als „Authorization: Bearer …“ an die URL des MCP-Servers. Ein Schlüssel handelt als du, mit deiner Rolle in diesem Arbeitsbereich.",
+    "adminOnly": "Nur Administratoren des Arbeitsbereichs können API-Schlüssel verwalten.",
+    "newKey": "Neuer API-Schlüssel",
+    "keyName": "Name",
+    "keyNamePlaceholder": "z. B. n8n-Automatisierungen",
+    "keyScopes": "Rechte",
+    "keyExpiry": "Läuft ab nach",
+    "days": "{n} Tagen",
+    "create": "Schlüssel erstellen",
+    "keyCreatedTitle": "Kopiere deinen neuen Schlüssel",
+    "keyCreatedText": "Der Schlüssel wird nur dieses eine Mal angezeigt. Bewahre ihn sicher auf; wenn du ihn verlierst, widerrufe ihn und erstelle einen neuen.",
+    "done": "Fertig",
+    "keysEmpty": "Noch keine API-Schlüssel.",
+    "expires": "läuft ab am {date}",
+    "expired": "Abgelaufen",
+    "revoke": "Widerrufen",
+    "revokeConfirm": "Den Schlüssel „{name}“ widerrufen? Tools, die ihn nutzen, funktionieren dann nicht mehr.",
+    "revoked": "Schlüssel widerrufen"
+  }
+}

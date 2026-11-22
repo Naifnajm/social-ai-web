@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from .models import PlatformSetting
 
 # Platform-provided AI: providers whose key the platform pays for (usage is billed as plan "AI credits").
-AI_PROVIDERS = ("openai", "anthropic", "gemini", "elevenlabs")
+AI_PROVIDERS = ("openai", "anthropic", "gemini", "elevenlabs", "replicate")  # replicate: Seedance / Wan video
 
 # Settings editable in the admin (key -> type). Secrets are write-only (the API returns configured: bool).
 SETTINGS_SCHEMA: dict[str, str] = {

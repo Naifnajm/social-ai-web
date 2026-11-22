@@ -37,6 +37,7 @@ class RunEstimate(BaseModel):
     credits_available: float | None = None  # plan allowance left + bought credits (None: unlimited / own keys)
     missing: list[MissingProvider] = []     # jobs no AI provider can do: the run would fail
     empty_text: list[int] = []              # empty text blocks the run needs
+    fallbacks: list[MissingProvider] = []   # runs anyway: video as a zoom on the picture, music / sfx skipped
 
 
 class OutputOut(BaseModel):

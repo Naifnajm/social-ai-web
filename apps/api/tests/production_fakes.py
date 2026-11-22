@@ -46,6 +46,11 @@ def real_media() -> tuple[bytes, bytes]:
             return v.read(), a.read()
 
 
+class _FakeProvider:
+    def __init__(self, provider_id=None):
+        self.id = provider_id
+
+
 class FakeAI:
     """AI text + media jobs. Images and audio finish at once (the callback fires synchronously, like a real
     provider may do); videos stay running until ``finish_videos``."""
@@ -63,6 +68,13 @@ class FakeAI:
         monkeypatch.setattr(ai_media, "start_job", self.start_job)
         monkeypatch.setattr(ai_media, "estimate", self.estimate)
         monkeypatch.setattr(ai_media, "transcribe", self.transcribe)
+        # like a workspace with every kind of provider: video blocks start jobs, music / sfx blocks are not skipped
+        self.no_providers: set[str] = set()
+        monkeypatch.setattr(ai_service, "has_provider",
+                            lambda db, ws, capability="text": capability not in self.no_providers)
+        monkeypatch.setattr(ai_media, "sound_provider",
+                            lambda db, ws, mode, provider_id=None: None if mode in self.no_providers
+                            else _FakeProvider(provider_id))
 
     def generate(self, db, workspace_id, system, user, **kwargs):
         self.texts.append({"system": system, "user": user, "workspace_id": workspace_id, **kwargs})

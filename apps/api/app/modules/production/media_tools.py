@@ -169,6 +169,24 @@ def merge(visual: tuple[bytes, str], audio: list[tuple[bytes, str]], aspect: str
         return _read(out)
 
 
+def ken_burns(content: bytes, aspect: str = "9:16", seconds: int = 8) -> bytes:
+    """A video from one still image: a slow, smooth zoom towards the centre (no AI needed). Returns MP4 bytes."""
+    _need_ffmpeg()
+    width, height = SIZES.get(aspect or "9:16", SIZES["9:16"])
+    seconds = max(2, min(int(seconds or 8), 30))
+    fps, frames = 25, max(2, min(int(seconds or 8), 30)) * 25
+    with tempfile.TemporaryDirectory(prefix="sai_") as tmp:
+        src = os.path.join(tmp, "still.png")
+        with open(src, "wb") as fh:  # twice the size first, so the zoom stays sharp
+            fh.write(fit_image(content, width * 2, height * 2))
+        out = os.path.join(tmp, "out.mp4")
+        zoom = "zoompan=z='min(1+0.15*on/%d,1.15)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=%d:s=%dx%d:fps=%d" % (
+            frames, frames, width, height, fps)
+        _run(["ffmpeg", "-y", "-loop", "1", "-i", src, "-vf", zoom + ",format=yuv420p", "-t", str(seconds),
+              "-c:v", "libx264", "-preset", "veryfast", "-movflags", "+faststart", "-an", out])
+        return _read(out)
+
+
 # ---------------------------------------------------------------------------- captions
 def extract_audio(content: bytes, mimetype: str) -> bytes:
     """The soundtrack of a video as a small MP3 (speech-to-text services take up to 25 MB)."""

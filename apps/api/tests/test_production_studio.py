@@ -164,8 +164,14 @@ def test_failures_propagate_and_design_needs_editor(api, fake_ai, fake_social, d
     graph = api.graph(board)
     design = api.by_name(graph, "Card design")
     post = api.by_name(graph, "Post")
-    assert design["state"] == "failed" and "design editor" in design["error"]
-    assert post["state"] == "failed"
+    # nothing designed by hand: the headline is laid out over the background in the brand's look
+    assert design["state"] == "done" and "automatically" in design["notice"] and design["output"]
+    assert post["state"] == "done"
+    empty = api.board()
+    lonely = api.node(empty, "design", 0, 0)
+    graph_empty = api.run(empty)
+    assert api.by_id(graph_empty, lonely["id"])["state"] == "failed"
+    assert "design editor" in api.by_id(graph_empty, lonely["id"])["error"]
     layers = {"aspect": "4:5", "layers": [{"type": "text", "text": "مرحبا"}]}
     bad = api.raw("POST", f"/nodes/{design['id']}/design", {"png": "bm90IGEgcG5n", "layers": layers})
     assert bad.status_code == 400
@@ -242,7 +248,7 @@ def test_estimates_per_block_and_run(api, fake_ai):
     api.run(board)
     estimate = api.get(f"/boards/{board}/estimate")
     assert estimate == {"cost": 0, "reused": 2, "blocks": 0, "credits": None, "credits_available": None,
-                        "missing": [], "empty_text": []}
+                        "missing": [], "empty_text": [], "fallbacks": []}
     forced = api.get(f"/boards/{board}/estimate", node_ids=[image["id"]], force="true")
     assert forced["cost"] == pytest.approx(0.12) and forced["blocks"] == 1
     node = api.by_id(api.graph(board), image["id"])

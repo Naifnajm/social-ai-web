@@ -23,7 +23,7 @@ from sqlalchemy.orm import Session
 
 from app.core import db as core_db
 from app.core.errors import ApiError, AppError, Forbidden, NotFound
-from app.core.i18n import _, set_locale
+from app.core.i18n import _, lazy, set_locale
 from app.core.models import Media
 from app.core.notify import notify
 from app.core.storage import read_media, save_media
@@ -311,13 +311,25 @@ def estimate_run(g: BoardGraph, node_ids: list[int] | None = None, downstream: b
             credit_cost += float(est["credits"])
     reused = len([n for n in selection if n.kind in CAPABILITY and n.id not in dirty])
     missing: dict[str, list[int]] = {}
+    fallbacks: dict[str, list[int]] = {}
     for node in selection:
         capability = CAPABILITY.get(node.kind)
-        if capability and node.id in dirty and not ai_service.has_provider(g.db, g.board.workspace_id, capability):
+        if not capability or node.id not in dirty:
+            continue
+        if capability == "audio" and (node.audio_mode or "speech") in ("music", "sfx"):
+            if ai_media.sound_provider(g.db, g.board.workspace_id, node.audio_mode, node.provider_id) is None:
+                fallbacks.setdefault(node.audio_mode, []).append(node.id)  # skipped, the rest goes on
+            continue
+        if ai_service.has_provider(g.db, g.board.workspace_id, capability):
+            continue
+        if capability == "video" and video_fallback_possible(g, node):
+            fallbacks.setdefault("video", []).append(node.id)  # a slow zoom on the picture instead
+        else:
             missing.setdefault(capability, []).append(node.id)
     empty = [n.id for n in selection if n.kind == "text" and not (n.text_value or "").strip()]
     out = {"cost": round(cost, 4), "reused": reused, "blocks": len(dirty),
            "missing": [{"capability": c, "node_ids": ids} for c, ids in missing.items()], "empty_text": empty,
+           "fallbacks": [{"capability": c, "node_ids": ids} for c, ids in fallbacks.items()],
            "credits": round(credit_cost, 1) if uses_credits else None, "credits_available": None}
     if uses_credits:
         from app.modules.billing import credits
@@ -682,30 +694,84 @@ def _run_image(g: BoardGraph, node: Node) -> None:
     _start_job(g, node, "image", _prompt_with_inputs(g, node, texts), refs)
 
 
+def video_fallback_possible(g: BoardGraph, node: Node) -> bool:
+    """No video model, but a moving picture can still be made: ffmpeg plus an image (linked, or made now)."""
+    if not media_tools.ffmpeg_available():
+        return False
+    _texts, media = inputs(g, node)
+    return any(media_kind(m) == "image" for m in media) or ai_service.has_provider(g.db, node.workspace_id, "image")
+
+
 def _run_video(g: BoardGraph, node: Node) -> None:
     texts, media = inputs(g, node)
     images = [m for m in media if media_kind(m) == "image"][:1]
     prompt = _prompt_with_inputs(g, node, texts)
     if not prompt.strip() and images:
         prompt = "Bring this image to life with subtle natural motion."
+    if not ai_service.has_provider(g.db, node.workspace_id, "video") and video_fallback_possible(g, node):
+        return _video_from_still(g, node, prompt, images[0] if images else None)
     _start_job(g, node, "video", prompt, images)
+
+
+def _video_from_still(g: BoardGraph, node: Node, prompt: str, image: Media | None) -> None:
+    """No video model is set up: make the picture (when none is linked) and move it slowly, so the production
+    still ends with a video. Free apart from the image."""
+    cost = 0.0
+    if image is None:
+        if not prompt.strip():
+            raise AppError(_("Write a prompt or link a text block."), code="no_prompt")
+        job = ai_media.start_job(g.db, node.workspace_id, "image", prompt, aspect=node.aspect or "9:16",
+                                 style=node.style, user_id=g.board.user_id,
+                                 brand_kit_id=g.kit.id if g.kit else None, shot=node.shot)
+        if job.state != "done" or not job.media_id:
+            raise AppError(job.error or _("The picture for the video could not be made."), code="no_still")
+        image, cost = g.media(job.media_id) or g.db.get(Media, job.media_id), float(job.cost or 0)
+    content = media_tools.ken_burns(read_media(image), node.aspect or "9:16", node.seconds or 8)
+    _done_with(g, node, _store(g, node, content, "video/mp4", "mp4"), cost=cost)
+    node.cost = round(cost, 6)
+    node.notice = _("No video model is set up, so this is a slow zoom on the picture (free). Add Seedance (Replicate) or Gemini in Settings › AI providers for real motion.")  # noqa: E501
+
+
+SOUND_MISSING = {
+    "music": lazy("No AI provider here makes music (ElevenLabs does), so this block was skipped and the video goes on without it."),  # noqa: E501
+    "sfx": lazy("No AI provider here makes sound effects (ElevenLabs does), so this block was skipped and the video goes on without it."),  # noqa: E501
+}
+
+
+def _skip(g: BoardGraph, node: Node, notice: str) -> None:
+    """Done without a result: the blocks after it carry on without it."""
+    node.output_media_id, node.output_text = None, None
+    _done_with(g, node, record=False)
+    node.notice = notice
 
 
 def _run_audio(g: BoardGraph, node: Node) -> None:
     texts, _media = inputs(g, node)
-    if (node.audio_mode or "speech") == "speech":
+    mode = node.audio_mode or "speech"
+    if mode == "speech":
         # the linked text is the script; the block's own prompt is used when nothing is linked
         _start_job(g, node, "audio", "\n\n".join(texts) or _prompt(g, node), audio_mode="speech")
-    else:
-        _start_job(g, node, "audio", _prompt_with_inputs(g, node, texts), audio_mode=node.audio_mode)
+        return
+    provider = ai_media.sound_provider(g.db, node.workspace_id, mode, node.provider_id)
+    if provider is None:
+        return _skip(g, node, _(SOUND_MISSING.get(mode, SOUND_MISSING["sfx"])))
+    if provider.id != node.provider_id:
+        node.provider_id = provider.id  # e.g. ElevenLabs for music when the default audio provider is OpenAI
+        node.model_id = None
+    _start_job(g, node, "audio", _prompt_with_inputs(g, node, texts), audio_mode=mode)
 
 
 def _run_merge(g: BoardGraph, node: Node) -> None:
     _texts, media = inputs(g, node)
     visual = ([m for m in media if media_kind(m) == "video"] or [m for m in media if media_kind(m) == "image"])[:1]
     audios = [m for m in media if media_kind(m) == "audio"]
-    if not visual or not audios:
+    if not visual:
         raise AppError(_("Link a video (or an image) and an audio block."), code="merge_inputs")
+    if not audios:  # every sound block was skipped: the picture goes on without sound
+        if media_kind(visual[0]) == "video":
+            return _done_with(g, node, visual[0])
+        content = media_tools.ken_burns(read_media(visual[0]), node.aspect or "9:16", node.seconds or 8)
+        return _done_with(g, node, _store(g, node, content, "video/mp4", "mp4"))
     content = media_tools.merge((read_media(visual[0]), visual[0].mimetype),
                                 [(read_media(a), a.mimetype) for a in audios], aspect=node.aspect)
     _done_with(g, node, _store(g, node, content, "video/mp4", "mp4"))
@@ -713,9 +779,27 @@ def _run_merge(g: BoardGraph, node: Node) -> None:
 
 def _run_design(g: BoardGraph, node: Node) -> None:
     media = g.media(node.output_media_id)
-    if not media:
+    if media and node.design:
+        return _done_with(g, node, media)
+    # Nothing designed by hand yet: lay out the linked text over the linked picture in the brand's look.
+    texts, linked = inputs(g, node)
+    text = next((t for t in texts if t.strip()), "")
+    if not text and not media:
         raise AppError(_("Open the design editor and save your design."), code="no_design")
-    _done_with(g, node, media)
+    if media and not text:
+        return _done_with(g, node, media)
+    from app.modules.brand import service as brand_service
+    from app.modules.ideas import slides
+    kit = g.kit or brand_service.default_kit(g.db, g.board.workspace_id)
+    brand = {"name": kit.name if kit else "", "logo_media_id": kit.logo_media_id if kit else None,
+             "colors": {"primary": kit.color_primary, "secondary": kit.color_secondary, "text": kit.color_text,
+                        "accent": kit.color_accent} if kit else {}}
+    image = next((m for m in linked if media_kind(m) == "image"), None)
+    photo = slides._photo(g.db, node.workspace_id, image.id) if image else None
+    content = slides.render_slide({"title": clean_text(text)[:220]}, 0, 1, brand,
+                                  logo=slides._logo(g.db, node.workspace_id, brand), photo=photo)
+    _done_with(g, node, _store(g, node, content, "image/jpeg", "jpg"))
+    node.notice = _("Designed automatically in your brand. Open the editor to change it.")
 
 
 def upstream_formats(g: BoardGraph, node: Node) -> dict[str, Media]:

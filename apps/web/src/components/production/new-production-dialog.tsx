@@ -46,7 +46,7 @@ export function NewProductionDialog({ template, onClose }: { template: BoardTemp
     <Modal open onClose={onClose} title={t("title")} size="lg"
       footer={<>
         <Button variant="ghost" onClick={onClose}>{t("cancel")}</Button>
-        <Button variant="primary" icon="add" loading={create.isPending} disabled={!selected} onClick={() => create.mutate()}>{t("create")}</Button>
+        <Button variant="primary" icon="add" loading={create.isPending} disabled={models.isLoading || (list.length > 0 && !selected)} onClick={() => create.mutate()}>{t("create")}</Button>
       </>}>
       <div className="flex flex-col gap-5">
         <div className="flex items-center gap-3 rounded-2xl bg-white/55 p-3 ring-1 ring-line">

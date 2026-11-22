@@ -112,6 +112,24 @@ def start_job(db: Session, workspace_id: int, kind: str, prompt: str, *, provide
     return job
 
 
+def sound_provider(db: Session, workspace_id: int, mode: str, provider_id: int | None = None) -> AIProvider | None:
+    """A provider that can really make ``mode`` ("music" / "sfx"): the one asked for when it can, else the first
+    of the workspace's own providers that can, else the platform's (e.g. ElevenLabs). None when nobody can."""
+    from .generators import CLIENTS
+    flag = "supports_music" if mode == "music" else "supports_sfx"
+    able = lambda p: p is not None and getattr(CLIENTS.get(p.provider_type), flag, False)  # noqa: E731
+    if provider_id:
+        asked = db.get(AIProvider, provider_id)
+        if asked and asked.workspace_id == workspace_id and asked.active and able(asked):
+            return asked
+    for provider in prov.list_providers(db, workspace_id, "audio", active_only=True):
+        if able(provider):
+            return provider
+    types = tuple(t for t, cls in CLIENTS.items() if getattr(cls, flag, False))
+    managed = prov.platform_provider(db, workspace_id, "audio", types=types)
+    return managed if able(managed) else None
+
+
 def estimate(db: Session, workspace_id: int, kind: str, prompt: str = "", *, seconds: int = 0,
              audio_mode: str = "speech", model_id: int | None = None, provider_id: int | None = None) -> dict:
     """``{"cost", "detail", "model", "model_id", "provider", "provider_id", "wallet", "known"}``."""

@@ -624,6 +624,6 @@ def test_admin_users_ai_and_system(db, client, auth):
     assert client.post(f"/api/admin/users/{auth.user_id}/active", json={"value": False},
                        headers=auth.headers).json()["code"] == "self_action"
     ai = client.get("/api/admin/ai", headers=auth.headers).json()
-    assert ai["month_total"] == 0 and set(ai["keys"]) == {"openai", "anthropic", "gemini", "elevenlabs"}
+    assert ai["month_total"] == 0 and set(ai["keys"]) == {"openai", "anthropic", "gemini", "elevenlabs", "replicate"}
     system = client.get("/api/admin/system", headers=auth.headers).json()
     assert system["checks"][0] == {"key": "database", "ok": True, "detail": ""} and "errors_24h" in system

@@ -160,5 +160,10 @@
  "Write a warm 15-second voice-over script (max 40 words) for this idea, in the brand's tone.": "اكتب نص تعليق صوتي دافئ مدته 15 ثانية (40 كلمة كحد أقصى) لهذه الفكرة، بنبرة العلامة.",
  "Write one vivid prompt for a 10-second vertical video of this idea: subject, action, camera, light and sound. Max 80 words.": "اكتب وصفاً حياً واحداً لفيديو عمودي مدته 10 ثوانٍ لهذه الفكرة: الموضوع، الحركة، الكاميرا، الإضاءة والصوت. 80 كلمة كحد أقصى.",
  "Write the social media caption for this idea with a clear call to action.": "اكتب نص منشور التواصل الاجتماعي لهذه الفكرة مع دعوة واضحة لاتخاذ إجراء.",
- "Stopped.": "تم الإيقاف."
+ "Stopped.": "تم الإيقاف.",
+ "No AI provider here makes music (ElevenLabs does), so this block was skipped and the video goes on without it.": "لا يوجد هنا مزوّد ذكاء اصطناعي يصنع الموسيقى (ElevenLabs يصنعها)، فتم تخطي هذا البلوك ويكتمل الفيديو بدونها.",
+ "No AI provider here makes sound effects (ElevenLabs does), so this block was skipped and the video goes on without it.": "لا يوجد هنا مزوّد ذكاء اصطناعي يصنع المؤثرات الصوتية (ElevenLabs يصنعها)، فتم تخطي هذا البلوك ويكتمل الفيديو بدونها.",
+ "No video model is set up, so this is a slow zoom on the picture (free). Add Seedance (Replicate) or Gemini in Settings › AI providers for real motion.": "لا يوجد نموذج فيديو مضبوط، فهذا تقريب بطيء على الصورة (مجانًا). أضف Seedance (Replicate) أو Gemini من الإعدادات › مزوّدو الذكاء الاصطناعي للحركة الحقيقية.",
+ "The picture for the video could not be made.": "تعذّر إنشاء الصورة اللازمة للفيديو.",
+ "Designed automatically in your brand. Open the editor to change it.": "صُمّم تلقائيًا بهويتك. افتح المحرر لتعديله."
 }

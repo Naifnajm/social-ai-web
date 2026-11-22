@@ -205,7 +205,8 @@ CAPABILITY_ERROR = {
 }
 
 
-def platform_provider(db: Session, workspace_id: int, capability: str) -> AIProvider | None:
+def platform_provider(db: Session, workspace_id: int, capability: str,
+                      types: tuple[str, ...] | None = None) -> AIProvider | None:
     """The platform-paid provider of this workspace for ``capability`` (created on first use), or None.
 
     The platform keeps one key per provider type in the admin settings. A workspace without its own provider
@@ -213,8 +214,8 @@ def platform_provider(db: Session, workspace_id: int, capability: str) -> AIProv
     """
     from app.modules.billing import platform
     preferred = platform.get_setting(db, "ai.default_provider")
-    types = sorted(platform.AI_PROVIDERS, key=lambda t: t != preferred)
-    for provider_type in types:
+    ordered = sorted(platform.AI_PROVIDERS, key=lambda t: t != preferred)
+    for provider_type in [t for t in ordered if not types or t in types]:
         key = platform.ai_key(db, provider_type)
         if not key or not catalog.can(provider_type, capability):
             continue

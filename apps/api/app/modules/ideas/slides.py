@@ -35,7 +35,7 @@ def _photo(db, workspace_id: int, media_id: int | None) -> Image.Image | None:
     if not media or media.workspace_id != workspace_id or media.kind != "image":
         return None
     try:
-        photo = render.place_photo(render.open_image(read_media(media)).convert("RGBA"), (WIDTH, HEIGHT))
+        photo = render.place_photo(render.open_image(read_media(media)), (WIDTH, HEIGHT)).convert("RGBA")
     except Exception:
         return None
     shade = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))

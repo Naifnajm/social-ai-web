@@ -34,8 +34,12 @@ def test_run_preflight_lists_missing_providers_and_empty_texts(api, fake_ai, db,
     api.connect(board, image["id"], video["id"])
     monkeypatch.setattr(ai_service, "has_provider", lambda db_, ws, cap="text": cap == "image")
     est = api.get(f"/boards/{board}/estimate")
-    assert est["missing"] == [{"capability": "video", "node_ids": [video["id"]]}]
+    # no video model, but pictures can be made: the video becomes a slow zoom (a fallback, not a blocker)
+    assert est["missing"] == [] and est["fallbacks"] == [{"capability": "video", "node_ids": [video["id"]]}]
     assert est["empty_text"] == [text["id"]] and est["blocks"] == 2
+    monkeypatch.setattr(ai_service, "has_provider", lambda db_, ws, cap="text": False)
+    nothing = api.get(f"/boards/{board}/estimate")
+    assert {m["capability"] for m in nothing["missing"]} == {"image", "video"}  # no picture, so no zoom either
     assert est["credits"] is None  # own keys (the fakes): no credits
 
 

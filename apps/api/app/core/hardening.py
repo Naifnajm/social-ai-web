@@ -34,9 +34,16 @@ API_HEADERS = {
 
 
 def client_ip(request: Request) -> str:
-    forwarded = request.headers.get("x-forwarded-for")
+    """The caller's address for rate limits. Only values written by our own proxy are trusted: nginx sets
+    ``X-Real-IP`` (replacing anything the client sent); otherwise the LAST ``X-Forwarded-For`` hop, which our
+    proxy appended. The first hop is whatever the client typed, so it is never used (it would let anyone dodge
+    the login limits by sending a new address with each request)."""
+    real = (request.headers.get("x-real-ip") or "").strip()
+    if real:
+        return real
+    forwarded = [hop.strip() for hop in (request.headers.get("x-forwarded-for") or "").split(",") if hop.strip()]
     if forwarded:
-        return forwarded.split(",")[0].strip()
+        return forwarded[-1]
     return request.client.host if request.client else ""
 
 

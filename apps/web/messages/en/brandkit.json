@@ -68,7 +68,9 @@
     "tokensMore": "Also in the file: {spacing} spacing, {radius} radius and {shadow} shadow tokens and {components} component files (kept out: posts do not need them).",
     "healthAfter": "Brand health after import",
     "noLogo": "No logo found",
-    "photoStyle": "Camera style from the imagery rules"
+    "photoStyle": "Camera style from the imagery rules",
+    "missingFiles": "Missing files",
+    "vectorHint": "Vector logo: sharp at every size. Designs draw it at the size they need."
   },
   "health": {
     "title": "Brand health",
@@ -105,7 +107,8 @@
       "visual": "Visuals"
     },
     "fonts": "Brand font files",
-    "fontsHint": "Used by designs, carousels and templates; Tajawal draws any letter a file does not have."
+    "fontsHint": "Used by designs, carousels and templates; Tajawal draws any letter a file does not have.",
+    "live": "Updates as you edit"
   },
   "checks": {
     "logo": { "label": "Logo", "hint": "Add the logo for light backgrounds." },

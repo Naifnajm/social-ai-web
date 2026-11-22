@@ -68,7 +68,9 @@
     "tokensMore": "Außerdem in der Datei: {spacing} Abstands-, {radius} Radius- und {shadow} Schatten-Tokens sowie {components} Komponentendateien (nicht übernommen: Beiträge brauchen sie nicht).",
     "healthAfter": "Markenzustand nach dem Import",
     "noLogo": "Kein Logo gefunden",
-    "photoStyle": "Kamerastil aus den Bildregeln"
+    "photoStyle": "Kamerastil aus den Bildregeln",
+    "missingFiles": "Fehlende Dateien",
+    "vectorHint": "Vektorlogo: in jeder Größe scharf. Designs zeichnen es in der Größe, die sie brauchen."
   },
   "health": {
     "title": "Markenzustand",
@@ -105,7 +107,8 @@
       "visual": "Bildwelt"
     },
     "fonts": "Schriftdateien der Marke",
-    "fontsHint": "Von Designs, Karussells und Vorlagen genutzt; Tajawal zeichnet jedes Zeichen, das eine Datei nicht enthält."
+    "fontsHint": "Von Designs, Karussells und Vorlagen genutzt; Tajawal zeichnet jedes Zeichen, das eine Datei nicht enthält.",
+    "live": "Aktualisiert sich beim Bearbeiten"
   },
   "checks": {
     "logo": { "label": "Logo", "hint": "Füge das Logo für helle Hintergründe hinzu." },

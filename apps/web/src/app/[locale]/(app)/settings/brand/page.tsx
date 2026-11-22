@@ -333,7 +333,7 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
                   ) : <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-fill-2 text-muted"><Icon name="image" size={22} /></span>}
                   <Button id="bk-logo_media_id" size="sm" icon="upload" loading={uploading} onClick={() => fileRef.current?.click()}>{form.logo_media_id ? t("changeLogo") : t("uploadLogo")}</Button>
                   {form.logo_media_id && <Button size="sm" variant="ghost" onClick={() => set({ logo_media_id: null })}>{t("removeLogo")}</Button>}
-                  <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+                  <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,.svg" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
                   {form.logo_dark_media_id && (
                     <span id="bk-logo_dark_media_id" className="ms-auto flex items-center gap-2 rounded-xl bg-[#111] p-1.5 pe-2 text-xs text-white/80">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -475,11 +475,9 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
           <div className={cx("mx-auto max-w-[280px]", !kit && "sticky top-0")}>
             <div className="mb-2 text-[13px] font-medium text-text-2">{t("preview")}</div>
             <KitPreview kit={form} />
-            {kit && (
-              <div className="mt-4 rounded-2xl bg-white/60 p-3 ring-1 ring-line">
-                <BrandHealth kitId={kit.id} onFix={jump} onAccept={acceptSuggestions} />
-              </div>
-            )}
+            <div className="mt-4 rounded-2xl bg-white/60 p-3 ring-1 ring-line">
+              <BrandHealth kitId={kit?.id} values={form} onFix={jump} onAccept={acceptSuggestions} />
+            </div>
           </div>
         </div>
       </div>

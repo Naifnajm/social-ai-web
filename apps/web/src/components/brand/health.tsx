@@ -1,13 +1,14 @@
 "use client";
 /**
  * Brand health: the completeness of a brand kit (score ring + gaps grouped, each with a fix hint), from
- * GET /brand-kits/{id}/completeness or a report already in hand (import preview). "Fix" jumps to the field;
- * "Suggest with AI" asks POST /brand-kits/{id}/suggest and shows the answers to accept one by one.
+ * GET /brand-kits/{id}/completeness, live from the unsaved form (POST /brand-kits/completeness/preview, debounced
+ * 400 ms) or a report already in hand (import preview). "Fix" jumps to the field; "Suggest with AI" asks
+ * POST /brand-kits/{id}/suggest and shows the answers to accept one by one.
  *
- *   <BrandHealth kitId={kit.id} onFix={(field, tab) => …} onAccept={(values) => setForm(…)} />
+ *   <BrandHealth kitId={kit?.id} values={form} onFix={(field, tab) => …} onAccept={(values) => setForm(…)} />
  *   <HealthSummary report={draft.completeness} />          // read-only (import preview)
  */
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { Icon } from "@/components/icon";
@@ -145,13 +146,33 @@ function suggestionText(value: Suggestions[string]) {
   return typeof value === "string" ? value : Object.entries(value).filter(([k]) => k !== "mode").map(([k, v]) => `${k}: ${v}`).join(" · ");
 }
 
-/** The permanent panel of a saved kit: health from the API, fixes and AI suggestions to accept into the form. */
-export function BrandHealth({ kitId, version, onFix, onAccept, canEdit = true }: {
-  kitId: number; version?: unknown; onFix: (field: string, tab: string) => void; onAccept: (values: Suggestions) => void; canEdit?: boolean;
+/** ``value`` once it has not changed for ``ms`` milliseconds. */
+export function useDebounced<T>(value: T, ms = 400): T {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setSettled(value), ms);
+    return () => clearTimeout(timer);
+  }, [value, ms]);
+  return settled;
+}
+
+/** The panel of the kit editor: health of the saved kit, or live from the unsaved ``values`` (recalculated while
+ * the person edits), fixes, and AI suggestions to accept into the form (saved kits only). */
+export function BrandHealth({ kitId, values, version, onFix, onAccept, canEdit = true }: {
+  kitId?: number | null; values?: Record<string, unknown>; version?: unknown; onFix: (field: string, tab: string) => void;
+  onAccept: (values: Suggestions) => void; canEdit?: boolean;
 }) {
   const t = useTranslations("brandkit");
   const tb = useTranslations("ai.brand");
-  const health = useQuery({ queryKey: ["brand-kits", kitId, "completeness", version], queryFn: () => api.get<Completeness>(`/brand-kits/${kitId}/completeness`) });
+  const body = useDebounced(values ? JSON.stringify(values) : null, 400);
+  const health = useQuery({
+    queryKey: body !== null ? ["brand-kits", kitId ?? "new", "completeness-preview", body] : ["brand-kits", kitId, "completeness", version],
+    queryFn: () => body !== null
+      ? api.post<Completeness>("/brand-kits/completeness/preview", { brand_kit_id: kitId ?? null, values: JSON.parse(body) })
+      : api.get<Completeness>(`/brand-kits/${kitId}/completeness`),
+    enabled: body !== null || !!kitId,
+    placeholderData: keepPreviousData,
+  });
   const [suggestions, setSuggestions] = useState<Suggestions>({});
   const suggest = useMutation({
     mutationFn: (fields: string[]) => api.post<{ suggestions: Suggestions }>(`/brand-kits/${kitId}/suggest`, { fields }),
@@ -173,8 +194,14 @@ export function BrandHealth({ kitId, version, onFix, onAccept, canEdit = true }:
     <div className="flex flex-col gap-3">
       <HealthSummary report={health.data} compact
         onFix={(c) => onFix(c.field, c.tab)}
-        onSuggest={canEdit ? (c) => suggest.mutate([c.field]) : undefined} suggesting={suggest.isPending} />
-      {canEdit && aiGaps.length > 1 && (
+        onSuggest={canEdit && kitId ? (c) => suggest.mutate([c.field]) : undefined} suggesting={suggest.isPending} />
+      {values && (
+        <p className="flex items-center gap-1.5 text-[11.5px] text-muted" aria-live="polite">
+          <Icon name={health.isFetching ? "autorenew" : "bolt"} size={13} className={health.isFetching ? "animate-spin" : undefined} />
+          {t("health.live")}
+        </p>
+      )}
+      {canEdit && kitId && aiGaps.length > 1 && (
         <Button size="sm" icon="auto_awesome" loading={suggest.isPending} onClick={() => suggest.mutate(aiGaps)}>{t("health.suggestAll")}</Button>
       )}
       {pending.length > 0 && (

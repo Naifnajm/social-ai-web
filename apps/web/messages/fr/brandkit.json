@@ -68,7 +68,9 @@
     "tokensMore": "Aussi dans le fichier : {spacing} tokens d'espacement, {radius} de rayon, {shadow} d'ombre et {components} fichiers de composants (non importés : les publications n'en ont pas besoin).",
     "healthAfter": "Santé de la marque après l'import",
     "noLogo": "Aucun logo trouvé",
-    "photoStyle": "Style de prise de vue tiré des règles d'images"
+    "photoStyle": "Style de prise de vue tiré des règles d'images",
+    "missingFiles": "Fichiers manquants",
+    "vectorHint": "Logo vectoriel : net à toutes les tailles. Les visuels le dessinent à la taille voulue."
   },
   "health": {
     "title": "Santé de la marque",
@@ -105,7 +107,8 @@
       "visual": "Visuels"
     },
     "fonts": "Fichiers de police de la marque",
-    "fontsHint": "Utilisés par les designs, carrousels et modèles ; Tajawal dessine toute lettre absente d'un fichier."
+    "fontsHint": "Utilisés par les designs, carrousels et modèles ; Tajawal dessine toute lettre absente d'un fichier.",
+    "live": "Se met à jour pendant la saisie"
   },
   "checks": {
     "logo": { "label": "Logo", "hint": "Ajoutez le logo pour fonds clairs." },

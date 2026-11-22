@@ -68,7 +68,9 @@
     "tokensMore": "Ook in het bestand: {spacing} spacing-, {radius} radius- en {shadow} schaduwtokens en {components} componentbestanden (niet geïmporteerd: berichten hebben ze niet nodig).",
     "healthAfter": "Merkgezondheid na import",
     "noLogo": "Geen logo gevonden",
-    "photoStyle": "Camerastijl uit de beeldregels"
+    "photoStyle": "Camerastijl uit de beeldregels",
+    "missingFiles": "Ontbrekende bestanden",
+    "vectorHint": "Vectorlogo: scherp op elk formaat. Ontwerpen tekenen het op de maat die ze nodig hebben."
   },
   "health": {
     "title": "Merkgezondheid",
@@ -105,7 +107,8 @@
       "visual": "Beeld"
     },
     "fonts": "Lettertypebestanden van het merk",
-    "fontsHint": "Gebruikt door ontwerpen, carrousels en sjablonen; Tajawal tekent elke letter die een bestand niet heeft."
+    "fontsHint": "Gebruikt door ontwerpen, carrousels en sjablonen; Tajawal tekent elke letter die een bestand niet heeft.",
+    "live": "Werkt bij terwijl je bewerkt"
   },
   "checks": {
     "logo": { "label": "Logo", "hint": "Voeg het logo voor lichte achtergronden toe." },

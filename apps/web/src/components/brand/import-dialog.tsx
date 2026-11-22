@@ -29,7 +29,8 @@ export type ImportDraft = {
   fields: Record<string, DraftField>; current: Record<string, unknown> | null; colours: Colour[];
   fonts: FontFile[]; logos: Logo[]; logo_primary: string | null; logo_dark: string | null; imagery: Picture[];
   docs: string[]; components: number; ignored: number; tokens: { colours: number; spacing: number; radius: number; shadow: number };
-  book_source: Source | null; warnings: { code: string; message: string }[]; completeness: Completeness; arabic_needed: boolean;
+  book_source: Source | null; warnings: { code: string; message: string; files?: string[] }[]; completeness: Completeness; arabic_needed: boolean;
+  missing_fonts?: string[]; missing_assets?: { group: string; name: string }[];
 };
 export type ImportedKit = { id: number; name: string };
 type KitRef = { id: number; name: string };
@@ -112,7 +113,11 @@ export function ImportDialog({ kits, kitId, onClose, onDone }: {
     setApply(new Set(Object.keys(d.fields).filter((k) => !d.current || empty(d.current[k]) || JSON.stringify(d.current[k]) !== JSON.stringify(v[k]))));
     setLogo(d.logo_primary);
     setLogoDark(d.logo_dark);
-    setKeepLogos(new Set());
+    // an SVG main logo: keep its raster (PNG…) variants too, they stay available in the media library
+    const primary = d.logos.find((l) => l.key === d.logo_primary);
+    setKeepLogos(new Set(primary?.mimetype === "image/svg+xml"
+      ? d.logos.filter((l) => l.mimetype !== "image/svg+xml" && l.key !== d.logo_primary && l.key !== d.logo_dark).map((l) => l.key)
+      : []));
     setFonts(new Set(d.fonts.filter((f) => f.loadable && f.role !== "other").map((f) => f.key)));
     setImagery(new Set(d.imagery.filter((i) => i.selected).map((i) => i.key)));
   };
@@ -267,7 +272,18 @@ export function ImportDialog({ kits, kitId, onClose, onDone }: {
             <div className="rounded-2xl bg-warn-bg p-3">
               <div className="mb-1.5 flex items-center gap-1.5 text-[13px] font-semibold text-warn"><Icon name="warning" size={15} />{t("warnings")}</div>
               <ul className="flex flex-col gap-1 ps-5 text-[12.5px] text-text-2">
-                {d.warnings.map((w, i) => <li key={i} className="list-disc">{w.message}</li>)}
+                {d.warnings.map((w, i) => (
+                  <li key={i} className="list-disc">
+                    {w.message}
+                    {!!w.files?.length && (
+                      <span className="mt-1 flex flex-wrap gap-1" aria-label={t("missingFiles")}>
+                        {w.files.map((f) => (
+                          <code key={f} dir="ltr" className="rounded-md bg-white/80 px-1.5 py-px text-[11px] text-text-2 ring-1 ring-line">{f}</code>
+                        ))}
+                      </span>
+                    )}
+                  </li>
+                ))}
               </ul>
             </div>
           )}
@@ -378,7 +394,10 @@ export function ImportDialog({ kits, kitId, onClose, onDone }: {
                         <img src={fileUrl(d.import_id, l.key)} alt={l.name} className="max-h-full max-w-full object-contain" />
                       </div>
                       <div className="flex flex-col gap-1.5 bg-white/80 p-2.5">
-                        <div className="truncate text-[12px] font-medium" dir="ltr" title={l.name}>{l.name}</div>
+                        <div className="flex min-w-0 items-center gap-1">
+                          <span className="truncate text-[12px] font-medium" dir="ltr" title={l.name}>{l.name}</span>
+                          {l.mimetype === "image/svg+xml" && <span title={t("vectorHint")} className="shrink-0"><Badge tone="ok">SVG</Badge></span>}
+                        </div>
                         <span className="text-[11px] text-muted">{t(`variants.${l.variant}`)}</span>
                         <div className="flex flex-wrap gap-1">
                           <button type="button" onClick={() => setLogo(logo === l.key ? null : l.key)} aria-pressed={logo === l.key}

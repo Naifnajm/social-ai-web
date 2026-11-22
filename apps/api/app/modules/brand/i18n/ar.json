@@ -22,5 +22,7 @@
   "Only a logo for dark backgrounds was found; add the version for light backgrounds.": "وُجد شعار للخلفيات الداكنة فقط، فأضف نسخة الخلفيات الفاتحة.",
   "The main logo is an SVG: it is kept, but designs drawn by the app need a PNG version.": "الشعار الرئيسي بصيغة SVG: سيُحفظ، لكن التصاميم التي يرسمها التطبيق تحتاج إلى نسخة PNG.",
   "The AI could not read the brand book ({error}); the headings were read instead.": "تعذر على الذكاء الاصطناعي قراءة دليل الهوية ({error})، فقُرئت عناوينه بدلًا من ذلك.",
-  "This import has expired. Upload the file again.": "انتهت صلاحية هذا الاستيراد، فارفع الملف مرة أخرى."
+  "This import has expired. Upload the file again.": "انتهت صلاحية هذا الاستيراد، فارفع الملف مرة أخرى.",
+  "{count} files listed in design-system.json are not in the upload.": "{count} من الملفات المذكورة في design-system.json غير موجودة في الملف المرفوع.",
+  "This SVG cannot be used safely. Export it again without scripts or external links.": "لا يمكن استخدام ملف SVG هذا بأمان، فصدّره مرة أخرى دون نصوص برمجية أو روابط خارجية."
 }

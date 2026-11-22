@@ -6,9 +6,19 @@ Kept: shapes, paths, gradients, text, styles without external urls, internal ``#
 raster images (``data:image/png|jpeg|gif|webp``). Dropped: <script>, <foreignObject>, frames and media elements,
 ``on*`` attributes, ``javascript:`` and any http(s)/file reference, ``@import``. A DOCTYPE or ENTITY makes the
 whole file refused (entity expansion attacks). The served file still carries the sandbox CSP of uploads.
+
+    png = svg.rasterize(content, 640, 640)   # PNG bytes fitted in 640×640 (transparent), or None
+    svg.can_rasterize()                       # resvg-py (or cairosvg) is installed
+
+Rasterizing always sanitizes first, caps the output at ``MAX_PX`` per side, refuses ``<use>`` fan-out bombs and
+very large documents, and caches the last results in memory (keyed by content hash and size).
 """
+import hashlib
+import io
 import re
+import threading
 import xml.etree.ElementTree as ET
+from collections import OrderedDict
 
 SVG_NS = "http://www.w3.org/2000/svg"
 XLINK_NS = "http://www.w3.org/1999/xlink"
@@ -18,6 +28,9 @@ DROP_TAGS = {"script", "foreignobject", "iframe", "embed", "object", "audio", "v
 SAFE_DATA = re.compile(r"^data:image/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+/=\s]+$", re.I)
 URL_IN_CSS = re.compile(r"url\(\s*(['\"]?)(.*?)\1\s*\)", re.I)
 MAX_SVG = 5 * 1024 * 1024
+MAX_PX = 4096  # longest side of a rasterized SVG
+MAX_ELEMENTS = 20000  # elements drawn after <use> expansion
+CACHE_SIZE = 64
 
 ET.register_namespace("", SVG_NS)
 ET.register_namespace("xlink", XLINK_NS)
@@ -102,3 +115,137 @@ def _bright(value: str) -> bool:
         return False
     r, g, b = (int(value[i:i + 2], 16) for i in (0, 2, 4))
     return (0.299 * r + 0.587 * g + 0.114 * b) > 200
+
+
+def intrinsic_size(content: bytes) -> tuple[int | None, int | None]:
+    """The drawing size an SVG declares (width/height, else the viewBox), rounded to pixels."""
+    try:
+        root = ET.fromstring(content)
+    except ET.ParseError:
+        return None, None
+
+    def number(value: str | None) -> float | None:
+        match = re.match(r"^\s*([0-9.]+)\s*(px)?\s*$", value or "")
+        return float(match.group(1)) if match else None
+
+    width, height = number(root.attrib.get("width")), number(root.attrib.get("height"))
+    box = re.split(r"[\s,]+", (root.attrib.get("viewBox") or "").strip())
+    if (width is None or height is None) and len(box) == 4:
+        try:
+            box_w, box_h = float(box[2]), float(box[3])
+        except ValueError:
+            box_w = box_h = 0
+        if box_w > 0 and box_h > 0:
+            width = width or (height * box_w / box_h if height else box_w)
+            height = height or width * box_h / box_w
+    if not width or not height:
+        return None, None
+    return max(1, round(width)), max(1, round(height))
+
+
+# ---------------------------------------------------------------------------- rasterizing
+def is_svg(content: bytes | None, mimetype: str | None = None, filename: str | None = None) -> bool:
+    """Whether the bytes are an SVG document (by type, name or content)."""
+    if (mimetype or "").split(";")[0].strip().lower() == "image/svg+xml":
+        return True
+    if (filename or "").lower().endswith(".svg"):
+        return True
+    head = (content or b"")[:2048].lstrip().lower()
+    if head.startswith(b"\xef\xbb\xbf"):
+        head = head[3:]
+    return head.startswith(b"<svg") or (head.startswith(b"<?xml") and b"<svg" in head)
+
+
+def renderer() -> str | None:
+    """The SVG rasterizer available here: "resvg", "cairosvg" or None."""
+    try:
+        import resvg_py  # noqa: F401
+        return "resvg"
+    except ImportError:
+        pass
+    try:  # pragma: no cover - only when resvg-py is missing
+        import cairosvg  # noqa: F401
+        return "cairosvg"
+    except Exception:  # cairosvg raises OSError when libcairo is missing
+        return None
+
+
+def can_rasterize() -> bool:
+    return renderer() is not None
+
+
+def _expanded_size(root: ET.Element) -> int:
+    """How many elements the drawing has once every ``<use>`` is expanded (a cheap guard against use bombs)."""
+    by_id = {el.attrib["id"]: el for el in root.iter() if "id" in el.attrib}
+    memo: dict[int, int] = {}
+
+    def size(el: ET.Element, depth: int = 0) -> int:
+        key = id(el)
+        if key in memo:
+            return memo[key]
+        if depth > 32:
+            return MAX_ELEMENTS + 1
+        total = 1
+        for child in el.iter():
+            if child is el:
+                continue
+            total += 1
+            if _local(child.tag if isinstance(child.tag, str) else "") == "use":
+                ref = next((v for k, v in child.attrib.items() if _local(k) == "href"), "")
+                target = by_id.get(ref[1:]) if ref.startswith("#") else None
+                if target is not None:
+                    total += size(target, depth + 1)
+            if total > MAX_ELEMENTS:
+                break
+        memo[key] = total
+        return total
+
+    return size(root)
+
+
+_cache: OrderedDict = OrderedDict()
+_lock = threading.Lock()
+
+
+def _render(clean: bytes, width: int, height: int) -> bytes | None:
+    engine = renderer()
+    if engine == "resvg":
+        import resvg_py
+        return resvg_py.svg_to_bytes(svg_string=clean.decode("utf-8"), width=width, height=height)
+    if engine == "cairosvg":  # pragma: no cover - fallback
+        import cairosvg
+        from PIL import Image, ImageOps
+        png = cairosvg.svg2png(bytestring=clean, output_width=width, unsafe=False)
+        with Image.open(io.BytesIO(png)) as image:  # cairosvg keeps the aspect from the width only: fit the box
+            fitted = ImageOps.contain(image.convert("RGBA"), (width, height))
+            out = io.BytesIO()
+            fitted.save(out, "PNG")
+            return out.getvalue()
+    return None
+
+
+def rasterize(content: bytes, width: int = 1024, height: int | None = None) -> bytes | None:
+    """PNG bytes of the SVG fitted inside ``width``×``height`` (aspect kept, transparent background), or None when
+    it is not a safe SVG, too complex, or no rasterizer is installed. The SVG is sanitized first."""
+    if not content or not can_rasterize():
+        return None
+    width = max(1, min(MAX_PX, int(width or 1024)))
+    height = max(1, min(MAX_PX, int(height or width)))
+    key = (hashlib.sha256(content).hexdigest(), width, height)
+    with _lock:
+        if key in _cache:
+            _cache.move_to_end(key)
+            return _cache[key]
+    clean = sanitize(content)
+    png = None
+    if clean is not None:
+        try:
+            if _expanded_size(ET.fromstring(clean)) <= MAX_ELEMENTS:
+                png = _render(clean, width, height)
+        except Exception:  # invalid geometry, a zero-size result, a renderer error
+            png = None
+    with _lock:
+        _cache[key] = png
+        while len(_cache) > CACHE_SIZE:
+            _cache.popitem(last=False)
+    return png

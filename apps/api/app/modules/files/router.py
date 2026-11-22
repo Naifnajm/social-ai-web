@@ -52,6 +52,11 @@ async def upload(file: UploadFile = File(...), ctx: Ctx = Depends(workspace_ctx(
         raise AppError(_("The file is too large (max {mb} MB).", mb=settings.max_upload_mb), code="too_large")
     if not (file.content_type or "").split("/")[0] in ("image", "video", "audio"):
         raise AppError(_("Only images, videos and audio files can be uploaded."), code="bad_type")
+    if (file.content_type or "").lower() == "image/svg+xml" or (file.filename or "").lower().endswith(".svg"):
+        from app.modules.brand import svg
+        if svg.sanitize(content) is None:
+            raise AppError(_("This SVG cannot be used safely. Export it again without scripts or external links."),
+                           code="bad_svg")
     media = save_media(ctx.db, ctx.workspace.id, content, file.filename or "file", file.content_type,
                        source="upload", user_id=ctx.user.id)
     return media_out(media)

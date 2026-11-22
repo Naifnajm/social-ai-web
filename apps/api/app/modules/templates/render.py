@@ -10,11 +10,12 @@ Pure functions on bytes and a *spec* dict (no database) — ``service.frame_spec
         "background": "#111111",
         "text": {"x", "y", "w", "h", "size", "color", "align", "bold", "max_lines", "background", "default",
                  "font": {"bold": "/path/brand.woff2", "regular": "..."} (optional brand font files)} or None,
-        "logo": {"content": b"<png>", "position": "top_left", "size": 18} or None,
+        "logo": {"content": b"<png or svg>", "position": "top_left", "size": 18} or None,
     }
 
 Arabic text is shaped right-to-left with RAQM (libraqm) and drawn with the bundled Tajawal font
-(Arabic + Latin + Arabic-Indic digits); system fonts are the fallback. A text spec may name brand font files
+(Arabic + Latin + Arabic-Indic digits); system fonts are the fallback. Mixed Arabic/Latin lines follow the Unicode
+bidi rules run by run (``visual_runs``), with the paragraph direction of each line's first strong letter. A text spec may name brand font files
 (``"font"``): they are used when they can draw every letter of the text, else Tajawal draws it.
 """
 import glob
@@ -138,8 +139,15 @@ def hex_color(color: str | None, default=(17, 17, 17)) -> tuple[int, int, int]:
         return default
 
 
-def open_image(content: bytes) -> Image.Image:
-    """Open JPEG/PNG/WebP/… bytes, applying the EXIF rotation."""
+def open_image(content: bytes, svg_size: int = 2048) -> Image.Image:
+    """Open JPEG/PNG/WebP/… bytes, applying the EXIF rotation. An SVG is sanitized and rasterized to fit
+    ``svg_size``×``svg_size`` (transparent background)."""
+    from app.modules.brand import svg
+    if svg.is_svg(content):
+        png = svg.rasterize(content, svg_size, svg_size)
+        if png is None:
+            raise FrameError(_("This file is not an image we can read."), code="bad_image")
+        content = png
     try:
         image = Image.open(io.BytesIO(content))
         image.load()
@@ -275,11 +283,60 @@ def place_photo(photo: Image.Image, size: tuple[int, int], fit: str = "cover") -
 
 
 # ---------------------------------------------------------------------------- text
+# Mixed Arabic / Latin lines: each line gets the paragraph direction of its first strong letter (Unicode bidi
+# rule P2), its words are grouped into right-to-left and left-to-right runs (neutrals such as digits or "—"
+# take the direction of their neighbours when both agree, else the paragraph's), and the runs are laid out in
+# visual order — reversed in a right-to-left paragraph. Each run is drawn on its own with its own direction
+# (RAQM shapes Arabic); without RAQM python-bidi is used when installed, else the letters are reversed.
+def _strong(text: str) -> str | None:
+    """"R" or "L": the direction of the first strong character of ``text`` (None when it has none)."""
+    for char in text:
+        kind = unicodedata.bidirectional(char)
+        if kind in ("R", "AL"):
+            return "R"
+        if kind == "L":
+            return "L"
+    return None
+
+
+def base_rtl(text: str | None) -> bool:
+    """Whether a paragraph reads right to left: its first strong letter is Arabic/Hebrew."""
+    return _strong(text or "") == "R"
+
+
+def visual_runs(line: str, rtl: bool | None = None) -> list[tuple[str, bool]]:
+    """The runs of ``line`` in visual order (left to right): ``[(text, is_rtl), …]``.
+
+    ``visual_runs("قهوة Cold Brew جديدة")`` -> ``[("جديدة", True), ("Cold Brew", False), ("قهوة", True)]``.
+    """
+    words = line.split()
+    if not words:
+        return []
+    paragraph_rtl = base_rtl(line) if rtl is None else rtl
+    kinds = [_strong(w) for w in words]
+    resolved = []
+    for index, kind in enumerate(kinds):
+        if kind is None:
+            before = next((k for k in reversed(kinds[:index]) if k), None)
+            after = next((k for k in kinds[index + 1:] if k), None)
+            kind = before if before and before == after else ("R" if paragraph_rtl else "L")
+        resolved.append(kind == "R")
+    runs: list[list] = []
+    for word, is_rtl in zip(words, resolved):
+        if runs and runs[-1][1] == is_rtl:
+            runs[-1][0].append(word)
+        else:
+            runs.append([[word], is_rtl])
+    out = [(" ".join(ws), is_rtl) for ws, is_rtl in runs]
+    return list(reversed(out)) if paragraph_rtl else out
+
+
 def _direction(rtl: bool) -> dict:
     return {"direction": "rtl", "language": "ar"} if rtl and has_raqm() else {}
 
 
 def _measure(draw: ImageDraw.ImageDraw, text: str, font, rtl: bool):
+    """Bounding box size and offset of ``text`` drawn as one run: ``(width, height, left, top)``."""
     try:
         left, top, right, bottom = draw.textbbox((0, 0), text, font=font, **_direction(rtl))
     except (KeyError, ValueError, OSError):
@@ -287,14 +344,74 @@ def _measure(draw: ImageDraw.ImageDraw, text: str, font, rtl: bool):
     return right - left, bottom - top, left, top
 
 
+def _rtl_fallback(run: str) -> str:
+    """A right-to-left run in visual order for Pillow's basic layout (no RAQM)."""
+    try:  # optional: python-bidi (+ arabic-reshaper for joined letters)
+        from bidi import get_display  # type: ignore
+        try:
+            import arabic_reshaper  # type: ignore
+            run = arabic_reshaper.reshape(run)
+        except ImportError:
+            pass
+        return get_display(run)
+    except ImportError:
+        pass
+    parts = re.split(r"(\d[\d.,:]*)", run)  # numbers keep their left-to-right order
+    return "".join(p if re.fullmatch(r"\d[\d.,:]*", p) else p[::-1] for p in reversed(parts))
+
+
+def _run_args(is_rtl: bool) -> dict:
+    if not has_raqm():
+        return {}
+    return {"direction": "rtl", "language": "ar"} if is_rtl else {"direction": "ltr"}
+
+
+def _run_text(run: str, is_rtl: bool) -> str:
+    return _rtl_fallback(run) if is_rtl and not has_raqm() else run
+
+
+def _run_length(draw: ImageDraw.ImageDraw, run: str, font, is_rtl: bool) -> float:
+    try:
+        return draw.textlength(_run_text(run, is_rtl), font=font, **_run_args(is_rtl))
+    except (KeyError, ValueError, OSError):
+        return draw.textlength(run, font=font)
+
+
+def line_layout(draw: ImageDraw.ImageDraw, line: str, font, rtl: bool | None = None):
+    """``(width, [(x offset, run, is_rtl), …])`` of a line drawn run by run in visual order."""
+    space = draw.textlength(" ", font=font)
+    x, placed = 0.0, []
+    for run, is_rtl in visual_runs(line, rtl):
+        if placed:
+            x += space
+        placed.append((x, run, is_rtl))
+        x += _run_length(draw, run, font, is_rtl)
+    return round(x), placed
+
+
+def _line_width(draw, line: str, font, rtl: bool | None = None) -> int:
+    return line_layout(draw, line, font, rtl)[0]
+
+
+def _draw_line(draw: ImageDraw.ImageDraw, x: int, middle: int, line: str, font, fill, rtl: bool | None = None):
+    _width, placed = line_layout(draw, line, font, rtl)
+    for offset, run, is_rtl in placed:
+        try:
+            draw.text((x + offset, middle), _run_text(run, is_rtl), font=font, fill=fill, anchor="lm",
+                      **_run_args(is_rtl))
+        except (KeyError, ValueError, OSError):
+            draw.text((x + offset, middle), run, font=font, fill=fill, anchor="lm")
+
+
 def _wrap(draw, text: str, font, max_width: int, rtl: bool) -> list[str]:
     lines = []
     for paragraph in (text or "").splitlines() or [""]:
         words, line = paragraph.split(), ""
+        direction = base_rtl(paragraph) if _strong(paragraph) else rtl
         for word in words:
             candidate = (line + " " + word).strip()
             # punctuation (— : !) never starts a line
-            if line and any(c.isalnum() for c in word) and _measure(draw, candidate, font, rtl)[0] > max_width:
+            if line and any(c.isalnum() for c in word) and _line_width(draw, candidate, font, direction) > max_width:
                 lines.append(line)
                 line = word
             else:
@@ -312,14 +429,20 @@ def _layout_text(draw, text: str, spec: dict, box, rtl: bool):
         font = load_font(size, spec.get("bold", True), spec.get("font"), text)
         lines = _wrap(draw, text, font, w, rtl)
         line_h = int(size * 1.35)
-        widths = [_measure(draw, line, font, rtl)[0] for line in lines]
+        widths = [_line_width(draw, line, font, _line_rtl(line, rtl)) for line in lines]
         if (len(lines) <= max_lines and line_h * len(lines) <= h and max(widths or [0]) <= w) or size <= 12:
             return font, lines[:max_lines], line_h, size
         size = int(size * 0.9)
 
 
+def _line_rtl(line: str, rtl: bool) -> bool:
+    """Paragraph direction of one line: its first strong letter, else the text's."""
+    return base_rtl(line) if _strong(line) else rtl
+
+
 def draw_text(canvas: Image.Image, text: str | None, spec: dict) -> Image.Image:
-    """Draw ``text`` inside the template's text zone. Arabic is shaped right-to-left (RAQM)."""
+    """Draw ``text`` inside the template's text zone. Each line is laid out with the Unicode bidi rules (see
+    ``visual_runs``): Arabic runs right to left (shaped by RAQM), Latin runs left to right."""
     text = unicodedata.normalize("NFC", (text or "").strip())
     if not text:
         return canvas
@@ -327,7 +450,7 @@ def draw_text(canvas: Image.Image, text: str | None, spec: dict) -> Image.Image:
     box = box_px((spec.get("x"), spec.get("y"), spec.get("w"), spec.get("h")), width, height)
     layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(layer)
-    rtl = is_rtl(text)
+    rtl = base_rtl(text)
     font, lines, line_h, size = _layout_text(draw, text, spec, box, rtl)
     color = hex_color(spec.get("color"), (255, 255, 255))
     align = spec.get("align") or "auto"
@@ -335,7 +458,7 @@ def draw_text(canvas: Image.Image, text: str | None, spec: dict) -> Image.Image:
         align = "right" if rtl else "left"
     block_h = line_h * len(lines)
     top = box[1] + max(0, (box[3] - block_h) // 2)
-    widths = [_measure(draw, line, font, rtl)[0] for line in lines]
+    widths = [_line_width(draw, line, font, _line_rtl(line, rtl)) for line in lines]
     background = spec.get("background")
     if background:
         pad = max(8, size // 3)
@@ -349,7 +472,7 @@ def draw_text(canvas: Image.Image, text: str | None, spec: dict) -> Image.Image:
         draw.rounded_rectangle((left - pad, top - pad // 2, left + block_w + pad, top + block_h + pad // 2),
                                radius=pad, fill=hex_color(background) + (235,))
     for index, line in enumerate(lines):
-        line_w, _lh, off_x, _off_y = _measure(draw, line, font, rtl)
+        line_w = widths[index]
         if align == "center":
             x = box[0] + (box[2] - line_w) // 2
         elif align == "right":
@@ -357,10 +480,7 @@ def draw_text(canvas: Image.Image, text: str | None, spec: dict) -> Image.Image:
         else:
             x = box[0]
         middle = top + index * line_h + line_h // 2
-        try:
-            draw.text((x - off_x, middle), line, font=font, fill=color + (255,), anchor="lm", **_direction(rtl))
-        except (KeyError, ValueError, OSError):
-            draw.text((x - off_x, middle), line, font=font, fill=color + (255,), anchor="lm")
+        _draw_line(draw, x, middle, line, font, color + (255,), _line_rtl(line, rtl))
     canvas.alpha_composite(layer)
     return canvas
 
@@ -369,12 +489,12 @@ def draw_text(canvas: Image.Image, text: str | None, spec: dict) -> Image.Image:
 def _paste_logo(canvas: Image.Image, logo: dict | None) -> Image.Image:
     if not logo or not logo.get("content"):
         return canvas
-    try:
-        image = open_image(logo["content"]).convert("RGBA")
-    except FrameError:
-        return canvas
     width, height = canvas.size
     target = max(16, int(width * float(logo.get("size") or 16) / 100.0))
+    try:  # an SVG logo is rasterized at exactly the size it is drawn (sharp edges, cached)
+        image = open_image(logo["content"], svg_size=target).convert("RGBA")
+    except FrameError:
+        return canvas
     image = ImageOps.contain(image, (target, target), Image.LANCZOS)
     margin = int(min(width, height) * 0.04)
     position = logo.get("position") or "top_right"

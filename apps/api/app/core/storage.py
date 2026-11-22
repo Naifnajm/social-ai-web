@@ -29,6 +29,9 @@ def _root() -> Path:
 def _probe(content: bytes, mimetype: str) -> tuple[int | None, int | None]:
     if not mimetype.startswith("image/"):
         return None, None
+    if mimetype == "image/svg+xml":
+        from app.modules.brand import svg
+        return svg.intrinsic_size(content)
     try:
         from PIL import Image
         with Image.open(io.BytesIO(content)) as image:
@@ -41,9 +44,22 @@ def guess_mimetype(filename: str, default: str = "application/octet-stream") -> 
     return mimetypes.guess_type(filename)[0] or default
 
 
+def _safe_svg(content: bytes, mimetype: str, filename: str) -> tuple[bytes, str]:
+    """Every SVG is stored sanitized (no script, no external reference); one that cannot be made safe is kept
+    as a plain download (``application/octet-stream``), never as an image a browser would render."""
+    from app.modules.brand import svg
+    if mimetype.split(";")[0].strip().lower() != "image/svg+xml" and not filename.lower().endswith(".svg"):
+        return content, mimetype
+    clean = svg.sanitize(content)
+    if clean is None:
+        return content, "application/octet-stream"
+    return clean, "image/svg+xml"
+
+
 def save_media(db: Session, workspace_id: int, content: bytes, filename: str, mimetype: str | None = None, *,
                source: str = "upload", user_id: int | None = None) -> Media:
     mimetype = mimetype or guess_mimetype(filename)
+    content, mimetype = _safe_svg(content, mimetype, filename or "")
     ext = Path(filename).suffix.lower()[:10] or mimetypes.guess_extension(mimetype) or ""
     key = f"{workspace_id}/{time.strftime('%Y/%m')}/{secrets.token_hex(12)}{ext}"
     path = _root() / key

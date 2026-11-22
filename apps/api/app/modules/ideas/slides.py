@@ -1,6 +1,7 @@
 """Carousel slides in the brand's look: 1080×1350 images with the brand kit's colours, its logo and the
 Tajawal font (Arabic shaped right-to-left, Latin left-to-right). The first slide is the hook, the last one the
-call to action; a product idea uses the product photo behind the first slide. A brand kit with imported font
+call to action; a product idea uses the product photo behind the first slide. The logo may be an SVG: it is
+rasterized at the size it is drawn (templates/render.py ``_paste_logo``). A brand kit with imported font
 files (``brand["fonts"]``, see brand/fonts.py) draws titles with its heading font and texts with its body font;
 Tajawal draws what those files cannot (e.g. Arabic with a Latin-only font)."""
 from PIL import Image, ImageDraw
@@ -26,7 +27,7 @@ def _logo(db, workspace_id: int, brand: dict) -> dict | None:
     if not media or media.workspace_id != workspace_id:
         return None
     try:
-        return {"content": read_media(media), "position": "bottom_left" if not render.is_rtl(brand.get("name"))
+        return {"content": read_media(media), "position": "bottom_left" if not render.base_rtl(brand.get("name"))
                 else "bottom_right", "size": 12}
     except OSError:
         return None
@@ -58,7 +59,9 @@ def render_slide(slide: dict, index: int, total: int, brand: dict, *, logo: dict
     fonts = brand.get("fonts") or {}
     heading, body = fonts.get("heading") or fonts.get("body"), fonts.get("body") or fonts.get("heading")
     first, last = index == 0, index == total - 1
-    rtl = render.is_rtl((slide.get("title") or "") + (slide.get("body") or ""))
+    # the reading direction of the slide: the first strong letter of its title (else its body) — a Latin title
+    # with one Arabic word stays left to right, an Arabic title with a Latin product name right to left
+    rtl = render.base_rtl((slide.get("title") or "").strip() or slide.get("body"))
     align = "right" if rtl else "left"
     bar_x = WIDTH - 96 - 120 if rtl else 96
     draw.rounded_rectangle((bar_x, 120, bar_x + 120, 132), radius=6, fill=render.hex_color(accent) + (255,))

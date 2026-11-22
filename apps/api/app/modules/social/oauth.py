@@ -71,7 +71,9 @@ PLATFORMS = {
     "threads": {
         "env": ("threads_app_id", "threads_app_secret"),
         "authorize": "https://threads.net/oauth/authorize",
-        "scopes": "threads_basic,threads_content_publish,threads_manage_insights",
+        # radar: keyword search of public posts and replies to the account's posts
+        "scopes": "threads_basic,threads_content_publish,threads_manage_insights,threads_read_replies,"
+                  "threads_keyword_search",
     },
     "linkedin": {
         "env": ("linkedin_client_id", "linkedin_client_secret"),
@@ -309,6 +311,7 @@ def _exchange_threads(db, workspace_id, client_id, secret, code, verifier):
         "platform": "threads", "name": me.get("name") or me.get("username"), "username": me.get("username"),
         "external_id": str(me.get("id") or short.get("user_id")), "access_token": token,
         "avatar_url": me.get("threads_profile_picture_url"), "token_expires_at": _expiry(long_lived.get("expires_in")),
+        "extra": {"scopes": PLATFORMS["threads"]["scopes"]},
     }]
 
 
@@ -321,7 +324,8 @@ def _exchange_linkedin(db, workspace_id, client_id, secret, code, verifier):
     me = http("GET", "https://api.linkedin.com/v2/userinfo", "OAuth: profile",
               headers={"Authorization": f"Bearer {access}"})
     common = {"access_token": access, "refresh_token": token.get("refresh_token"),
-              "token_expires_at": _expiry(token.get("expires_in"))}
+              "token_expires_at": _expiry(token.get("expires_in")),
+              "extra": {"scopes": token.get("scope") or ""}}  # the radar checks r_organization_social
     accounts = [dict(common, platform="linkedin", name=me.get("name"), username=me.get("email") or me.get("name"),
                      external_id=f"urn:li:person:{me['sub']}", avatar_url=me.get("picture"))]
     if linkedin_organizations(db, workspace_id):

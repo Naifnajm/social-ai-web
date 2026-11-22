@@ -8,16 +8,16 @@ from fastapi import APIRouter, Depends, Query, Response
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select
 
-from app.core.db import utcnow
-from app.core.deps import Ctx, workspace_ctx
+from app.core.db import get_db, utcnow
+from app.core.deps import Ctx, superadmin, workspace_ctx
 from app.core.errors import AppError, NotFound
 from app.core.i18n import _
 from app.core.jobs import enqueue
 from app.modules.billing import limits
-from app.modules.billing import platform as platform_settings
 from app.modules.social.models import SocialAccount
 from app.modules.workspaces.models import Role
 
+from . import registry
 from . import service as svc
 from .models import (
     EMOTIONS,
@@ -52,6 +52,26 @@ class Competitor(BaseModel):
         return _words(value, 15)
 
 
+SourceKey = Literal["owned", "instagram", "facebook", "threads", "youtube", "youtube_comments", "google_business", "linkedin", "news", "web", "x", "reddit", "tiktok", "telegram", "app_store", "google_play"]
+DEFAULT_SOURCES = ["owned", "instagram", "facebook", "threads", "youtube", "youtube_comments", "google_business",
+                   "news"]
+
+
+class QueryOptions(BaseModel):
+    """Lists some sources read: public Telegram channels, App Store / Google Play app ids, subreddits and extra
+    YouTube channels whose video comments are read."""
+    telegram_channels: list[str] = Field(default=[], max_length=10)
+    app_store_ids: list[str] = Field(default=[], max_length=5)
+    google_play_ids: list[str] = Field(default=[], max_length=5)
+    subreddits: list[str] = Field(default=[], max_length=3)
+    youtube_channel_ids: list[str] = Field(default=[], max_length=2)
+
+    @field_validator("telegram_channels", "app_store_ids", "google_play_ids", "subreddits", "youtube_channel_ids")
+    @classmethod
+    def clean(cls, value):
+        return _words(value, 10)
+
+
 class QueryIn(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     keywords: list[str] = Field(min_length=1)
@@ -60,10 +80,11 @@ class QueryIn(BaseModel):
     languages: list[Literal["ar", "en", "fr", "de", "nl"]] = []
     countries: list[str] = []
     competitors: list[Competitor] = Field(default=[], max_length=5)
-    sources: list[Literal["owned", "instagram", "facebook", "youtube", "google_business", "news", "x"]] = \
-        ["owned", "instagram", "facebook", "youtube", "google_business", "news"]
+    sources: list[SourceKey] = DEFAULT_SOURCES
     active: bool = True
     x_monthly_cap: int = Field(default=3000, ge=0, le=1_000_000)
+    monthly_cap_usd: float | None = Field(default=None, ge=0, le=100_000)
+    options: QueryOptions = QueryOptions()
 
     @field_validator("keywords", "required", "excluded")
     @classmethod
@@ -84,9 +105,11 @@ class QueryPatch(BaseModel):
     languages: list[Literal["ar", "en", "fr", "de", "nl"]] | None = None
     countries: list[str] | None = None
     competitors: list[Competitor] | None = Field(default=None, max_length=5)
-    sources: list[Literal["owned", "instagram", "facebook", "youtube", "google_business", "news", "x"]] | None = None
+    sources: list[SourceKey] | None = None
     active: bool | None = None
     x_monthly_cap: int | None = Field(default=None, ge=0, le=1_000_000)
+    monthly_cap_usd: float | None = Field(default=None, ge=0, le=100_000)
+    options: QueryOptions | None = None
 
     @field_validator("keywords", "required", "excluded")
     @classmethod
@@ -115,10 +138,13 @@ class QueryOut(BaseModel):
     last_error: str | None = None
     mentions: int = 0
     x_usage: dict
+    monthly_cap_usd: float | None = None
+    options: dict = {}
+    spend: dict = {}
 
 
 class MentionPatch(BaseModel):
-    status: Literal["new", "reviewed", "muted"] | None = None
+    status: Literal["new", "reviewed", "muted", "spam"] | None = None
     sentiment: Literal["positive", "neutral", "negative"] | None = None
     intent: Literal["question", "purchase", "complaint", "praise", "news", "other"] | None = None
     topic: str | None = Field(default=None, max_length=60)
@@ -128,6 +154,28 @@ class ActIn(BaseModel):
     action: Literal["studio", "planner", "approval", "inbox", "dismiss"]
     account_ids: list[int] | None = None
     text: str | None = Field(default=None, max_length=5000)
+
+
+class BoardIn(BaseModel):
+    template: str = Field(default="pipeline_quick", max_length=40)
+
+
+class ReportIn(BaseModel):
+    on: bool = True
+
+
+class AssignIn(BaseModel):
+    user_id: int | None = None
+    note: str | None = Field(default=None, max_length=500)
+
+
+class SourceToggleIn(BaseModel):
+    query_id: int | None = None
+    on: bool = True
+
+
+class OwnKeyIn(BaseModel):
+    key: str | None = Field(default=None, max_length=500)
 
 
 class FeedbackIn(BaseModel):
@@ -148,7 +196,8 @@ def _query_out(ctx: Ctx, query: ListeningQuery) -> QueryOut:
                     countries=query.countries or [], competitors=query.competitors or [],
                     sources=query.sources or [], active=query.active, x_monthly_cap=query.x_monthly_cap,
                     last_collected_at=query.last_collected_at, last_error=query.last_error, mentions=count,
-                    x_usage=svc.x_usage(query))
+                    x_usage=svc.x_usage(query), monthly_cap_usd=query.monthly_cap_usd,
+                    options=query.options or {}, spend=svc.spend(query))
 
 
 def _check_accounts(ctx: Ctx, ids: list[int] | None) -> None:
@@ -165,14 +214,8 @@ def _check_accounts(ctx: Ctx, ids: list[int] | None) -> None:
 def status(ctx: Ctx = Depends(workspace_ctx())):
     """Is the radar in the plan, which sources can be used, what is connected and what is used."""
     db, ws = ctx.db, ctx.workspace.id
-    platforms = set(db.scalars(select(SocialAccount.platform).where(SocialAccount.workspace_id == ws,
-                                                                    SocialAccount.active.is_(True))))
-    youtube_key = bool(platform_settings.get_secret(db, "listening.youtube_api_key"))
-    x_key = bool(platform_settings.get_secret(db, "listening.x_bearer_token"))
     allowed = svc.allowed_sources(db, ws)
-    ready = {"owned": True, "instagram": "instagram" in platforms, "facebook": "facebook" in platforms,
-             "youtube": youtube_key or "youtube" in platforms, "google_business": "google_business" in platforms,
-             "news": True, "x": x_key}
+    health = {s: registry.health(db, ws, s) for s in SOURCES}
     from app.modules.billing.service import billing_state
     state = billing_state(db, ws)
     queries = list(db.scalars(select(ListeningQuery).where(ListeningQuery.workspace_id == ws)
@@ -181,9 +224,12 @@ def status(ctx: Ctx = Depends(workspace_ctx())):
         "enabled": limits.feature(db, ws, "listening"),
         "x_enabled": limits.feature(db, ws, "listening_x"),
         "queries_used": len(queries), "queries_limit": state.limits.get("listening_queries"),
-        "sources": [{"source": s, "in_plan": s in allowed, "ready": ready[s], "paid": s == "x"} for s in SOURCES],
+        "sources": [{"source": s, "in_plan": s in allowed, "ready": health[s]["status"] == "ready",
+                     "paid": s in registry.PAID, "status": health[s]["status"],
+                     "access": registry.SOURCE_DEFS[s].access, "beta": registry.SOURCE_DEFS[s].beta}
+                    for s in SOURCES],
         "queries": [{"id": q.id, "name": q.name, "active": q.active} for q in queries],
-        "x_price_per_post": svc.collectors.X_PRICE_PER_POST,
+        "x_price_per_post": registry.cost_view(db, "x", ws)["unit_price"],
     }
 
 
@@ -199,6 +245,7 @@ def create_query(body: QueryIn, ctx: Ctx = Depends(workspace_ctx(Role.editor))):
     svc.check_query_limits(ctx.db, ctx.workspace.id, body.sources, adding=True)
     data = body.model_dump()
     data["competitors"] = [c for c in data["competitors"]]
+    data["options"] = {k: v for k, v in (data.get("options") or {}).items() if v}
     query = ListeningQuery(workspace_id=ctx.workspace.id, **data)
     ctx.db.add(query)
     ctx.db.flush()
@@ -220,6 +267,8 @@ def update_query(query_id: int, body: QueryPatch, ctx: Ctx = Depends(workspace_c
     if data.get("keywords") is not None and not data["keywords"]:
         raise AppError(_("Add at least one word to listen for."), code="invalid")
     svc.check_query_limits(ctx.db, ctx.workspace.id, data.get("sources") or [], adding=False)
+    if "options" in data:
+        data["options"] = {k: v for k, v in (data["options"] or {}).items() if v}
     for key, value in data.items():
         setattr(query, key, value)
     ctx.db.flush()
@@ -244,23 +293,110 @@ def collect_now(query_id: int, ctx: Ctx = Depends(workspace_ctx(Role.editor))):
 
 @router.get("/estimate")
 def estimate(query_id: int | None = None, ctx: Ctx = Depends(workspace_ctx())):
-    """What a setup costs: expected mentions per month (from the last 30 days), X reads and their price."""
+    """What a setup costs: expected mentions per month (from the last 30 days) and, for each paid source, the units
+    it used in the last 30 days and their price per month at the workspace's price (cost + markup)."""
     from app.modules.billing.service import billing_state
     query = svc.get_query(ctx.db, ctx.workspace.id, query_id) if query_id else None
     expected = None
     by_source: dict = {}
+    costs: dict = {}
     if query:
         rows = ctx.db.execute(select(Mention.source, func.count()).where(
             Mention.query_id == query.id, Mention.published_at >= utcnow() - timedelta(days=30))
             .group_by(Mention.source)).all()
         by_source = {s: c for s, c in rows}
         expected = sum(by_source.values()) if by_source else None
+        for source, cursor in (query.cursors or {}).items():
+            if source in registry.PAID and isinstance(cursor, dict):
+                spend = cursor.get("spend") or {}
+                units = int(spend.get("units") or 0) + int(spend.get("own_units") or 0)
+                costs[source] = {"units_month": units, "usd_month": round(float(spend.get("usd") or 0), 2)}
+    defaults = {"web": 8 * 30, "reddit": 12 * 4 * 30, "tiktok": 4 * 4 * 30}  # units a month at the run cadence
+    for source in registry.PAID:
+        cost = registry.cost_view(ctx.db, source, ctx.workspace.id)
+        units = (costs.get(source) or {}).get("units_month") or (
+            (query.x_monthly_cap if query else 3000) if source == "x" else defaults.get(source, 0))
+        costs.setdefault(source, {})
+        costs[source].update(unit=cost["unit"], unit_price=cost["unit_price"], own_key=cost["own_key"],
+                             expected_units=units, expected_usd=round(units * cost["unit_price"], 2))
     cap = query.x_monthly_cap if query else 3000
     return {"expected_month": expected, "by_source": by_source, "x": svc.x_usage(query) if query else None,
-            "x_cap_cost_usd": round(cap * svc.collectors.X_PRICE_PER_POST, 2),
+            "x_cap_cost_usd": round(cap * registry.cost_view(ctx.db, "x", ctx.workspace.id)["unit_price"], 2),
+            "costs": costs, "spend": svc.spend(query) if query else None,
             "queries_used": ctx.db.scalar(select(func.count()).where(
                 ListeningQuery.workspace_id == ctx.workspace.id)) or 0,
             "queries_limit": billing_state(ctx.db, ctx.workspace.id).limits.get("listening_queries")}
+
+
+# ------------------------------------------------------------------------------------------------ sources
+def _optional_query(ctx: Ctx, query_id: int | None) -> ListeningQuery | None:
+    if query_id:
+        return _query(ctx, query_id)
+    return ctx.db.scalar(select(ListeningQuery).where(ListeningQuery.workspace_id == ctx.workspace.id)
+                         .order_by(ListeningQuery.active.desc(), ListeningQuery.id))
+
+
+def _source_key(key: str) -> str:
+    if key not in registry.SOURCE_DEFS:
+        raise NotFound(_("Source not found."))
+    return key
+
+
+@router.get("/sources")
+def list_sources(query_id: int | None = None, ctx: Ctx = Depends(workspace_ctx())):
+    """Every radar source with its status for this workspace (and setup), what it costs and the button that fixes
+    it."""
+    query = _optional_query(ctx, query_id)
+    from app.modules.billing import credits
+    return {"query_id": query.id if query else None, "sources": registry.workspace_view(ctx.db, ctx.workspace.id, query),
+            "credits": credits.available(ctx.db, ctx.workspace.id), "spend": svc.spend(query) if query else None}
+
+
+@router.post("/sources/{key}/test")
+def test_source(key: str, body: SourceToggleIn | None = None, ctx: Ctx = Depends(workspace_ctx(Role.editor))):
+    """Check the source again; when the setup uses it, read it once now (charged like any run)."""
+    key = _source_key(key)
+    query = _optional_query(ctx, body.query_id if body else None)
+    result = None
+    if query and key in (query.sources or []) and registry.health(ctx.db, ctx.workspace.id, key)["status"] == "ready":
+        limits.require(ctx.db, ctx.workspace.id, "listening")
+        cursors = dict(query.cursors or {})
+        cursor = dict(cursors.get(key) or {})
+        cursor.pop("at", None)  # a test ignores the source's waiting time
+        cursors[key] = cursor
+        query.cursors = cursors
+        outcome = svc.collect(ctx.db, query, only=[key])
+        result = {"new": outcome["new"], "error": outcome["errors"].get(key)}
+    return {"key": key, "health": registry.health(ctx.db, ctx.workspace.id, key, query if query and key in (
+        query.sources or []) else None), "result": result}
+
+
+@router.post("/sources/{key}/toggle")
+def toggle_source(key: str, body: SourceToggleIn, ctx: Ctx = Depends(workspace_ctx(Role.editor))):
+    """Use (or stop using) a source in a setup."""
+    key = _source_key(key)
+    query = _optional_query(ctx, body.query_id)
+    if not query:
+        raise NotFound(_("Set up what to listen for first."))
+    sources = [s for s in query.sources or [] if s != key]
+    if body.on:
+        if not registry.SOURCE_DEFS[key].available:
+            raise AppError(_("This source cannot be used."), code="radar_source_unavailable")
+        svc.check_query_limits(ctx.db, ctx.workspace.id, [key], adding=False)
+        sources.append(key)
+    query.sources = sources
+    ctx.db.flush()
+    return _query_out(ctx, query)
+
+
+@router.put("/sources/{key}/own-key")
+def set_own_key(key: str, body: OwnKeyIn, ctx: Ctx = Depends(workspace_ctx(Role.admin))):
+    """The workspace's own API key for X or Brave (its reads are then not charged). Write-only."""
+    key = _source_key(key)
+    if not registry.SOURCE_DEFS[key].byo:
+        raise AppError(_("This source cannot use your own key."), code="radar_no_own_key")
+    registry.set_own_key(ctx.db, ctx.workspace.id, key, (body.key or "").strip() or None)
+    return {"key": key, "own_key": bool(registry.own_key(ctx.db, ctx.workspace.id, key))}
 
 
 # ------------------------------------------------------------------------------------------------ numbers
@@ -290,7 +426,7 @@ def mentions(query_id: int | None = None, days: int = Days,
              sentiment: Literal["positive", "neutral", "negative"] | None = None,
              intent: Literal["question", "purchase", "complaint", "praise", "news", "other"] | None = None,
              source: str | None = None, brand: str | None = "own",
-             status: Literal["new", "reviewed", "muted", "converted"] | None = None, q: str | None = None,
+             status: Literal["new", "reviewed", "muted", "converted", "spam"] | None = None, q: str | None = None,
              influencers: bool = False, unanswered: bool = False, offset: int = Query(default=0, ge=0),
              limit: int = Query(default=50, ge=1, le=200), ctx: Ctx = Depends(workspace_ctx())):
     query = svc.get_query(ctx.db, ctx.workspace.id, query_id)
@@ -329,6 +465,40 @@ def mention_to_inbox(mention_id: int, ctx: Ctx = Depends(workspace_ctx(Role.edit
     return {"conversation_id": conv.id, "url": f"/inbox/{conv.id}"}
 
 
+@router.post("/mentions/{mention_id}/reply")
+def mention_reply(mention_id: int, ctx: Ctx = Depends(workspace_ctx(Role.editor))):
+    """A reply draft in the brand's voice (brand guard applied). Comments on your own accounts open in the inbox;
+    public mentions come with the link to answer on the network."""
+    return svc.mention_reply(ctx.db, _mention(ctx, mention_id), ctx.user.id)
+
+
+@router.post("/mentions/{mention_id}/post")
+def mention_post(mention_id: int, ctx: Ctx = Depends(workspace_ctx(Role.editor))):
+    """A draft post in Studio written by the AI from what the person said."""
+    limits.require(ctx.db, ctx.workspace.id, "ai_studio")
+    return svc.mention_to_post(ctx.db, _mention(ctx, mention_id), ctx.user.id)
+
+
+@router.post("/mentions/{mention_id}/board")
+def mention_board(mention_id: int, body: BoardIn | None = None, ctx: Ctx = Depends(workspace_ctx(Role.editor))):
+    """A production board (template) with the mention as its idea."""
+    limits.require(ctx.db, ctx.workspace.id, "production")
+    return svc.mention_to_board(ctx.db, _mention(ctx, mention_id), ctx.user.id,
+                                (body.template if body else None) or "pipeline_quick")
+
+
+@router.post("/mentions/{mention_id}/report")
+def mention_report(mention_id: int, body: ReportIn, ctx: Ctx = Depends(workspace_ctx(Role.editor))):
+    """Show (or stop showing) the mention in the next scheduled reports."""
+    return svc.mention_report(ctx.db, _mention(ctx, mention_id), body.on)
+
+
+@router.post("/mentions/{mention_id}/assign")
+def mention_assign(mention_id: int, body: AssignIn, ctx: Ctx = Depends(workspace_ctx(Role.editor))):
+    """Give the mention to a teammate (they get a notification); ``user_id`` null clears it."""
+    return svc.mention_assign(ctx.db, _mention(ctx, mention_id), ctx.user.id, body.user_id, body.note)
+
+
 # ------------------------------------------------------------------------------------------------- events
 def _event(ctx: Ctx, event_id: int) -> RadarEvent:
     event = ctx.db.get(RadarEvent, event_id)
@@ -343,7 +513,9 @@ def event_out(ctx: Ctx, event: RadarEvent, full: bool = False) -> dict:
            "what": event.what, "why": event.why, "suggestion": event.suggestion, "draft": event.draft,
            "started_at": event.started_at, "ai_written": event.ai_written, "feedback": event.feedback,
            "acted_action": event.acted_action, "acted_ref": event.acted_ref, "metrics": event.metrics or {},
-           "evidence_count": len(event.evidence_ids or [])}
+           "evidence_count": len(event.evidence_ids or []),
+           "links": {"inbox": "/inbox" if event.kind in ("crisis", "influencer", "opportunity") else None,
+                     "ideas": "/ideas" if event.kind in ("opportunity", "rising", "competitor", "spike") else None}}
     if full:
         rows, _total = svc.list_mentions(ctx.db, ctx.db.get(ListeningQuery, event.query_id),
                                          ids=event.evidence_ids or [0], brand="all", limit=20)
@@ -422,3 +594,77 @@ def quick_search(q: str = Query(min_length=2, max_length=80), days: int = Days, 
     return {"q": term, "total": len(rows), "sentiment": split, "items": found[:50], "news": news,
             "intents": {i: sum(1 for m in rows if m.intent == i) for i in INTENTS},
             "emotions": {e: sum(1 for m in rows if m.emotion == e) for e in EMOTIONS if e != "none"}}
+
+
+# ------------------------------------------------------------------------------------- platform admin
+class AdminSourcesIn(BaseModel):
+    secrets: dict[str, str | None] = {}            # setting key -> new value ("" or null clears it)
+    prices: dict[str, float | None] = {}           # source -> $ per unit (null: back to the default)
+    enabled: dict[str, bool] = {}                  # source -> on/off for every workspace
+    youtube_units_per_run: int | None = Field(default=None, ge=1, le=10_000)
+
+
+def _admin_out(db) -> dict:
+    from app.modules.ai.models import AIUsage
+    from app.modules.billing.limits import month_start
+    from app.modules.workspaces.models import Workspace
+    price = func.coalesce(func.sum(func.coalesce(AIUsage.price, AIUsage.cost)), 0.0)
+    rows = db.execute(select(Workspace.id, Workspace.name, AIUsage.model_name, func.coalesce(func.sum(AIUsage.cost), 0.0),
+                             price, func.coalesce(func.sum(AIUsage.units), 0.0))
+                      .where(AIUsage.capability == "data", AIUsage.created_at >= month_start(),
+                             Workspace.id == AIUsage.workspace_id)
+                      .group_by(Workspace.id, Workspace.name, AIUsage.model_name).order_by(price.desc()).limit(200)).all()
+    workspaces: dict[int, dict] = {}
+    for wid, name, model_name, cost, charged, units in rows:
+        row = workspaces.setdefault(wid, {"id": wid, "name": name, "cost": 0.0, "price": 0.0, "by_source": {}})
+        source = registry.source_of_usage(model_name) or model_name
+        row["cost"] = round(row["cost"] + float(cost), 4)
+        row["price"] = round(row["price"] + float(charged), 4)
+        row["by_source"][source] = {"cost": round(float(cost), 4), "units": round(float(units))}
+    from app.modules.billing import credits, platform
+    return {"sources": registry.admin_view(db), "markup_percent": credits.markup(db),
+            "youtube_units_per_run": registry.youtube_units_per_run(db),
+            "youtube_units_today": registry.youtube_units_used(db), "youtube_daily_units": registry.YOUTUBE_DAILY_UNITS,
+            "workspaces": sorted(workspaces.values(), key=lambda r: -r["cost"])[:25],
+            "month_cost": round(sum(r["cost"] for r in workspaces.values()), 4),
+            "month_price": round(sum(r["price"] for r in workspaces.values()), 4),
+            "settings_keys": [k for k in platform.SETTINGS_SCHEMA if k.startswith("listening.")]}
+
+
+@router.get("/admin/sources")
+def admin_sources(admin=Depends(superadmin), db=Depends(get_db)):
+    """Platform admin: every source with its keys (configured or not, never the value), unit price, on/off and what
+    it cost this month, per source and per workspace."""
+    return _admin_out(db)
+
+
+@router.put("/admin/sources")
+def admin_update_sources(body: AdminSourcesIn, admin=Depends(superadmin), db=Depends(get_db)):
+    from app.modules.billing import platform
+    for key, value in body.secrets.items():
+        if key not in registry.SECRET_KEYS:
+            raise AppError(_("Unknown setting: {key}", key=key), code="bad_setting")
+        platform.set_secret(db, key, (value or "").strip() or None, admin.id)
+    if body.prices:
+        prices = dict(platform.get_setting(db, "listening.unit_prices") or {})
+        for source, value in body.prices.items():
+            spec = registry.SOURCE_DEFS.get(source)
+            if not spec or not spec.unit:
+                raise AppError(_("Unknown source: {key}", key=source), code="bad_setting")
+            if value is None:
+                prices.pop(source, None)
+            elif value < 0:
+                raise AppError(_("Invalid value for {key}.", key=source), code="bad_setting")
+            else:
+                prices[source] = float(value)
+        platform.set_setting(db, "listening.unit_prices", prices or None, admin.id)
+    if body.enabled:
+        off = registry.switched_off(db)
+        for source, on in body.enabled.items():
+            if source not in registry.SOURCE_DEFS:
+                raise AppError(_("Unknown source: {key}", key=source), code="bad_setting")
+            off = (off - {source}) if on else (off | {source})
+        platform.set_setting(db, "listening.sources_off", sorted(off), admin.id)
+    if body.youtube_units_per_run is not None:
+        platform.set_setting(db, "listening.youtube_units_per_run", body.youtube_units_per_run, admin.id)
+    return _admin_out(db)

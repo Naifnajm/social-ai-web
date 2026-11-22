@@ -71,7 +71,7 @@ def detect(db: Session, query: ListeningQuery, now=None) -> list[RadarEvent]:
     now = now or utcnow()
     workspace = db.get(Workspace, query.workspace_id)
     set_locale(workspace.locale)
-    rows = list(db.scalars(select(Mention).where(Mention.query_id == query.id,
+    rows = list(db.scalars(select(Mention).where(Mention.query_id == query.id, Mention.status != "spam",
                                                  Mention.published_at >= now - timedelta(days=14))))
     own = [m for m in rows if m.brand is None]
     created: list[RadarEvent] = []
@@ -194,14 +194,42 @@ def detect(db: Session, query: ListeningQuery, now=None) -> list[RadarEvent]:
             evidence_ids=_evidence([m for m in week_own if word in tx.words(m.text, exclude)]),
             metrics={"count": count, "before": older.get(word, 0)})
 
+    if any(e.kind in ("crisis", "spike") for e in created):
+        from .analysis import boost
+        boost(db, workspace.id)  # read the next runs more carefully (larger AI budget for 6 hours)
     for event in created:
         if event.severity != "info":
             write_card(db, workspace, event)
         if event.severity in NOTIFY:
             notify_role(db, workspace.id, Role.editor, kind="radar.event", title=event.title,
                         body=(event.what or "")[:180], link=f"/radar/events/{event.id}")
+        if event.severity == "urgent" and get_setting(db, workspace.id, "listening.email_alerts", False):
+            _email(db, workspace, event)
     db.flush()
     return created
+
+
+def _email(db: Session, workspace: Workspace, event: RadarEvent) -> None:
+    """Urgent events by e-mail to the workspace's admins (opt-in: ``listening.email_alerts``)."""
+    from html import escape
+
+    from app.core.config import settings
+    from app.core.mail import send_mail
+    from app.modules.auth.models import User
+    from app.modules.workspaces.models import ROLE_RANK, Membership
+    members = db.scalars(select(Membership).where(Membership.workspace_id == workspace.id)).all()
+    ids = [m.user_id for m in members if ROLE_RANK[m.role] >= ROLE_RANK[Role.admin]]
+    emails = [u.email for u in db.scalars(select(User).where(User.id.in_(ids or [0]))) if u.email]
+    if not emails:
+        return
+    link = f"{settings.web_url.rstrip('/')}/radar/events/{event.id}"
+    try:
+        send_mail(emails, _("Radar alert: {title}", title=event.title),
+                  f"<p><strong>{escape(event.title)}</strong></p><p>{escape(event.what or '')}</p>"
+                  f"<p>{escape(event.suggestion or '')}</p><p><a href=\"{escape(link)}\">{escape(link)}</a></p>",
+                  text=f"{event.title}\n{event.what}\n{link}")
+    except Exception:  # mail problems never stop detection
+        _logger.exception("radar alert e-mail failed for workspace %s", workspace.id)
 
 
 CARD_SYSTEM = """You write short alert cards for a company's social media team, in {language}.

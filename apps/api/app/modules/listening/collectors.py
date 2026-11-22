@@ -14,8 +14,16 @@ Sources and what they cost:
   ``listening.youtube_api_key`` or a connected YouTube account.
 * google_business — reviews of each connected location.
 * news — Google News RSS search (free, no key).
-* x — recent search, pay-per-use on X's side (platform key ``listening.x_bearer_token``); every post read
-  counts against the query's monthly cap.
+* x — recent search, pay-per-use on X's side (platform key ``listening.x_bearer_token`` or the workspace's own
+  key); every post read counts against the query's monthly cap and is charged from the AI credits (not with an
+  own key).
+
+The newer sources (Threads, YouTube comments, web, Reddit, TikTok, Telegram, LinkedIn, app stores) are in
+``collectors_ext.py``; ``ALL`` there is the complete table. A collector that cannot run raises
+``metering.SourceBlocked`` (needs a key, out of credits, quota used up…), which becomes the source's health.
+
+``reach`` is only set when the network gives a real number (views, impressions); otherwise it stays None and the
+author's followers are shown as an estimated potential reach. Nothing is invented.
 
 Written from each network's reference pages; the live APIs need approved apps (Meta App Review for
 Instagram Public Content Access, a Google project, an X developer account).
@@ -34,7 +42,9 @@ from app.core.db import utcnow
 from app.core.http import ApiError, call
 from app.modules.social.models import SocialAccount
 
+from . import registry
 from . import text as tx
+from .metering import SourceBlocked
 
 GRAPH = "https://graph.facebook.com/v24.0"
 YOUTUBE = "https://www.googleapis.com/youtube/v3"
@@ -146,7 +156,7 @@ def _ig_item(media: dict, account: SocialAccount, owned: bool) -> dict:
     return {"source": "instagram", "external_id": str(media.get("id")), "text": media.get("caption") or "",
             "published_at": _date(media.get("timestamp")), "url": media.get("permalink"),
             "author_handle": media.get("username"), "author_name": media.get("username"),
-            "engagement": likes + comments, "reach": likes * 10 + comments * 20, "account_id": account.id,
+            "engagement": likes + comments, "reach": None, "account_id": account.id,
             "platform": "instagram", "owned": owned}
 
 
@@ -179,27 +189,46 @@ def collect_facebook(db: Session, query, cursor: dict) -> list[dict]:
 
 
 # ---------------------------------------------------------------------------------------------- youtube
+def youtube_auth(db: Session, query) -> tuple[dict, dict | None]:
+    """(params, headers) for the YouTube Data API: the platform key, else a connected channel's token."""
+    key = _platform_secret(db, "listening.youtube_api_key")
+    if key:
+        return {"key": key}, None
+    accounts = _accounts(db, query.workspace_id, "youtube")
+    if not accounts:
+        raise SourceBlocked("needs_connection", "", {"kind": "connect", "platform": "youtube"})
+    return {}, {"Authorization": f"Bearer {_token(db, accounts[0])}"}
+
+
+def youtube_call(db: Session, query, operation: str, path: str, units: int, params: dict):
+    """One YouTube call that counts against the platform's daily quota (10,000 units)."""
+    if registry.youtube_units_used(db) + units > registry.YOUTUBE_DAILY_UNITS:
+        raise SourceBlocked("quota_exhausted", "")
+    auth, headers = youtube_auth(db, query)
+    try:
+        data = _call(query, operation, f"{YOUTUBE}/{path}", params={**params, **auth}, headers=headers)
+    except ApiError as exc:
+        if exc.status == 403 and "quota" in str(exc).lower():
+            registry.spend_youtube_units(db, 0, exhausted=True)
+            raise SourceBlocked("quota_exhausted", "") from None
+        raise
+    registry.spend_youtube_units(db, units)
+    return data
+
+
 def collect_youtube(db: Session, query, cursor: dict) -> list[dict]:
     if cursor.get("at") and _date(cursor["at"]) > utcnow() - YOUTUBE_EVERY:
         return []
     terms = [t.lstrip("#") for t in tx.search_terms(query)][:6]
     if not terms:
         return []
-    key = _platform_secret(db, "listening.youtube_api_key")
     params = {"part": "snippet", "type": "video", "order": "date", "maxResults": 25, "q": " | ".join(terms),
               "publishedAfter": (_date(cursor.get("since")) if cursor.get("since")
                                  else utcnow() - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")}
-    headers = None
-    if key:
-        params["key"] = key
-    else:
-        accounts = _accounts(db, query.workspace_id, "youtube")
-        if not accounts:
-            return []
-        headers = {"Authorization": f"Bearer {_token(db, accounts[0])}"}
-    data = _call(query, "YouTube search", f"{YOUTUBE}/search", params=params, headers=headers)
+    data = youtube_call(db, query, "YouTube search", "search", 100, params)
     cursor["at"] = utcnow().isoformat()
     items = []
+    found = list(cursor.get("videos") or [])
     for video in data.get("items") or []:
         snippet = video.get("snippet") or {}
         video_id = (video.get("id") or {}).get("videoId")
@@ -210,7 +239,10 @@ def collect_youtube(db: Session, query, cursor: dict) -> list[dict]:
                       "published_at": _date(snippet.get("publishedAt")),
                       "url": f"https://www.youtube.com/watch?v={video_id}",
                       "author_name": snippet.get("channelTitle"), "author_handle": snippet.get("channelId")})
+        if video_id not in found:
+            found.append(video_id)
         cursor["since"] = max(cursor.get("since") or "", snippet.get("publishedAt") or "") or None
+    cursor["videos"] = found[-50:]  # the comments source reads these videos too
     return items
 
 
@@ -233,13 +265,56 @@ def collect_google_business(db: Session, query, cursor: dict) -> list[dict]:
 
 
 # ------------------------------------------------------------------------------------------------- news
+GNEWS = "https://gnews.io/api/v4/search"
+NEWSAPI = "https://newsapi.org/v2/everything"
+
+
+def _news_item(key: str, url: str | None, title: str, body: str, published, outlet: str | None, lang: str | None,
+               country: str | None = None) -> dict:
+    return {"source": "news", "external_id": key, "url": url or None, "lang": lang, "country": country,
+            "text": f"{title or ''}\n{body or ''}".strip(), "published_at": _date(published), "author_name": outlet}
+
+
+def _news_paid(db: Session, query, terms: list[str], langs: list[str], seen: set) -> list[dict] | None:
+    """GNews or NewsAPI when the platform has a key (None: no key, use Google News RSS)."""
+    search = " OR ".join(f'"{t}"' if " " in t else t for t in terms)
+    gnews, newsapi = _platform_secret(db, "listening.gnews_api_key"), _platform_secret(db, "listening.newsapi_key")
+    if not gnews and not newsapi:
+        return None
+    items = []
+    for lang in langs:
+        if gnews:
+            data = _call(query, "News search (GNews)", GNEWS, params={"q": search[:200], "lang": lang, "max": 25,
+                                                                     "sortby": "publishedAt", "apikey": gnews})
+            rows = [(a.get("url"), a.get("title"), a.get("description") or a.get("content"), a.get("publishedAt"),
+                     (a.get("source") or {}).get("name")) for a in data.get("articles") or []]
+        else:
+            data = _call(query, "News search (NewsAPI)", NEWSAPI, params={"q": search[:500], "language": lang,
+                                                                         "sortBy": "publishedAt", "pageSize": 25},
+                         headers={"X-Api-Key": newsapi})
+            rows = [(a.get("url"), a.get("title"), a.get("description"), a.get("publishedAt"),
+                     (a.get("source") or {}).get("name")) for a in data.get("articles") or []]
+        for url, title, body, published, outlet in rows:
+            key = hashlib.sha1((url or title or "").encode()).hexdigest()[:24]
+            if key in seen:
+                continue
+            seen.add(key)
+            items.append(_news_item(key, url, title or "", body or "", published, outlet, lang))
+    return items
+
+
 def collect_news(db: Session, query, cursor: dict) -> list[dict]:
     terms = [t.lstrip("#@") for t in tx.search_terms(query)][:8]
     if not terms:
         return []
     langs = [lang for lang in (query.languages or ["ar"]) if lang in ("ar", "en")] or ["ar"]
     country = (query.countries or ["SA"])[0].upper()
-    items, seen = [], set(cursor.get("seen") or [])
+    seen = set(cursor.get("seen") or [])
+    paid = _news_paid(db, query, terms, langs, seen) if query.id else None
+    if paid is not None:
+        cursor["seen"] = list(seen)[-500:]
+        return paid
+    items = []
     for lang in langs:
         response = _call(query, "News search", NEWS_RSS, expect_json=False, params={
             "q": " OR ".join(f'"{t}"' if " " in t else t for t in terms), "hl": lang, "gl": country,
@@ -257,10 +332,8 @@ def collect_news(db: Session, query, cursor: dict) -> list[dict]:
             seen.add(key)
             description = re.sub(r"<[^>]+>", " ", html.unescape(item.findtext("description") or ""))
             source = item.find("source")
-            items.append({"source": "news", "external_id": key, "url": link or None, "lang": lang,
-                          "text": f"{item.findtext('title') or ''}\n{description}".strip(),
-                          "published_at": _date(item.findtext("pubDate")),
-                          "author_name": source.text if source is not None else None, "country": country})
+            items.append(_news_item(key, link, item.findtext("title") or "", description, item.findtext("pubDate"),
+                                    source.text if source is not None else None, lang, country))
     cursor["seen"] = list(seen)[-500:]
     return items
 
@@ -274,9 +347,9 @@ def x_reads_this_month(cursor: dict) -> int:
 def collect_x(db: Session, query, cursor: dict) -> list[dict]:
     if cursor.get("at") and _date(cursor["at"]) > utcnow() - X_EVERY:
         return []
-    bearer = _platform_secret(db, "listening.x_bearer_token")
+    bearer, own = registry.key_for(db, query.workspace_id, "x", "listening.x_bearer_token")
     if not bearer:
-        return []
+        raise SourceBlocked("needs_key", "")
     month = utcnow().strftime("%Y-%m")
     reads = x_reads_this_month(cursor)
     left = max(0, int(query.x_monthly_cap or 0) - reads)
@@ -290,7 +363,10 @@ def collect_x(db: Session, query, cursor: dict) -> list[dict]:
     langs = [lang for lang in query.languages or [] if lang in ("ar", "en")]
     if len(langs) == 1:
         search += f" lang:{langs[0]}"
-    params = {"query": search[:512], "max_results": min(100, left), "expansions": "author_id",
+    from . import metering
+    batch = metering.affordable_units(db, query, "x", cursor, max(10, min(100, left)), own=own)
+    metering.afford(db, query, "x", cursor, max(batch, 10), own=own)  # X reads at least 10 posts per call
+    params = {"query": search[:512], "max_results": batch, "expansions": "author_id",
               "tweet.fields": "created_at,public_metrics,lang,author_id",
               "user.fields": "username,name,public_metrics"}
     if cursor.get("since_id"):
@@ -300,6 +376,7 @@ def collect_x(db: Session, query, cursor: dict) -> list[dict]:
     users = {u.get("id"): u for u in ((data.get("includes") or {}).get("users") or [])}
     posts = data.get("data") or []
     cursor.update(month=month, reads=reads + len(posts), capped=False)
+    metering.charge(db, query, "x", cursor, len(posts), own=own)
     if (data.get("meta") or {}).get("newest_id"):
         cursor["since_id"] = data["meta"]["newest_id"]
     items = []
@@ -313,7 +390,8 @@ def collect_x(db: Session, query, cursor: dict) -> list[dict]:
                       "published_at": _date(post.get("created_at")), "lang": post.get("lang"),
                       "url": f"https://x.com/{user.get('username') or 'i'}/status/{post.get('id')}",
                       "author_name": user.get("name"), "author_handle": user.get("username"),
-                      "author_followers": followers, "reach": followers + int(metrics.get("impression_count") or 0),
+                      "author_followers": followers,
+                      "reach": int(metrics["impression_count"]) if metrics.get("impression_count") else None,
                       "engagement": engagement})
     return items
 

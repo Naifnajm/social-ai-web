@@ -7,7 +7,9 @@ event to the rest of the platform (inbox, studio, planner, approvals).
     radar.mention_to_inbox(db, mention)           # the mention becomes an inbox conversation
     radar.act(db, event, user_id, "studio")       # a draft post with the event's draft text
 """
+import hashlib
 import logging
+import re
 from collections import Counter, defaultdict
 from datetime import UTC, datetime, timedelta
 
@@ -24,9 +26,10 @@ from app.modules.planning.service import workspace_tz
 from app.modules.social.models import SocialAccount
 from app.modules.workspaces.models import Workspace
 
-from . import analysis, collectors, detection
+from . import analysis, collectors, collectors_ext, detection, registry
 from . import text as tx
-from .models import FREE_SOURCES, ListeningQuery, Mention, RadarEvent
+from .metering import SourceBlocked
+from .models import SOURCES, ListeningQuery, Mention, RadarEvent
 
 _logger = logging.getLogger(__name__)
 INBOX_PLATFORMS = ("instagram", "facebook")
@@ -39,10 +42,10 @@ def _aware(dt):
 
 # ---------------------------------------------------------------------------------------------- queries
 def allowed_sources(db: Session, workspace_id: int) -> list[str]:
-    sources = list(FREE_SOURCES)
-    if limits.feature(db, workspace_id, "listening_x"):
-        sources.append("x")
-    return sources
+    """Sources the plan includes and the platform admin did not turn off."""
+    off = registry.switched_off(db)
+    return [s for s in SOURCES if s not in off and registry.SOURCE_DEFS[s].available
+            and registry.in_plan(db, workspace_id, s)]
 
 
 def get_query(db: Session, workspace_id: int, query_id: int | None) -> ListeningQuery:
@@ -75,8 +78,50 @@ def _keep(query: ListeningQuery, item: dict) -> tuple[bool, str | None]:
     return True, brand
 
 
+DEDUPE_DAYS = 14
+_LINK = tx._URL
+
+
+def content_hash(text: str) -> str | None:
+    """Fingerprint of a text without links, @handles, punctuation or spacing (None when too short to compare)."""
+    norm = tx.normalize(_LINK.sub(" ", text or ""))
+    norm = " ".join(w for w in re.findall(r"[\w#]+", norm) if not w.startswith("@"))
+    if len(norm) < 24:
+        return None
+    return hashlib.sha1(norm.encode()).hexdigest()
+
+
+def spam_reason(item: dict, text: str) -> str | None:
+    """A basic spam / bot filter: link farms, hashtag walls and copy-pasted texts (checked in ``store``)."""
+    links = len(_LINK.findall(text or ""))
+    words_ = len((text or "").split())
+    if links >= 4 or (links >= 2 and words_ <= links * 4):
+        return "links"
+    tags = len(tx.hashtags(text))
+    if tags >= 10 and tags >= words_ * 0.6:
+        return "hashtags"
+    return None
+
+
+def _duplicate(db: Session, query: ListeningQuery, item: dict, digest: str | None) -> Mention | None:
+    since = utcnow() - timedelta(days=DEDUPE_DAYS)
+    url = (item.get("url") or "").strip()
+    base = select(Mention).where(Mention.query_id == query.id, Mention.published_at >= since)
+    if url and item.get("source") != "owned":
+        found = db.scalar(base.where(Mention.url == url[:1000]).limit(1))
+        if found:
+            return found
+    if digest:
+        return db.scalar(base.where(Mention.content_hash == digest).order_by(Mention.id).limit(1))
+    return None
+
+
 def store(db: Session, query: ListeningQuery, items: list[dict]) -> list[Mention]:
-    """Store the items that match the query and are not stored yet. Returns the new mentions."""
+    """Store the items that match the query and are not stored yet. Returns the new mentions.
+
+    The same content found on another source (same link, or the same text by the same author) is not stored twice:
+    the first mention notes where else it appeared (``extra.also_on``). The same text by another author (copy-paste
+    campaigns), link farms and hashtag walls are stored as ``spam`` — hidden, and the team can undo it."""
     created = []
     for item in items:
         keep, brand = _keep(query, item)
@@ -88,6 +133,24 @@ def store(db: Session, query: ListeningQuery, items: list[dict]) -> list[Mention
         if exists:
             continue
         text = item.get("text") or ""
+        digest = content_hash(text)
+        status = "converted" if item.get("conversation_id") else "new"
+        extra = dict(item.get("extra") or {})
+        if not item.get("owned"):
+            twin = _duplicate(db, query, item, digest)
+            if twin is not None:
+                author = (item.get("author_handle") or item.get("author_name") or "").lower()
+                twin_author = (twin.author_handle or twin.author_name or "").lower()
+                if (twin.url and twin.url == item.get("url")) or not author or author == twin_author:
+                    also = dict(twin.extra or {})
+                    also["also_on"] = sorted(set(also.get("also_on") or []) | {item["source"]})
+                    twin.extra = also
+                    continue
+                status, extra["spam_reason"] = "spam", "repeated"
+            reason = spam_reason(item, text)
+            if reason and status != "spam":
+                status, extra["spam_reason"] = "spam", reason
+        reach = item.get("reach")
         mention = Mention(
             workspace_id=query.workspace_id, query_id=query.id, source=item["source"],
             platform=item.get("platform"), external_id=external_id, url=(item.get("url") or None),
@@ -96,9 +159,9 @@ def store(db: Session, query: ListeningQuery, items: list[dict]) -> list[Mention
             author_followers=int(item.get("author_followers") or 0), text=text[:5000],
             lang=item.get("lang") or tx.detect_lang(text), country=(item.get("country") or None),
             published_at=_aware(item.get("published_at")) or utcnow(), brand=brand,
-            reach=int(item.get("reach") or 0), engagement=int(item.get("engagement") or 0),
-            account_id=item.get("account_id"), conversation_id=item.get("conversation_id"), extra=item.get("extra"),
-            status="converted" if item.get("conversation_id") else "new")
+            reach=int(reach) if reach not in (None, "") else None, engagement=int(item.get("engagement") or 0),
+            account_id=item.get("account_id"), conversation_id=item.get("conversation_id"), extra=extra or None,
+            content_hash=digest, status=status)
         try:
             with db.begin_nested():
                 db.add(mention)
@@ -109,33 +172,95 @@ def store(db: Session, query: ListeningQuery, items: list[dict]) -> list[Mention
     return created
 
 
-def collect(db: Session, query: ListeningQuery, *, detect: bool = True) -> dict:
-    """One collection run: every source of the query, then classification and detection."""
+def _blocked_message(db: Session, workspace_id: int, source: str, status: str, message: str = "") -> str:
+    if message:
+        return message
+    base = registry._base_health(db, workspace_id, source)
+    if base["status"] == status and base["message"]:
+        return base["message"]
+    spec = registry.SOURCE_DEFS.get(source)
+    if status == "needs_permission":
+        return _("The platform app is missing a permission for this source ({permission}). The platform admin must "
+                 "request it.", permission=(spec.permission if spec else "") or "-")
+    if status == "quota_exhausted":
+        return _("The quota of this source is used up for now. Reading resumes automatically.")
+    if status == "needs_key":
+        return _("The key of this source is missing or was refused. The platform admin must check it.")
+    if status == "needs_connection":
+        return _("Connect (or reconnect) the account this source reads from.")
+    if status == "needs_setup":
+        return _("Add what to read in the setup.")
+    return status
+
+
+def _api_status(source: str, exc: ApiError) -> str:
+    text = str(exc).lower()
+    if exc.status == 429 or (exc.status == 403 and "quota" in text):
+        return "quota_exhausted"
+    if exc.status == 401:
+        spec = registry.SOURCE_DEFS.get(source)
+        return "needs_connection" if spec and spec.platform else "needs_key"
+    if exc.status == 403 or "(#10)" in text or "permission" in text:
+        return "needs_permission"
+    return "error"
+
+
+def collect(db: Session, query: ListeningQuery, *, detect: bool = True, only: list[str] | None = None) -> dict:
+    """One collection run: every source of the query, then classification and detection.
+
+    A source that cannot run (no key, no account, out of credits, quota or permission missing, an API error) is
+    skipped with its reason kept as the source's health (``cursors[source]["_health"]``); it never stops the
+    others."""
     allowed = allowed_sources(db, query.workspace_id)
     cursors = dict(query.cursors or {})
+    query._live_cursors = cursors  # metering reads the setup's spend while the run updates it
     found, errors = 0, {}
-    for source in query.sources or []:
-        if source not in allowed or source not in collectors.COLLECTORS:
+    for source in only or query.sources or []:
+        if source not in allowed or source not in collectors_ext.ALL:
             continue
         cursor = dict(cursors.get(source) or {})
+        cursor.pop("_health", None)
         try:
-            items = collectors.COLLECTORS[source](db, query, cursor)
+            items = collectors_ext.ALL[source](db, query, cursor)
+        except SourceBlocked as exc:
+            message = _blocked_message(db, query.workspace_id, source, exc.status, exc.message)
+            cursor["_health"] = {"status": exc.status, "message": message, "action": exc.action,
+                                 "at": utcnow().isoformat()}
+            cursors[source] = cursor
+            errors[source] = message[:300]
+            continue
         except ApiError as exc:
+            status = _api_status(source, exc)
+            message = str(exc)[:300] if status == "error" else _blocked_message(db, query.workspace_id, source, status)
+            cursors.setdefault(source, {})
+            cursors[source] = {**cursors[source], "_health": {"status": status, "message": message,
+                                                              "at": utcnow().isoformat()}}
             errors[source] = str(exc)[:300]
             continue
         except Exception as exc:  # one broken source never stops the others
             _logger.exception("radar source %s failed for query %s", source, query.id)
+            cursors[source] = {**(cursors.get(source) or {}), "_health": {
+                "status": "error", "message": str(exc)[:300], "at": utcnow().isoformat()}}
             errors[source] = str(exc)[:300]
             continue
         cursors[source] = cursor
         found += len(store(db, query, items))
     query.cursors = cursors
+    query._live_cursors = None
     query.last_collected_at = utcnow()
     query.last_error = "; ".join(f"{k}: {v}" for k, v in errors.items()) or None
     db.flush()
     analysis.classify_pending(db, query.workspace_id)
     events = detection.detect(db, query) if detect else []
     return {"new": found, "errors": errors, "events": len(events)}
+
+
+def spend(query: ListeningQuery) -> dict:
+    """What the setup spent this month on paid sources, per source, against its cap."""
+    from . import metering
+    by = {k: round(metering.source_spend(c), 4) for k, c in (query.cursors or {}).items()
+          if isinstance(c, dict) and metering.source_spend(c)}
+    return {"usd": round(sum(by.values()), 4), "by_source": by, "cap_usd": query.monthly_cap_usd}
 
 
 def x_usage(query: ListeningQuery) -> dict:
@@ -154,7 +279,7 @@ def _window(days: int, now: datetime | None = None) -> tuple[datetime, datetime,
 
 def _rows(db: Session, query: ListeningQuery, start: datetime, end: datetime) -> list[Mention]:
     return list(db.scalars(select(Mention).where(Mention.query_id == query.id, Mention.published_at >= start,
-                                                 Mention.published_at < end, Mention.status != "muted")
+                                                 Mention.published_at < end, Mention.status.not_in(("muted", "spam")))
                            .order_by(Mention.published_at)))
 
 
@@ -228,12 +353,16 @@ def overview(db: Session, workspace: Workspace, query: ListeningQuery, days: int
                "event": spikes.get(i)} for i in range(days + 1)]
     sov = (len(own) / len(now_all) * 100) if query.competitors and now_all else None
     prev_sov = (len(prev_own) / len(prev_all) * 100) if query.competitors and prev_all else None
-    reach, prev_reach = sum(m.reach for m in own), sum(m.reach for m in prev_own)
+    reach, prev_reach = sum(m.reach or 0 for m in own), sum(m.reach or 0 for m in prev_own)
+    measured = sum(1 for m in own if m.reach is not None)
+    potential = sum(m.author_followers or 0 for m in own if m.reach is None)
     return {
         "query_id": query.id, "days": days, "last_collected_at": query.last_collected_at,
         "kpis": {
             "mentions": {"value": len(own), "delta": _delta(len(own), len(prev_own))},
-            "reach": {"value": reach, "delta": _delta(reach, prev_reach)},
+            # real views/impressions only; ``potential`` (followers of the other authors) is an estimate
+            "reach": {"value": reach, "delta": _delta(reach, prev_reach) if measured else None,
+                      "measured": measured, "total": len(own), "potential": potential, "estimated": measured < len(own)},
             "net_sentiment": {"value": net_sentiment(own), "change": net_sentiment(own) - net_sentiment(prev_own)
                               if prev_own else None},
             "share_of_voice": {"value": round(sov) if sov is not None else None,
@@ -369,17 +498,24 @@ def brief(db: Session, workspace: Workspace, query: ListeningQuery, hours: int =
 
 # ------------------------------------------------------------------------------------------- mentions
 SOURCE_PLATFORM = {"instagram": "instagram", "facebook": "facebook", "youtube": "youtube", "x": "x",
-                   "google_business": "google_business", "news": "news"}
+                   "google_business": "google_business", "news": "news", "threads": "threads",
+                   "youtube_comments": "youtube", "linkedin": "linkedin", "tiktok": "tiktok", "telegram": "telegram",
+                   "reddit": "reddit", "web": "web", "app_store": "app_store", "google_play": "google_play"}
 
 
 def mention_out(m: Mention) -> dict:
+    extra = m.extra or {}
+    estimated = m.author_followers if m.reach is None and (m.author_followers or 0) > 0 else None
     return {"id": m.id, "source": m.source, "platform": m.platform or SOURCE_PLATFORM.get(m.source, m.source),
             "url": m.url, "author_name": m.author_name, "author_handle": m.author_handle,
             "author_followers": m.author_followers, "text": m.text, "lang": m.lang, "country": m.country,
             "published_at": m.published_at, "brand": m.brand, "reach": m.reach, "engagement": m.engagement,
-            "sentiment": m.sentiment, "intent": m.intent, "topic": m.topic, "emotion": m.emotion,
-            "status": m.status, "corrected": m.corrected, "conversation_id": m.conversation_id,
-            "can_inbox": (m.platform or m.source) in INBOX_PLATFORMS and m.source != "google_business"}
+            "reach_estimated": estimated, "sentiment": m.sentiment, "intent": m.intent, "topic": m.topic,
+            "emotion": m.emotion, "status": m.status, "corrected": m.corrected, "conversation_id": m.conversation_id,
+            "can_inbox": (m.platform or m.source) in INBOX_PLATFORMS and m.source not in ("google_business",),
+            "spam_reason": extra.get("spam_reason"), "also_on": extra.get("also_on") or [],
+            "in_report": bool(extra.get("in_report")), "assigned_to_id": m.assigned_to_id,
+            "stars": extra.get("stars")}
 
 
 def list_mentions(db: Session, query: ListeningQuery, *, days: int = 30, sentiment: str | None = None,
@@ -405,7 +541,7 @@ def list_mentions(db: Session, query: ListeningQuery, *, days: int = 30, sentime
     if status:
         stmt = stmt.where(Mention.status == status)
     elif not ids:
-        stmt = stmt.where(Mention.status != "muted")
+        stmt = stmt.where(Mention.status.not_in(("muted", "spam")))
     if q and q.strip():
         stmt = stmt.where(Mention.text.ilike(f"%{q.strip()}%"))
     if influencers:
@@ -419,9 +555,11 @@ def list_mentions(db: Session, query: ListeningQuery, *, days: int = 30, sentime
 
 def mention_counts(db: Session, query: ListeningQuery, days: int = 30) -> dict:
     base = select(func.count()).where(Mention.query_id == query.id, Mention.brand.is_(None),
-                                      Mention.status != "muted",
+                                      Mention.status.not_in(("muted", "spam")),
                                       Mention.published_at >= utcnow() - timedelta(days=days))
     return {
+        "spam": db.scalar(select(func.count()).where(Mention.query_id == query.id, Mention.status == "spam",
+                                                     Mention.published_at >= utcnow() - timedelta(days=days))) or 0,
         "all": db.scalar(base) or 0,
         "negative": db.scalar(base.where(Mention.sentiment == "negative")) or 0,
         "purchase": db.scalar(base.where(Mention.intent == "purchase")) or 0,
@@ -470,6 +608,120 @@ def mention_to_inbox(db: Session, mention: Mention):
     mention.conversation_id, mention.status = conv.id, "converted"
     db.flush()
     return conv
+
+
+# ------------------------------------------------------------------------------------- mention actions
+DRAFT_SYSTEM = {
+    "reply": "You write a short public reply from the brand \"{brand}\" to a social media mention. Answer in the "
+             "mention's language, warm and helpful, at most 2 sentences, no hashtags. If it is a complaint, apologise "
+             "and offer to help in private. Never promise refunds or facts you do not know. Answer with the reply "
+             "text only.\n{profile}",
+    "post": "You write a social media post for the brand \"{brand}\" inspired by what a person said publicly (the "
+            "mention). Do not quote or name the person. Turn it into a useful, positive post in {language}: a hook, "
+            "1-3 short lines and a call to action, up to 3 relevant hashtags. Answer with the post text only.\n"
+            "{profile}",
+}
+
+
+def draft_from_mention(db: Session, mention: Mention, kind: str, user_id: int | None = None) -> dict:
+    """An AI draft (reply or post) in the brand's voice, checked by the brand guard. Without AI: a template."""
+    from app.core.i18n import LANGUAGE_NAMES
+    from app.modules.ai import providers as prov
+    from app.modules.ai import service as ai
+    from app.modules.brand import guard
+    from app.modules.brand import service as brand
+
+    workspace = db.get(Workspace, mention.workspace_id)
+    kit = brand.default_kit(db, workspace.id)
+    system = DRAFT_SYSTEM[kind].format(brand=workspace.name, profile=kit.llm_profile() if kit else "",
+                                       language=LANGUAGE_NAMES.get(workspace.locale, "Arabic"))
+    text, ai_used = "", False
+    if ai.has_provider(db, workspace.id, "text"):
+        try:
+            fast = prov.fast_model(db, workspace.id)
+            text = ai.generate_text(db, workspace.id, system, f"Mention ({mention.source}):\n{mention.text[:1500]}",
+                                    model_id=fast.id if fast else None, user_id=user_id,
+                                    purpose="Radar: reply draft" if kind == "reply" else "Radar: post draft").strip()
+            ai_used = bool(text)
+        except Exception as exc:  # no credits, provider down: the template still helps
+            _logger.info("radar draft without AI for mention %s: %s", mention.id, exc)
+    if not text:
+        name = mention.author_name or mention.author_handle or ""
+        if kind == "post":
+            text = _("You asked about {topic}. Here is what you need to know:", topic=mention.topic or workspace.name)
+        elif name:
+            text = _("Thank you for your message, {name}. We are looking into it and will get back to you shortly.",
+                     name=name)
+        else:
+            text = _("Thank you for your message. We are looking into it and will get back to you shortly.")
+    text, notes = guard.enforce_text(db, workspace.id, kit, text, user_id)
+    return {"text": text, "notes": notes, "ai": ai_used}
+
+
+def mention_reply(db: Session, mention: Mention, user_id: int | None = None) -> dict:
+    """Reply: owned comments go to the inbox (the reply is sent from there); public mentions get the original link
+    and a draft to paste."""
+    draft = draft_from_mention(db, mention, "reply", user_id)
+    out = {"draft": draft["text"], "notes": draft["notes"], "ai": draft["ai"], "url": mention.url,
+           "conversation_id": None, "inbox_url": None}
+    can_inbox = (mention.platform or mention.source) in INBOX_PLATFORMS and mention.source != "google_business"
+    if mention.conversation_id or can_inbox:
+        try:
+            conv = mention_to_inbox(db, mention)
+            out.update(conversation_id=conv.id, inbox_url=f"/inbox/{conv.id}")
+        except AppError:
+            pass  # no account connected: the link and the draft still work
+    return out
+
+
+def mention_to_post(db: Session, mention: Mention, user_id: int) -> dict:
+    from app.modules.social import service as social
+    draft = draft_from_mention(db, mention, "post", user_id)
+    post = social.create_post(db, mention.workspace_id, user_id, content=draft["text"],
+                              name=(mention.topic or _("Radar idea"))[:120], source_ref=f"radar-mention:{mention.id}",
+                              ai_brief=f"Inspired by a public mention: {mention.text[:500]}")
+    _mark(mention)
+    return {"post_id": post.id, "url": f"/studio?post={post.id}", "notes": draft["notes"]}
+
+
+def mention_to_board(db: Session, mention: Mention, user_id: int, template: str = "pipeline_quick") -> dict:
+    from app.modules.production import service as production
+    idea = _("Content idea from what people say: {text}", text=mention.text[:1500])
+    board = production.create_board(db, mention.workspace_id, user_id, template,
+                                    (mention.topic or _("Radar idea"))[:200], text=idea)
+    _mark(mention)
+    return {"board_id": board.id, "url": f"/production/{board.id}"}
+
+
+def mention_report(db: Session, mention: Mention, on: bool) -> dict:
+    extra = dict(mention.extra or {})
+    extra["in_report"] = bool(on)
+    mention.extra = extra
+    db.flush()
+    return mention_out(mention)
+
+
+def mention_assign(db: Session, mention: Mention, by_user_id: int, user_id: int | None, note: str | None) -> dict:
+    from app.core.notify import notify
+    from app.modules.workspaces.models import Membership
+    if user_id is not None:
+        member = db.scalar(select(Membership).where(Membership.workspace_id == mention.workspace_id,
+                                                    Membership.user_id == user_id))
+        if not member:
+            raise NotFound(_("Team member not found."))
+    mention.assigned_to_id = user_id
+    db.flush()
+    if user_id is not None and user_id != by_user_id:
+        notify(db, mention.workspace_id, [user_id], kind="radar.assigned",
+               title=_("A mention was assigned to you"),
+               body=(note or "").strip()[:300] or (mention.text or "")[:180],
+               link=f"/radar/mentions?mention={mention.id}")
+    return mention_out(mention)
+
+
+def _mark(mention: Mention) -> None:
+    if mention.status == "new":
+        mention.status = "reviewed"
 
 
 # --------------------------------------------------------------------------------------------- events
@@ -549,8 +801,10 @@ def check_query_limits(db: Session, workspace_id: int, sources: list[str], addin
     limits.require(db, workspace_id, "listening")
     if adding:
         limits.check(db, workspace_id, "listening_queries")
-    if "x" in sources:
-        limits.require(db, workspace_id, "listening_x")
+    for source in sources:
+        spec = registry.SOURCE_DEFS.get(source)
+        if spec and spec.feature != "listening":
+            limits.require(db, workspace_id, spec.feature)
 
 
 # ---------------------------------------------------------------------------------------------- reports
@@ -571,7 +825,11 @@ def report_block(db: Session, workspace: Workspace, start: datetime, end: dateti
                                                       RadarEvent.severity != "info")))
     events.sort(key=lambda e: SEVERITY_ORDER.get(e.severity, 9))
     sov = round(len(own) / len(now_all) * 100) if query.competitors and now_all else None
-    return {"mentions": len(own), "mentions_delta": _delta(len(own), len(prev_own)),
+    highlights = [m for m in now_all if (m.extra or {}).get("in_report")][:5]
+    return {"highlights": [{"text": (m.text or "")[:280], "source": m.source, "author": m.author_name or m.author_handle,
+                            "sentiment": m.sentiment, "url": m.url} for m in highlights],
+            "sources": [{"source": s_, "count": c} for s_, c in Counter(m.source for m in own).most_common(6)],
+            "mentions": len(own), "mentions_delta": _delta(len(own), len(prev_own)),
             "net_sentiment": net_sentiment(own), "sentiment": _split(own), "share_of_voice": sov,
             "words": [w["word"] for w in word_cloud(own, _brand_exclude(query), 10)],
             "events": [{"title": e.title, "what": e.what, "severity": e.severity} for e in events[:3]]}

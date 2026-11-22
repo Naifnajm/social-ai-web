@@ -3,13 +3,18 @@
 With an AI provider (the workspace's own key, or platform AI credits) mentions are classified in batches by
 the cheapest text model the workspace routes to; without one — or past the per-run AI budget — the lexicon in
 ``text.classify`` is used and the topic comes from a short keyword list. A review's star rating and a person's
-correction always win.
+correction always win. Every source is classified by the AI, news and web pages included; spam is not.
+
+The per-run budget grows with the plan (``AI_BUDGET``) and is multiplied by ``BOOST_FACTOR`` for ``BOOST_HOURS``
+after a crisis or spike is detected (``boost``), so a busy moment is read properly. It is charged normally.
 """
 import logging
+from datetime import timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.db import utcnow
 from app.core.i18n import _, lazy, set_locale
 from app.modules.workspaces.models import Workspace
 from app.modules.workspaces.settings import get_setting
@@ -19,7 +24,10 @@ from .models import EMOTIONS, INTENTS, SENTIMENTS, Mention
 
 _logger = logging.getLogger(__name__)
 BATCH = 30
-AI_PER_RUN = 120
+AI_PER_RUN = 120          # default (unknown plan)
+AI_BUDGET = {"trial": 120, "free": 60, "starter": 120, "pro": 300, "business": 1000, "enterprise": 3000}
+BOOST_FACTOR = 4
+BOOST_HOURS = 6
 
 TOPIC_WORDS = {
     lazy("Orders and delivery"): ("توصيل", "مندوب", "طلبي", "الطلب", "وصل", "تأخر", "تاخر", "delivery", "courier",
@@ -54,7 +62,7 @@ def topic_of(text: str) -> str | None:
 def apply_lexicon(mention: Mention) -> None:
     result = tx.classify(mention.text)
     mention.sentiment, mention.intent, mention.emotion = result["sentiment"], result["intent"], result["emotion"]
-    if mention.source == "news" and mention.intent in ("other", "praise"):
+    if mention.source in ("news", "web") and mention.intent in ("other", "praise"):
         mention.intent = "news"
     mention.topic = mention.topic or topic_of(mention.text)
 
@@ -107,6 +115,25 @@ def _ai_batch(db: Session, workspace: Workspace, brand: str, mentions: list[Ment
     return True
 
 
+def boost(db: Session, workspace_id: int, hours: int = BOOST_HOURS) -> None:
+    """Raise the AI budget for the next ``hours`` (called when a crisis or spike is detected)."""
+    from app.modules.workspaces.settings import set_setting
+    set_setting(db, workspace_id, "listening.ai_boost_until", (utcnow() + timedelta(hours=hours)).isoformat())
+
+
+def ai_budget(db: Session, workspace_id: int) -> int:
+    """Mentions the AI may classify in one run: by plan, ×4 during a crisis/spike boost."""
+    from app.modules.billing.service import billing_state
+    from app.modules.workspaces.settings import get_setting
+
+    from .collectors import _date
+    budget = AI_BUDGET.get(billing_state(db, workspace_id).plan.code, AI_PER_RUN)
+    until = get_setting(db, workspace_id, "listening.ai_boost_until")
+    if until and _date(until) > utcnow():
+        budget *= BOOST_FACTOR
+    return budget
+
+
 def classify_pending(db: Session, workspace_id: int, *, use_ai: bool | None = None) -> int:
     """Classify the workspace's unanalyzed mentions. Returns how many were classified."""
     workspace = db.get(Workspace, workspace_id)
@@ -124,7 +151,7 @@ def classify_pending(db: Session, workspace_id: int, *, use_ai: bool | None = No
             db, workspace_id, "text")
     if use_ai:
         topics = existing_topics(db, workspace_id)
-        own = [m for m in pending if m.source != "news"][:AI_PER_RUN]
+        own = [m for m in pending if m.status != "spam"][:ai_budget(db, workspace_id)]
         for start in range(0, len(own), BATCH):
             if not _ai_batch(db, workspace, workspace.name, own[start:start + BATCH], topics):
                 break

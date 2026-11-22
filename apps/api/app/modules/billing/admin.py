@@ -278,6 +278,16 @@ def write_settings(data: PlatformSettingsIn, admin: User = Depends(superadmin), 
                          if float(v["usd"]) > 0 and int(v["credits"]) > 0]
             elif kind == "bool":
                 value = bool(value)
+            elif kind == "prices":
+                if not isinstance(value, dict):
+                    raise ValueError
+                value = {str(k): float(v) for k, v in value.items() if v not in ("", None)}
+                if any(v < 0 for v in value.values()):
+                    raise ValueError
+            elif kind == "keys":
+                if not isinstance(value, list):
+                    raise ValueError
+                value = sorted({str(v).strip() for v in value if str(v).strip()})
             elif kind == "dict":
                 if not isinstance(value, dict):
                     raise ValueError

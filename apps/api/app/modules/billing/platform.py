@@ -28,7 +28,16 @@ SETTINGS_SCHEMA: dict[str, str] = {
     "billing.credit_packs": "list",         # [{"usd": 10, "credits": 1000}, …] packs to buy       # {"pro_month": "price_..."} — overrides the environment
     "platform.announcement": "str",
     "listening.x_bearer_token": "secret",   # radar: X recent search (pay per post read)
-    "listening.youtube_api_key": "secret",  # radar: YouTube search (Google API key)        # optional banner text shown to every workspace
+    "listening.youtube_api_key": "secret",  # radar: YouTube search + comments (Google API key)
+    "listening.brave_api_key": "secret",    # radar: web, blogs and forums (Brave Search API)
+    "listening.reddit_client_id": "secret",  # radar: Reddit API (client credentials)
+    "listening.reddit_client_secret": "secret",
+    "listening.tiktok_provider_key": "secret",  # radar: TikTok through a data provider (ScrapeCreators)
+    "listening.gnews_api_key": "secret",    # radar: news (optional paid source; Google News RSS otherwise)
+    "listening.newsapi_key": "secret",
+    "listening.unit_prices": "prices",      # {source: $ per unit}; defaults in listening/registry.py
+    "listening.sources_off": "keys",        # sources the admin turned off for every workspace
+    "listening.youtube_units_per_run": "int",  # YouTube quota units one workspace may spend in one run
 }
 
 

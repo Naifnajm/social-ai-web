@@ -25,6 +25,15 @@ from .security import decode_token
 
 ACCESS_COOKIE = "sai_access"
 REFRESH_COOKIE = "sai_refresh"
+# while a platform administrator views the app as someone: the administrator's own refresh token, to come back
+IMPERSONATION_RETURN_COOKIE = "sai_imp_return"
+
+# While viewing as someone, an administrator cannot touch the person's credentials, account or connected access.
+IMPERSONATION_BLOCKED = ("/api/auth/password", "/api/auth/email", "/api/auth/2fa", "/api/auth/logout-everywhere",
+                         "/api/account/export", "/api/account/delete", "/api/account/workspaces", "/api/account/2fa",
+                         "/api/account/avatar", "/api/connect/keys", "/api/connect/authorize", "/api/admin")
+# Paths a person who must choose a new password can still use (the rest answers "password_change_required").
+PASSWORD_CHANGE_ALLOWED = ("/api/auth/",)
 
 
 class Unauthorized(AppError):
@@ -61,7 +70,44 @@ def current_user(request: Request, db: Session = Depends(get_db)) -> User:
     user = db.get(User, int(payload["sub"]))
     if not user or not user.is_active or user.token_version != payload.get("ver"):
         raise Unauthorized(_("Your session has expired. Please sign in again."), code="unauthenticated")
+    request.state.impersonator_id = None
+    if payload.get("imp"):
+        _impersonation(request, db, user, payload)
+    elif user.must_change_password and not request.url.path.startswith(PASSWORD_CHANGE_ALLOWED):
+        raise Forbidden(_("Choose a new password to continue."), code="password_change_required")
     set_locale(user.locale)
+    return user
+
+
+def _impersonation(request: Request, db: Session, user: User, payload: dict) -> None:
+    """A platform administrator viewing the app as ``user``: check the administrator is still one, refuse what the
+    view may not do, and record every change it makes under the administrator's name."""
+    admin = db.get(User, int(payload["imp"]))
+    if (not admin or not admin.is_active or not admin.is_superadmin or admin.token_version != payload.get("imp_ver")
+            or user.is_superadmin):
+        raise Unauthorized(_("Your session has expired. Please sign in again."), code="unauthenticated")
+    request.state.impersonator_id = admin.id
+    request.state.impersonation_expires = payload.get("exp")
+    path = request.url.path
+    if request.method == "DELETE" or path.startswith(IMPERSONATION_BLOCKED):
+        raise Forbidden(_("This is not possible while you view the app as someone else."),
+                        code="impersonation_forbidden")
+    if request.method not in ("GET", "HEAD", "OPTIONS"):
+        from app.modules.users.service import audit
+        audit(db, user.id, "impersonation.action", actor_id=admin.id, impersonator_id=admin.id,
+              summary=f"{request.method} {path}"[:500], request=request)
+
+
+def impersonator_id(request: Request) -> int | None:
+    """The platform administrator viewing the app as the signed-in user, if any (after ``current_user``)."""
+    return getattr(request.state, "impersonator_id", None)
+
+
+def not_impersonating(request: Request, user: User = Depends(current_user)) -> User:
+    """The signed-in user, refused while an administrator views the app as them."""
+    if impersonator_id(request):
+        raise Forbidden(_("This is not possible while you view the app as someone else."),
+                        code="impersonation_forbidden")
     return user
 
 
@@ -91,7 +137,7 @@ def workspace_ctx(min_role: Role = Role.viewer):
     return dependency
 
 
-def superadmin(user: User = Depends(current_user)) -> User:
-    if not user.is_superadmin:
+def superadmin(request: Request, user: User = Depends(current_user)) -> User:
+    if not user.is_superadmin or impersonator_id(request):
         raise Forbidden(_("Platform administrators only."), code="forbidden")
     return user

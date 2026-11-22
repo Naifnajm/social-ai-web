@@ -38,9 +38,20 @@ def create_refresh_token(user_id: int, token_version: int) -> str:
                    timedelta(days=settings.refresh_token_days))
 
 
-def create_purpose_token(purpose: str, subject: str, hours: int = 24) -> str:
-    """Single-purpose signed token (password reset, e-mail links…)."""
-    return _encode({"sub": subject, "typ": purpose}, timedelta(hours=hours))
+def create_purpose_token(purpose: str, subject: str, hours: int = 24, minutes: int = 0) -> str:
+    """Single-purpose signed token (password reset, e-mail links, the two-step sign-in challenge…)."""
+    return _encode({"sub": subject, "typ": purpose}, timedelta(hours=hours if not minutes else 0, minutes=minutes))
+
+
+IMPERSONATION_MINUTES = 30
+
+
+def create_impersonation_token(user_id: int, token_version: int, admin_id: int, admin_version: int) -> str:
+    """A short access token for ``user_id`` used by the platform administrator ``admin_id`` ("view as"). It carries
+    ``imp`` (the administrator) so the API can tell it apart, limit it and audit it; there is no refresh token."""
+    return _encode({"sub": str(user_id), "typ": "access", "ver": token_version, "imp": admin_id,
+                    "imp_ver": admin_version, "jti": secrets.token_hex(8)},
+                   timedelta(minutes=IMPERSONATION_MINUTES))
 
 
 def decode_token(token: str, expected_type: str) -> dict | None:

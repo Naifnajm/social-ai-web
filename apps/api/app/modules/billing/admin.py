@@ -1,9 +1,9 @@
-"""Platform admin (superadmins only): workspaces with plan/status/usage, support view (no impersonation),
-suspend/reactivate, extend trial, manual plan changes, platform stats and platform-wide settings."""
-from datetime import datetime, timedelta
+"""Platform admin (superadmins only): workspaces with plan/status/usage, support view, suspend/reactivate, extend
+trial, manual plan changes, platform stats and platform-wide settings. Users: ``app/modules/users/admin.py``."""
+from datetime import timedelta
 
-from pydantic import BaseModel
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
@@ -298,84 +298,6 @@ def write_settings(data: PlatformSettingsIn, admin: User = Depends(superadmin), 
             raise AppError(_("Invalid value for {key}.", key=key), code="bad_setting") from None
         platform.set_setting(db, key, value, admin.id)
     return _settings_out(db)
-
-
-# ------------------------------------------------------------------ users
-
-
-class AdminUserOut(BaseModel):
-    id: int
-    name: str
-    email: str
-    username: str | None = None
-    is_active: bool
-    is_superadmin: bool
-    last_login_at: datetime | None = None
-    created_at: datetime
-    workspaces: list[str] = []
-
-
-class AdminUserPage(BaseModel):
-    items: list[AdminUserOut]
-    total: int
-    page: int
-    page_size: int
-
-
-class FlagIn(BaseModel):
-    value: bool
-
-
-def _user_out(db: Session, user: User) -> AdminUserOut:
-    names = db.scalars(select(Workspace.name).join(Membership, Membership.workspace_id == Workspace.id)
-                       .where(Membership.user_id == user.id).order_by(Workspace.name)).all()
-    return AdminUserOut(id=user.id, name=user.name, email=user.email, username=user.username,
-                        is_active=user.is_active, is_superadmin=user.is_superadmin,
-                        last_login_at=user.last_login_at, created_at=user.created_at, workspaces=list(names))
-
-
-def _user(db: Session, user_id: int) -> User:
-    user = db.get(User, user_id)
-    if user is None:
-        raise NotFound(_("User not found."))
-    return user
-
-
-@router.get("/users", response_model=AdminUserPage)
-def list_users(q: str = "", page: int = Query(1, ge=1), page_size: int = Query(25, ge=1, le=100),
-               admin: User = Depends(superadmin), db: Session = Depends(get_db)):
-    """Every account on the platform, newest first; ``q`` matches the name, e-mail or username."""
-    query = select(User)
-    if q.strip():
-        like = f"%{q.strip().lower()}%"
-        query = query.where(or_(func.lower(User.name).like(like), func.lower(User.email).like(like),
-                                func.lower(func.coalesce(User.username, "")).like(like)))
-    total = db.scalar(select(func.count()).select_from(query.subquery())) or 0
-    rows = db.scalars(query.order_by(User.id.desc()).limit(page_size).offset((page - 1) * page_size)).all()
-    return AdminUserPage(items=[_user_out(db, u) for u in rows], total=total, page=page, page_size=page_size)
-
-
-@router.post("/users/{user_id}/active", response_model=AdminUserOut)
-def set_user_active(user_id: int, data: FlagIn, admin: User = Depends(superadmin), db: Session = Depends(get_db)):
-    """Disable or enable an account. A disabled account is signed out everywhere and cannot sign in."""
-    user = _user(db, user_id)
-    if user.id == admin.id and not data.value:
-        raise AppError(_("You cannot disable your own account."), code="self_action")
-    user.is_active = data.value
-    if not data.value:
-        user.token_version += 1
-    return _user_out(db, user)
-
-
-@router.post("/users/{user_id}/superadmin", response_model=AdminUserOut)
-def set_user_superadmin(user_id: int, data: FlagIn, admin: User = Depends(superadmin),
-                        db: Session = Depends(get_db)):
-    user = _user(db, user_id)
-    if user.id == admin.id and not data.value:
-        raise AppError(_("You cannot remove your own administrator rights."), code="self_action")
-    user.is_superadmin = data.value
-    user.token_version += 1
-    return _user_out(db, user)
 
 
 # ------------------------------------------------------------------ platform-paid AI

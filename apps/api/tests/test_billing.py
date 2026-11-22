@@ -598,13 +598,16 @@ def test_platform_settings_secrets_encrypted(client, db, admin):
 
 
 def test_cli_create_superadmin(db, capsys):
-    assert cli.main(["create-superadmin", "boss@example.com", "--name", "Boss"]) == 0
+    assert cli.main(["create-superadmin", "boss@example.com", "--name", "Boss", "--generate"]) == 0
     out = capsys.readouterr().out
-    assert "Created superadmin boss@example.com" in out and "Temporary password" in out
+    assert "Created superadmin boss@example.com" in out and "Password (shown once" in out
     user = db.query(User).filter_by(email="boss@example.com").one()
     assert user.is_superadmin and user.last_workspace_id
     assert cli.main(["create-superadmin", "BOSS@example.com"]) == 0
     assert "Promoted" in capsys.readouterr().out
+    assert cli.main(["revoke-superadmin", "boss@example.com"]) == 3       # the last active administrator stays
+    assert user.is_superadmin
+    assert cli.main(["create-superadmin", "second@example.com", "--generate"]) == 0
     assert cli.main(["revoke-superadmin", "boss@example.com"]) == 0
     assert not user.is_superadmin
     assert cli.main(["revoke-superadmin", "ghost@example.com"]) == 1

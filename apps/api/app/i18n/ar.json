@@ -17,5 +17,21 @@
   "User not found.": "المستخدم غير موجود.",
   "You cannot disable your own account.": "لا يمكنك تعطيل حسابك أنت.",
   "You cannot remove your own administrator rights.": "لا يمكنك إزالة صلاحية المدير عن حسابك أنت.",
-  "Your monthly AI limit in this workspace is used up (${spent} of ${limit}). Ask a workspace admin to raise it.": "استهلكت حدّك الشهري من الذكاء الاصطناعي في هذه المساحة (${spent} من ${limit}). اطلب من مدير المساحة رفعه."
+  "Your monthly AI limit in this workspace is used up (${spent} of ${limit}). Ask a workspace admin to raise it.": "استهلكت حدّك الشهري من الذكاء الاصطناعي في هذه المساحة (${spent} من ${limit}). اطلب من مدير المساحة رفعه.",
+  "Confirm your e-mail address": "أكّد بريدك الإلكتروني",
+  "Confirm this e-mail address for your account (valid 48 hours):": "أكّد عنوان البريد هذا لحسابك (الرابط صالح 48 ساعة):",
+  "The code is wrong or expired.": "الرمز غير صحيح أو انتهت صلاحيته.",
+  "This sign-in took too long. Start again.": "استغرق تسجيل الدخول وقتًا طويلًا. ابدأ من جديد.",
+  "Unknown time zone.": "منطقة زمنية غير معروفة.",
+  "Choose a password different from the current one.": "اختر كلمة مرور مختلفة عن الحالية.",
+  "Your password was changed": "تم تغيير كلمة المرور",
+  "The password of your account was just changed.": "تم للتو تغيير كلمة مرور حسابك.",
+  "An account with this e-mail already exists.": "يوجد حساب بهذا البريد الإلكتروني بالفعل.",
+  "Your e-mail address was changed": "تم تغيير بريدك الإلكتروني",
+  "The e-mail address of your account was changed to {email}.": "تم تغيير البريد الإلكتروني لحسابك إلى {email}.",
+  "If this was not you, reset your password now and contact support.": "إن لم تكن أنت من فعل ذلك، فأعد تعيين كلمة المرور الآن وتواصل مع الدعم.",
+  "Choose a new password to continue.": "اختر كلمة مرور جديدة للمتابعة.",
+  "This is not possible while you view the app as someone else.": "لا يمكن القيام بهذا أثناء عرض التطبيق بصفة شخص آخر.",
+  "Hello {name},": "مرحبًا {name}،",
+  "Use this link to choose a new password (valid 2 hours):": "استخدم هذا الرابط لاختيار كلمة مرور جديدة (صالح لمدة ساعتين):"
 }

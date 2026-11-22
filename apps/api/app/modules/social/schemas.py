@@ -65,7 +65,7 @@ class AccountUpdate(BaseModel):
 
 class ConnectionResult(BaseModel):
     ok: bool
-    account: AccountOut
+    account: AccountOut | None = None  # None: a new connection that failed is not kept
     message: str | None = None
 
 

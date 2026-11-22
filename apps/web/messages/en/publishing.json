@@ -82,7 +82,16 @@
   "disconnectText": "“{name}” will stop publishing. Its published posts and statistics are kept.",
   "cancel": "Cancel",
   "save": "Save",
-  "newTokenHint": "Leave empty to keep the current token."
+  "newTokenHint": "Leave empty to keep the current token.",
+  "fix": {
+   "draft": "Not checked yet: test the connection.",
+   "expired": "Access ended: reconnect the account.",
+   "error": "This account is not working.",
+   "details": "Fix details",
+   "testAgain": "Test again",
+   "remove": "Remove",
+   "idHint": "The page, account or channel id. A wrong id is the most common cause of a failed connection."
+  }
  },
  "studio": {
   "title": "Studio",

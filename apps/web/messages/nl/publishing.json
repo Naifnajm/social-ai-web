@@ -1,0 +1,13 @@
+{
+  "accounts": {
+    "fix": {
+      "draft": "Nog niet gecontroleerd: test de verbinding.",
+      "expired": "Toegang verlopen: koppel het account opnieuw.",
+      "error": "Dit account werkt niet.",
+      "details": "Gegevens aanpassen",
+      "testAgain": "Opnieuw testen",
+      "remove": "Verwijderen",
+      "idHint": "De id van de pagina, het account of het kanaal. Een verkeerde id is de meest voorkomende oorzaak van een mislukte koppeling."
+    }
+  }
+}

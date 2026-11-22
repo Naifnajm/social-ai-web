@@ -86,6 +86,10 @@ def connect_with_token(body: AccountCreate, ctx: Ctx = Depends(workspace_ctx(Rol
     if body.platform in ("facebook", "instagram", "google_business") and not (body.external_id or "").strip():
         raise AppError(_("Enter the account or page ID."), code="missing_external_id")
     account = service.find_existing(ctx.db, ctx.workspace.id, body.platform, (body.external_id or "").strip() or None)
+    # Everything below is tried inside a savepoint: a connection that does not work is undone, so a wrong token or
+    # id never leaves a broken account behind (and never breaks an account that was working).
+    savepoint = ctx.db.begin_nested()
+    is_new = account is None
     if account is None:
         limits.check(ctx.db, ctx.workspace.id, "social_accounts")
         account = SocialAccount(workspace_id=ctx.workspace.id, platform=body.platform,
@@ -108,8 +112,12 @@ def connect_with_token(body: AccountCreate, ctx: Ctx = Depends(workspace_ctx(Rol
     account.state = "draft"
     ctx.db.flush()
     ok = service.check_connection(ctx.db, account)
-    return ConnectionResult(ok=ok, account=account_out(account),
-                            message=None if ok else account.last_error)
+    if not ok:
+        message = account.last_error or _("The connection could not be checked.")
+        savepoint.rollback()
+        return ConnectionResult(ok=False, account=None if is_new else account_out(account), message=message)
+    savepoint.commit()
+    return ConnectionResult(ok=True, account=account_out(account))
 
 
 @router.get("/oauth/setup/{platform}", response_model=OAuthSetupOut)
@@ -180,6 +188,8 @@ def one(account_id: int, ctx: Ctx = Depends(workspace_ctx())):
 def update_account(account_id: int, body: AccountUpdate, ctx: Ctx = Depends(workspace_ctx(Role.admin))):
     account = get_account(ctx, account_id)
     data = body.model_dump(exclude_unset=True)
+    recheck = bool(data.get("access_token")) or (
+        bool(data.get("external_id")) and data["external_id"].strip() != (account.external_id or ""))
     for key in ("name", "username", "external_id"):
         if data.get(key):
             setattr(account, key, data[key].strip().lstrip("@") if key == "username" else data[key].strip())
@@ -203,6 +213,8 @@ def update_account(account_id: int, body: AccountUpdate, ctx: Ctx = Depends(work
             limits.check(ctx.db, ctx.workspace.id, "social_accounts")
         account.active = data["active"]
     ctx.db.flush()
+    if recheck and account.platform in PUBLISH_PLATFORMS:
+        service.check_connection(ctx.db, account)  # a new token or id is tested right away (state + last_error)
     return account_out(account)
 
 

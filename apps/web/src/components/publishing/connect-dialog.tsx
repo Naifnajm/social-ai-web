@@ -9,7 +9,8 @@ import { api } from "@/lib/api";
 import type { Account, OAuthSetup, PlatformOption } from "./types";
 import { errorText } from "./util";
 
-type View = { kind: "list" } | { kind: "setup"; platform: string } | { kind: "token"; platform: string };
+export type ConnectView = { kind: "list" } | { kind: "setup"; platform: string } | { kind: "token"; platform: string; externalId?: string; name?: string };
+type View = ConnectView;
 const PRIVACY = ["SELF_ONLY", "MUTUAL_FOLLOW_FRIENDS", "FOLLOWER_OF_CREATOR", "PUBLIC_TO_EVERYONE"];
 
 export function ConnectDialog({ open, onClose, initial }: { open: boolean; onClose: () => void; initial?: View }) {
@@ -29,9 +30,20 @@ export function ConnectDialog({ open, onClose, initial }: { open: boolean; onClo
     }>
       {view.kind === "list" && <PlatformList onPick={setView} />}
       {view.kind === "setup" && <SetupView platform={view.platform} onToken={() => setView({ kind: "token", platform: view.platform })} />}
-      {view.kind === "token" && <TokenForm platform={view.platform} onDone={close} />}
+      {view.kind === "token" && <TokenForm platform={view.platform} externalId={view.externalId} name={view.name} onDone={close} />}
     </Modal>
   );
+}
+
+/** Reconnect an account that stopped working: straight to its network's consent page when one-click connect is set up,
+ * otherwise to the setup or token form of that network (the token form keeps the account's id and name). */
+export async function reconnectView(account: Account, platforms: PlatformOption[]): Promise<ConnectView | null> {
+  const option = platforms.find((o) => o.key === account.platform);
+  if (!option) return { kind: "list" };
+  if (option.method === "token") return { kind: "token", platform: option.key, externalId: account.external_id ?? "", name: account.name };
+  if (!option.configured) return { kind: "setup", platform: option.key };
+  await startOAuth(option.key);
+  return null;
 }
 
 async function startOAuth(platform: string) {
@@ -138,18 +150,18 @@ function SetupView({ platform, onToken }: { platform: string; onToken: () => voi
   );
 }
 
-function TokenForm({ platform, onDone }: { platform: string; onDone: () => void }) {
+function TokenForm({ platform, externalId, name, onDone }: { platform: string; externalId?: string; name?: string; onDone: () => void }) {
   const t = useTranslations("publishing.connect");
   const qc = useQueryClient();
-  const [form, setForm] = useState({ external_id: "", access_token: "", name: "", privacy_level: "SELF_ONLY" });
+  const [form, setForm] = useState({ external_id: externalId ?? "", access_token: "", name: name ?? "", privacy_level: "SELF_ONLY" });
   const options = useQuery({ queryKey: ["account-platforms"], queryFn: () => api.get<PlatformOption[]>("/accounts/platforms") });
   const help = options.data?.find((o) => o.key === platform)?.help;
   const save = useMutation({
-    mutationFn: () => api.post<{ ok: boolean; account: Account; message?: string }>("/accounts", { platform, ...form }),
+    mutationFn: () => api.post<{ ok: boolean; account: Account | null; message?: string }>("/accounts", { platform, ...form }),
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ["accounts"] });
       qc.invalidateQueries({ queryKey: ["studio"] });
-      if (res.ok) {
+      if (res.ok && res.account) {
         toast.success(t("connected", { name: res.account.name }));
         onDone();
       } else toast.error(res.message || t("failed"));

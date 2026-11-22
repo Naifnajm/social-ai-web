@@ -1,0 +1,13 @@
+{
+  "accounts": {
+    "fix": {
+      "draft": "Pas encore vérifié : testez la connexion.",
+      "expired": "Accès expiré : reconnectez le compte.",
+      "error": "Ce compte ne fonctionne pas.",
+      "details": "Corriger les informations",
+      "testAgain": "Tester à nouveau",
+      "remove": "Retirer",
+      "idHint": "L’identifiant de la page, du compte ou de la chaîne. Un identifiant erroné est la cause la plus fréquente d’un échec de connexion."
+    }
+  }
+}

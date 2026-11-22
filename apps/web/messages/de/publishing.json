@@ -1,0 +1,13 @@
+{
+  "accounts": {
+    "fix": {
+      "draft": "Noch nicht geprüft: Verbindung testen.",
+      "expired": "Zugriff abgelaufen: Konto neu verbinden.",
+      "error": "Dieses Konto funktioniert nicht.",
+      "details": "Angaben korrigieren",
+      "testAgain": "Erneut testen",
+      "remove": "Entfernen",
+      "idHint": "Die ID der Seite, des Kontos oder des Kanals. Eine falsche ID ist die häufigste Ursache für eine fehlgeschlagene Verbindung."
+    }
+  }
+}

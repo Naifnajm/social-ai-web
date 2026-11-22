@@ -169,8 +169,31 @@ def test_failed_connection_is_reported(client, auth, mock_http):
     r = client.post("/api/accounts", json={"platform": "facebook", "access_token": "bad", "external_id": "1"},
                     headers=auth.headers)
     data = r.json()
-    assert not data["ok"] and data["account"]["state"] == "expired"
+    assert not data["ok"] and data["account"] is None  # a new connection that fails is not kept
     assert "Invalid OAuth" in data["message"]
+    assert client.get("/api/accounts", headers=auth.headers).json() == []
+
+
+def test_bad_token_never_breaks_a_working_account(client, auth, db, mock_http):
+    acc = account(db, auth.workspace_id, "facebook", name="Page", external_id="1", access_token="good")
+    mock_http(lambda m, u, k: mock_http.response(401, {"error": {"message": "Invalid OAuth access token"}}))
+    r = client.post("/api/accounts", json={"platform": "facebook", "access_token": "bad", "external_id": "1"},
+                    headers=auth.headers).json()
+    assert not r["ok"] and "Invalid OAuth" in r["message"]
+    db.refresh(acc)
+    assert acc.access_token == "good" and acc.state == "connected"
+
+
+def test_fixing_a_broken_account_from_edit(client, auth, db, mock_http):
+    acc = account(db, auth.workspace_id, "facebook", name="Page", external_id="wrong", access_token="tok")
+    acc.state, acc.last_error = "error", "Unsupported get request"
+    db.flush()
+    mock_http(lambda m, u, k: mock_http.response(body={"id": "123", "name": "Real Page"}))
+    out = client.patch(f"/api/accounts/{acc.id}", json={"external_id": "123"}, headers=auth.headers).json()
+    assert out["state"] == "connected" and not out["last_error"]  # the new id is tested right away
+    mock_http(lambda m, u, k: mock_http.response(401, {"error": {"message": "Session expired"}}))
+    out = client.patch(f"/api/accounts/{acc.id}", json={"access_token": "old"}, headers=auth.headers).json()
+    assert out["state"] == "expired" and "Session expired" in out["last_error"]
 
 
 def test_whatsapp_is_listed_as_inbox_only(client, auth, db):

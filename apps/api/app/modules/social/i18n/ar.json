@@ -163,5 +163,6 @@
  "This Google account manages no business location. Add or claim the business on Google first.": "حساب Google هذا لا يدير أي نشاط تجاري. أضف النشاط أو طالب بملكيته على Google أولًا.",
  "This Pinterest account has no board. Create a board on Pinterest first.": "حساب Pinterest هذا ليس فيه أي لوحة. أنشئ لوحة على Pinterest أولًا.",
  "This Pinterest account has no board. Create a board on Pinterest, then test the connection again.": "حساب Pinterest هذا ليس فيه أي لوحة. أنشئ لوحة على Pinterest ثم اختبر الاتصال من جديد.",
- "Pinterest accepts JPEG, PNG or WebP images.": "يقبل Pinterest صور JPEG أو PNG أو WebP."
+ "Pinterest accepts JPEG, PNG or WebP images.": "يقبل Pinterest صور JPEG أو PNG أو WebP.",
+ "The connection could not be checked.": "تعذّر التحقق من الاتصال."
 }

@@ -4,8 +4,8 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Suspense, useEffect, useState } from "react";
 import { Icon } from "@/components/icon";
-import { ConnectDialog } from "@/components/publishing/connect-dialog";
-import type { Account } from "@/components/publishing/types";
+import { ConnectDialog, reconnectView, type ConnectView } from "@/components/publishing/connect-dialog";
+import type { Account, PlatformOption } from "@/components/publishing/types";
 import { AccountAvatar, errorText, stateTone, useFormat } from "@/components/publishing/util";
 import { Badge, Button, Card, EmptyState, Field, IconButton, Input, Modal, SectionTitle, Select, Spinner, Switch, toast } from "@/components/ui";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -21,6 +21,24 @@ function AccountsSettings() {
   const fmt = useFormat();
   const isAdmin = useSession((s) => s.can("admin"));
   const [connectOpen, setConnectOpen] = useState(false);
+  const [connectView, setConnectView] = useState<{ view: ConnectView; key: number }>({ view: { kind: "list" }, key: 0 });
+  const [reconnecting, setReconnecting] = useState<number | null>(null);
+  const openConnect = (view: ConnectView = { kind: "list" }) => {
+    setConnectView((c) => ({ view, key: c.key + 1 }));
+    setConnectOpen(true);
+  };
+  const reconnect = async (account: Account) => {
+    setReconnecting(account.id);
+    try {
+      const platforms = await qc.fetchQuery({ queryKey: ["account-platforms"], queryFn: () => api.get<PlatformOption[]>("/accounts/platforms") });
+      const view = await reconnectView(account, platforms);
+      if (view) openConnect(view);
+    } catch (err) {
+      toast.error(errorText(err));
+    } finally {
+      setReconnecting(null);
+    }
+  };
   const [editing, setEditing] = useState<Account | null>(null);
   const [confirm, setConfirm] = useState<Account | null>(null);
   const accounts = useQuery({ queryKey: ["accounts"], queryFn: () => api.get<Account[]>("/accounts") });
@@ -64,14 +82,14 @@ function AccountsSettings() {
   return (
     <div className="flex flex-col gap-4">
       <Card>
-        <SectionTitle icon="link" actions={isAdmin && <Button variant="primary" size="sm" icon="add" onClick={() => setConnectOpen(true)}>{t("connect")}</Button>}>
+        <SectionTitle icon="link" actions={isAdmin && <Button variant="primary" size="sm" icon="add" onClick={() => openConnect()}>{t("connect")}</Button>}>
           {t("title")}
         </SectionTitle>
         {accounts.isLoading ? (
           <div className="flex justify-center py-10"><Spinner /></div>
         ) : !accounts.data?.length ? (
           <EmptyState icon="link" title={t("emptyTitle")} text={t("emptyText")}
-            action={isAdmin && <Button variant="primary" icon="add" onClick={() => setConnectOpen(true)}>{t("connect")}</Button>} />
+            action={isAdmin && <Button variant="primary" icon="add" onClick={() => openConnect()}>{t("connect")}</Button>} />
         ) : (
           <ul className="divide-y divide-line">
             {accounts.data.map((a) => (
@@ -90,17 +108,32 @@ function AccountsSettings() {
                     {!a.inbox_only && <span>{t("followers", { count: fmt.compact(a.followers) })}</span>}
                     {a.token_expires_at && !a.can_refresh && <span>{t("expires", { date: fmt.date(a.token_expires_at) })}</span>}
                   </div>
-                  {a.last_error && a.state !== "connected" && <div className="bidi mt-1 text-xs text-bad">{a.last_error}</div>}
                 </div>
                 {!a.inbox_only && (
                   <div className="flex items-center gap-0.5">
-                    {isAdmin && (a.state === "expired" || a.state === "error") && (
-                      <Button size="sm" icon="refresh" onClick={() => setConnectOpen(true)}>{t("reconnect")}</Button>
-                    )}
                     <IconButton icon="sync_alt" label={t("sync")} disabled={sync.isPending} onClick={() => sync.mutate(a.id)} />
                     {isAdmin && <IconButton icon="verified" label={t("test")} disabled={test.isPending} onClick={() => test.mutate(a.id)} />}
                     {isAdmin && <IconButton icon="edit_square" label={t("edit")} onClick={() => setEditing(a)} />}
                     {isAdmin && <IconButton icon="link_off" label={t("disconnect")} onClick={() => setConfirm(a)} />}
+                  </div>
+                )}
+                {!a.inbox_only && a.state !== "connected" && (
+                  <div className="flex w-full flex-col gap-2 rounded-2xl bg-bad-bg p-3 sm:ms-[52px] sm:w-[calc(100%-52px)]">
+                    <div className="flex items-start gap-2 text-sm">
+                      <Icon name="warning" size={16} className="mt-0.5 shrink-0 text-bad" />
+                      <div className="min-w-0">
+                        <div className="font-semibold text-bad">{t(`fix.${a.state === "draft" ? "draft" : a.state === "expired" ? "expired" : "error"}`)}</div>
+                        {a.last_error && <div className="bidi mt-0.5 break-words text-xs text-text-2" dir="auto">{a.last_error}</div>}
+                      </div>
+                    </div>
+                    {isAdmin && (
+                      <div className="flex flex-wrap gap-2">
+                        <Button size="sm" variant="primary" icon="refresh" loading={reconnecting === a.id} onClick={() => reconnect(a)}>{t("reconnect")}</Button>
+                        <Button size="sm" icon="edit_square" onClick={() => setEditing(a)}>{t("fix.details")}</Button>
+                        <Button size="sm" icon="verified" loading={test.isPending && test.variables === a.id} onClick={() => test.mutate(a.id)}>{t("fix.testAgain")}</Button>
+                        <Button size="sm" variant="ghost" icon="delete" className="text-bad" onClick={() => setConfirm(a)}>{t("fix.remove")}</Button>
+                      </div>
+                    )}
                   </div>
                 )}
               </li>
@@ -117,7 +150,7 @@ function AccountsSettings() {
         </div>
       </Card>
 
-      <ConnectDialog open={connectOpen} onClose={() => setConnectOpen(false)} />
+      <ConnectDialog key={connectView.key} initial={connectView.view} open={connectOpen} onClose={() => setConnectOpen(false)} />
       {editing && <EditAccount account={editing} onClose={() => { setEditing(null); refresh(); }} />}
       <Modal open={!!confirm} onClose={() => setConfirm(null)} size="sm" title={t("disconnectTitle")}
         footer={<><Button onClick={() => setConfirm(null)}>{t("cancel")}</Button><Button variant="danger" loading={disconnect.isPending} onClick={() => confirm && disconnect.mutate(confirm.id)}>{t("disconnect")}</Button></>}>
@@ -130,14 +163,23 @@ function AccountsSettings() {
 function EditAccount({ account, onClose }: { account: Account; onClose: () => void }) {
   const t = useTranslations("publishing.accounts");
   const c = useTranslations("publishing.connect");
-  const [form, setForm] = useState({ name: account.name, access_token: "", privacy_level: account.privacy_level || "SELF_ONLY", board_id: account.board_id || "" });
+  const [form, setForm] = useState({ name: account.name, external_id: account.external_id || "", access_token: "", privacy_level: account.privacy_level || "SELF_ONLY", board_id: account.board_id || "" });
+  const hasId = ["facebook", "instagram", "google_business", "telegram", "linkedin"].includes(account.platform);
   const save = useMutation({
-    mutationFn: () => api.patch(`/accounts/${account.id}`, {
+    mutationFn: () => api.patch<Account>(`/accounts/${account.id}`, {
       name: form.name, ...(form.access_token ? { access_token: form.access_token } : {}),
+      ...(hasId && form.external_id.trim() && form.external_id.trim() !== (account.external_id || "") ? { external_id: form.external_id.trim() } : {}),
       ...(account.platform === "tiktok" ? { privacy_level: form.privacy_level } : {}),
       ...(account.platform === "pinterest" && form.board_id ? { board_id: form.board_id } : {}),
     }),
-    onSuccess: () => { toast.success(t("saved")); onClose(); },
+    onSuccess: (res) => {
+      if (res.state !== "connected" && (form.access_token || form.external_id.trim() !== (account.external_id || ""))) {
+        toast.error(res.last_error || t("failed"));  // stays open so the details can be corrected
+        return;
+      }
+      toast.success(res.state === "connected" && account.state !== "connected" ? t("ok") : t("saved"));
+      onClose();
+    },
     onError: (err) => toast.error(errorText(err)),
   });
   return (
@@ -145,6 +187,11 @@ function EditAccount({ account, onClose }: { account: Account; onClose: () => vo
       footer={<><Button onClick={onClose}>{t("cancel")}</Button><Button variant="primary" loading={save.isPending} onClick={() => save.mutate()}>{t("save")}</Button></>}>
       <div className="flex flex-col gap-4">
         <Field label={c("displayName")}><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+        {hasId && (
+          <Field label={account.platform === "telegram" ? c("channel") : account.platform === "linkedin" ? c("authorUrn") : c("accountId")} hint={t("fix.idHint")}>
+            <Input dir="ltr" value={form.external_id} onChange={(e) => setForm({ ...form, external_id: e.target.value })} />
+          </Field>
+        )}
         <Field label={c("accessToken")} hint={t("newTokenHint")}>
           <Input dir="ltr" type="password" autoComplete="off" value={form.access_token} onChange={(e) => setForm({ ...form, access_token: e.target.value })} />
         </Field>

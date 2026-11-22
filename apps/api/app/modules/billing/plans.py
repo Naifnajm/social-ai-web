@@ -27,13 +27,14 @@ FEATURES = (
     "production",        # production canvas (AI video / multi-step boards)
     "listening",         # radar: social listening, events and advice
     "listening_x",       # radar source X (paid per post read)
+    "mcp",               # connect AI assistants (Claude, ChatGPT, MCP clients) and personal API keys
     "priority_support",
     "custom_branding",   # white-label reports, custom domain
 )
 
 _FREE = ("ai_studio", "templates", "quick_publish", "planning")
 _STARTER = ("ai_studio", "templates", "quick_publish", "planning", "inbox", "analytics")
-_PRO = _STARTER + ("approvals", "inbox_assistant", "reports", "link_tracking", "evergreen", "listening")
+_PRO = _STARTER + ("approvals", "inbox_assistant", "reports", "link_tracking", "evergreen", "listening", "mcp")
 _BUSINESS = _PRO + ("production", "priority_support", "listening_x")
 _ENTERPRISE = FEATURES
 

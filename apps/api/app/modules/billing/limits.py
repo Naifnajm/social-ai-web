@@ -61,6 +61,7 @@ FEATURE_LABELS = {
     "custom_branding": lazy("Custom branding"),
     "listening": lazy("Radar (social listening)"),
     "listening_x": lazy("Radar: X source"),
+    "mcp": lazy("AI assistants & API (Claude, ChatGPT)"),
 }
 PLAN_LABELS = {
     "trial": lazy("Free trial"),

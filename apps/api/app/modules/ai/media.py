@@ -19,7 +19,7 @@ Provider failures do not raise: the job is returned with ``state == "failed"`` a
 import importlib
 import logging
 import re
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session

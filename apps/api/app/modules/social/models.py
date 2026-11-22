@@ -10,7 +10,7 @@ from sqlalchemy import (JSON, Boolean, Column, DateTime, Float, ForeignKey, Inte
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.crypto import EncryptedString
-from app.core.db import Base, TimestampMixin, WorkspaceMixin
+from app.core.db import Base, WorkspaceMixin
 
 PUBLISH_PLATFORMS = ("facebook", "instagram", "linkedin", "x", "tiktok", "threads", "telegram", "youtube",
                      "pinterest", "google_business")

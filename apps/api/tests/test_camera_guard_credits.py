@@ -265,3 +265,22 @@ def test_admin_markup_packs_and_grants(client, db, auth):
     r = client.post(f"/api/admin/workspaces/{auth.workspace_id}/credits", json={"credits": 300, "note": "Bank"},
                     headers=h)
     assert r.json() == {"balance": 300}
+
+
+def test_credit_pack_invoice_never_changes_the_plan(client, auth, db, mock_http, stripe_env):  # noqa: F811
+    def handler(method, url, kw):
+        if url.endswith("/v1/customers"):
+            return mock_http.response(body={"id": "cus_T"})
+        return mock_http.response(body={"id": "cs_7", "url": "https://checkout.stripe.com/c/cs_7"})
+
+    mock_http(handler)
+    sub = service.get_subscription(db, auth.workspace_id)
+    before = (sub.plan_code, sub.status, sub.provider, sub.current_period_end)
+    assert client.post("/api/billing/credits/checkout", json={"pack_id": 0}, headers=auth.headers).status_code == 200
+    db.refresh(sub)
+    assert sub.provider == before[2] and sub.provider_customer_id == "cus_T"  # a trial stays a trial
+    invoice = {"id": "in_1", "customer": "cus_T", "subscription": None, "status": "paid",
+               "lines": {"data": [{"period": {"end": 1893456000}}]}}
+    assert _webhook(client, "invoice.paid", invoice).status_code == 200
+    db.refresh(sub)
+    assert (sub.plan_code, sub.status, sub.provider, sub.current_period_end) == before

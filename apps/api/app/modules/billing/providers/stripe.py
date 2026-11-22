@@ -90,7 +90,10 @@ class StripeProvider(PaymentProvider):
     def configured(self, db: Session) -> bool:
         return bool(billing_settings().stripe_secret_key)
 
-    def _customer(self, db: Session, workspace: Workspace, sub: Subscription, user: User) -> str:
+    def _customer(self, db: Session, workspace: Workspace, sub: Subscription, user: User,
+                  billing_plan: bool = True) -> str:
+        """The workspace's Stripe customer (created once). ``billing_plan=False`` (a credit pack): the plan's billing
+        provider is left as it is, so a trial or a manually managed plan stays what it was."""
         if sub.provider_customer_id and sub.provider in ("stripe", "none", "manual"):
             return sub.provider_customer_id
         customer = self._request("POST", "/v1/customers", workspace_id=workspace.id, operation="Create customer",
@@ -98,7 +101,8 @@ class StripeProvider(PaymentProvider):
                                        "metadata[workspace_id]": str(workspace.id),
                                        "preferred_locales[0]": workspace.locale or "ar"})
         sub.provider_customer_id = customer["id"]
-        sub.provider = "stripe"
+        if billing_plan:
+            sub.provider = "stripe"
         db.flush()
         return customer["id"]
 
@@ -137,7 +141,7 @@ class StripeProvider(PaymentProvider):
 
     def checkout_credits(self, db, workspace, sub, pack: dict, user, success_url: str, cancel_url: str) -> str:
         """Hosted page for a one-time payment of an AI credit pack."""
-        customer = self._customer(db, workspace, sub, user)
+        customer = self._customer(db, workspace, sub, user, billing_plan=False)
         session = self._request("POST", "/v1/checkout/sessions", workspace_id=workspace.id,
                                 operation="Create credits checkout", data={
                                     "mode": "payment",
@@ -324,6 +328,8 @@ class StripeProvider(PaymentProvider):
         if event.type in ("invoice.payment_failed", "invoice.paid", "invoice.payment_succeeded"):
             subscription_id = obj.get("subscription") or (
                 ((obj.get("parent") or {}).get("subscription_details") or {}).get("subscription"))
+            if not subscription_id:
+                return None  # a one-time invoice (an AI credit pack): it never changes the plan
             sub = self._find(db, subscription_id=subscription_id, customer_id=obj.get("customer"),
                              workspace_id=((obj.get("subscription_details") or {}).get("metadata") or {}).get("workspace_id"))
             if sub is None or (subscription_id and sub.provider_subscription_id

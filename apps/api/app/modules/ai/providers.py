@@ -3,7 +3,7 @@ budgets, wallets, connection tests and balances. Used by the router, ``service.p
 
 Every function takes the workspace id and only ever touches rows of that workspace.
 """
-from datetime import UTC, datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session

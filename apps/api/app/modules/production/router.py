@@ -26,7 +26,6 @@ from .schemas import (
     ConnectIn,
     ConnectOut,
     DesignIn,
-    EdgeOut,
     FromMediaIn,
     FromPostIn,
     GraphOut,

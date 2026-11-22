@@ -8,12 +8,14 @@ Pure functions on bytes and a *spec* dict (no database) — ``service.frame_spec
         "box": (x, y, w, h),            # photo window, % of the canvas
         "fit": "cover" | "contain",
         "background": "#111111",
-        "text": {"x", "y", "w", "h", "size", "color", "align", "bold", "max_lines", "background", "default"} or None,
+        "text": {"x", "y", "w", "h", "size", "color", "align", "bold", "max_lines", "background", "default",
+                 "font": {"bold": "/path/brand.woff2", "regular": "..."} (optional brand font files)} or None,
         "logo": {"content": b"<png>", "position": "top_left", "size": 18} or None,
     }
 
 Arabic text is shaped right-to-left with RAQM (libraqm) and drawn with the bundled Tajawal font
-(Arabic + Latin + Arabic-Indic digits); system fonts are the fallback.
+(Arabic + Latin + Arabic-Indic digits); system fonts are the fallback. A text spec may name brand font files
+(``"font"``): they are used when they can draw every letter of the text, else Tajawal draws it.
 """
 import glob
 import io
@@ -100,14 +102,29 @@ def font_path(bold: bool = True) -> str | None:
     return found
 
 
-def load_font(size: int, bold: bool = True):
-    path = font_path(bold)
-    if path:
-        engine = ImageFont.Layout.RAQM if has_raqm() else ImageFont.Layout.BASIC
-        try:
-            return ImageFont.truetype(path, size, layout_engine=engine)
-        except OSError:
-            pass
+def brand_font_path(font, bold: bool, text: str | None) -> str | None:
+    """The brand font file to draw ``text`` with (``font`` = a path or {"bold": path, "regular": path}), or None
+    when there is none or it lacks a glyph of the text (then Tajawal draws it)."""
+    if not font:
+        return None
+    if isinstance(font, dict):
+        path = font.get("bold" if bold else "regular") or font.get("regular" if bold else "bold")
+    else:
+        path = str(font)
+    if not path or not os.path.isfile(path):
+        return None
+    from app.modules.brand.fonts import covers
+    return path if covers(path, text) else None
+
+
+def load_font(size: int, bold: bool = True, font=None, text: str | None = None):
+    engine = ImageFont.Layout.RAQM if has_raqm() else ImageFont.Layout.BASIC
+    for path in (brand_font_path(font, bold, text), font_path(bold)):
+        if path:
+            try:
+                return ImageFont.truetype(path, size, layout_engine=engine)
+            except OSError:
+                continue
     return ImageFont.load_default(size)
 
 
@@ -292,7 +309,7 @@ def _layout_text(draw, text: str, spec: dict, box, rtl: bool):
     max_lines = max(1, int(spec.get("max_lines") or 2))
     size = max(10, int(spec.get("size") or 64))
     while True:
-        font = load_font(size, spec.get("bold", True))
+        font = load_font(size, spec.get("bold", True), spec.get("font"), text)
         lines = _wrap(draw, text, font, w, rtl)
         line_h = int(size * 1.35)
         widths = [_measure(draw, line, font, rtl)[0] for line in lines]

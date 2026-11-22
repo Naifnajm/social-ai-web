@@ -105,6 +105,10 @@ def frame_spec(db: Session, template: BrandTemplate) -> dict:
                         "background": template.text_bg_color or None, "align": template.text_align or "auto",
                         "bold": template.text_bold, "max_lines": template.text_max_lines or 2,
                         "default": template.text_default or ""}
+        if kit:  # the kit's imported heading (bold text) or body font file, when it has one
+            from app.modules.brand import fonts as brand_fonts
+            files = brand_fonts.for_kit(db, kit)
+            spec["text"]["font"] = files.get("heading" if template.text_bold else "body") or files.get("body")
     if template.logo_enabled and kit and kit.logo_media_id:
         logo = db.get(Media, kit.logo_media_id)
         if logo and logo.workspace_id == template.workspace_id:
@@ -120,7 +124,8 @@ def fingerprint(db: Session, template: BrandTemplate, extra: str = "") -> str:
     """Changes whenever the result of this template would change (previews, production caches)."""
     kit = template_kit(db, template)
     values = [getattr(template, f) for f in SPEC_FIELDS]
-    values += [kit.id if kit else None, kit.color_primary if kit else None, kit.logo_media_id if kit else None, extra]
+    values += [kit.id if kit else None, kit.color_primary if kit else None, kit.logo_media_id if kit else None,
+               kit.font_heading if kit else None, kit.font_family if kit else None, extra]
     return hashlib.sha1(repr(values).encode()).hexdigest()
 
 

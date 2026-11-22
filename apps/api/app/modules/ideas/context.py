@@ -24,6 +24,10 @@ def _brand(db: Session, workspace: Workspace) -> dict:
     out = {"name": kit.name or workspace.name, "kit_id": kit.id, "colors": {
         "primary": kit.color_primary, "secondary": kit.color_secondary, "text": kit.color_text,
         "accent": kit.color_accent, "background": kit.color_background}, "logo_media_id": kit.logo_media_id}
+    from app.modules.brand import fonts as brand_fonts
+    files = brand_fonts.for_kit(db, kit)
+    if files:
+        out["fonts"] = files
     out.update({f: getattr(kit, f) for f in fields if getattr(kit, f, None)})
     return out
 

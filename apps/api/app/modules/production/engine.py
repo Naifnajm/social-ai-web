@@ -794,6 +794,8 @@ def _run_design(g: BoardGraph, node: Node) -> None:
     brand = {"name": kit.name if kit else "", "logo_media_id": kit.logo_media_id if kit else None,
              "colors": {"primary": kit.color_primary, "secondary": kit.color_secondary, "text": kit.color_text,
                         "accent": kit.color_accent} if kit else {}}
+    from app.modules.brand import fonts as brand_fonts
+    brand["fonts"] = brand_fonts.for_kit(g.db, kit)
     image = next((m for m in linked if media_kind(m) == "image"), None)
     photo = slides._photo(g.db, node.workspace_id, image.id) if image else None
     content = slides.render_slide({"title": clean_text(text)[:220]}, 0, 1, brand,

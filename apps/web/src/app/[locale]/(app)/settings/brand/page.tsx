@@ -34,6 +34,8 @@ import type { Shot } from "@/lib/ai";
 import { ApiError, api, mediaUrl } from "@/lib/api";
 import { contrast, extractPalette, paletteToKit, readableOn } from "@/lib/palette";
 import { useSession } from "@/lib/session";
+import { BrandHealth, type Suggestions, useFontFaces } from "@/components/brand/health";
+import { ImportDialog } from "@/components/brand/import-dialog";
 
 type BrandKit = {
   id: number; name: string; logo_media_id: number | null; logo_url: string | null; color_primary: string;
@@ -42,11 +44,12 @@ type BrandKit = {
   color_accent: string | null; color_background: string | null; font_heading: string | null; description: string | null;
   industry: string | null; audience: string | null; personality: string | null; language_style: string | null;
   emoji_style: string | null; cta: string | null; banned_words: string | null; sample_posts: string | null;
-  website: string | null; is_default: boolean; active: boolean;
+  website: string | null; is_default: boolean; active: boolean; logo_dark_media_id: number | null;
   guard_mode: GuardMode; photo_style: Shot | null; visual_rules: string | null;
 };
 type GuardMode = "off" | "guide" | "strict";
 type Form = Omit<BrandKit, "id" | "logo_url">;
+type KitFont = { id: number; family: string; weight: number; style: string; role: string; has_arabic: boolean | null; url: string };
 type Draft = Partial<Form>;
 type Options = { fonts: string[]; language_styles: string[]; emoji_styles: string[] };
 type Palette = { colors: string[]; background: string | null };
@@ -60,7 +63,7 @@ const EMPTY: Form = {
   font_family: "system-ui", tagline: "", tone: "", guidelines: "", hashtags: "", visual_style: "", voice: "",
   color_accent: null, color_background: null, font_heading: null, description: "", industry: "", audience: "",
   personality: "", language_style: null, emoji_style: null, cta: "", banned_words: "", sample_posts: "", website: "",
-  is_default: false, active: true, guard_mode: "guide", photo_style: null, visual_rules: "",
+  is_default: false, active: true, guard_mode: "guide", photo_style: null, visual_rules: "", logo_dark_media_id: null,
 };
 const TEXTS = ["tagline", "tone", "guidelines", "hashtags", "visual_style", "voice", "description", "industry", "audience",
   "personality", "cta", "banned_words", "sample_posts", "website", "visual_rules"] as const;
@@ -118,27 +121,28 @@ function KitPreview({ kit, small = false }: { kit: Form; small?: boolean }) {
   );
 }
 
-function ColorField({ label, value, onChange, optional }: { label: string; value: string | null; onChange: (v: string | null) => void; optional?: boolean }) {
+function ColorField({ label, value, onChange, optional, id }: { label: string; value: string | null; onChange: (v: string | null) => void; optional?: boolean; id?: string }) {
   return (
     <Field label={label}>
       <div className="flex items-center gap-2">
         <input type="color" value={isHex(value) ? value : "#000000"} onChange={(e) => onChange(e.target.value)}
           className="h-10 w-12 shrink-0 cursor-pointer rounded-xl border border-line bg-white/70 p-1" aria-label={label} />
-        <Input dir="ltr" value={value ?? ""} maxLength={9} placeholder={optional ? "—" : undefined}
+        <Input id={id} dir="ltr" value={value ?? ""} maxLength={9} placeholder={optional ? "—" : undefined}
           onChange={(e) => onChange(e.target.value || (optional ? null : ""))} className="font-mono" />
       </div>
     </Field>
   );
 }
 
-function FontField({ label, value, fonts, onChange, sample, allowEmpty }: {
-  label: string; value: string | null; fonts: string[]; onChange: (v: string | null) => void; sample: string; allowEmpty?: string;
+function FontField({ label, value, fonts, onChange, sample, allowEmpty, id }: {
+  label: string; value: string | null; fonts: string[]; onChange: (v: string | null) => void; sample: string; allowEmpty?: string; id?: string;
 }) {
   return (
     <div className="flex flex-col gap-2 rounded-2xl bg-white/55 p-3 ring-1 ring-line">
       <Field label={label}>
-        <Select value={value ?? ""} onChange={(e) => onChange(e.target.value || null)}>
+        <Select id={id} value={value ?? ""} onChange={(e) => onChange(e.target.value || null)}>
           {allowEmpty && <option value="">{allowEmpty}</option>}
+          {value && !fonts.includes(value) && <option value={value}>{fontLabel(value)}</option>}
           {fonts.map((f) => <option key={f} value={f}>{fontLabel(f)}</option>)}
         </Select>
       </Field>
@@ -166,6 +170,24 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
   const options = useQuery({ queryKey: ["brand-kits", "options"], queryFn: () => api.get<Options>("/brand-kits/options"), staleTime: Infinity });
   const fonts = options.data?.fonts ?? [form.font_family];
   const presets = t.raw("personalityPresets") as string[];
+  // the kit's imported font files (design system), loaded under their family names for the previews
+  const kitFonts = useQuery({ queryKey: ["brand-kits", kit?.id, "fonts"], queryFn: () => api.get<KitFont[]>(`/brand-kits/${kit!.id}/fonts`), enabled: !!kit });
+  useFontFaces((kitFonts.data ?? []).map((f) => ({ family: f.family, url: f.url, weight: f.weight, style: f.style })));
+  const brandFonts = [...new Set((kitFonts.data ?? []).map((f) => `'${f.family}', ${f.role === "heading" ? "serif" : "sans-serif"}`))];
+  const fontChoices = [...brandFonts.filter((f) => !fonts.includes(f)), ...fonts];
+  const jump = (field: string, target: string) => {
+    setTab((["basics", "look", "type", "voice", "rules", "guard"].includes(target) ? target : "basics") as Tab);
+    setTimeout(() => {
+      const el = document.getElementById(`bk-${field}`);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      (el as HTMLInputElement | null)?.focus?.();
+    }, 60);
+  };
+  const acceptSuggestions = (values: Suggestions) => {
+    const patch: Partial<Form> = {};
+    for (const [key, value] of Object.entries(values)) (patch as Record<string, unknown>)[key] = value;
+    set(patch);
+  };
   const traits = (form.personality ?? "").split(/[,،]/).map((s) => s.trim()).filter(Boolean);
 
   // An existing logo: read its colours once so they can be offered again.
@@ -248,7 +270,7 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
   return (
     <Modal open onClose={onClose} size="xl" title={kit ? kit.name : t("new")}
       footer={<><Button onClick={onClose}>{t("cancel")}</Button><Button variant="primary" loading={save.isPending} disabled={!form.name.trim()} onClick={() => save.mutate()}>{t("save")}</Button></>}>
-      <div className="grid gap-6 md:grid-cols-[1fr_240px]">
+      <div className="grid gap-6 md:grid-cols-[1fr_280px]">
         <div className="flex min-w-0 flex-col gap-4">
           {/* AI draft */}
           <div className="rounded-2xl bg-[linear-gradient(135deg,rgba(124,58,237,.08),rgba(236,72,153,.08))] p-4 ring-1 ring-[rgba(124,58,237,.22)]">
@@ -296,8 +318,8 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
                 <Field label={t("industry")}><Input className="bidi" value={form.industry ?? ""} placeholder={t("industryPlaceholder")} onChange={(e) => set({ industry: e.target.value })} /></Field>
                 <Field label={t("website")}><Input dir="ltr" value={form.website ?? ""} placeholder="https://" onChange={(e) => set({ website: e.target.value })} /></Field>
               </div>
-              <Field label={t("description")} hint={t("descriptionHint")}><Textarea rows={3} className="bidi" value={form.description ?? ""} onChange={(e) => set({ description: e.target.value })} /></Field>
-              <Field label={t("audience")} hint={t("audienceHint")}><Textarea rows={2} className="bidi" value={form.audience ?? ""} onChange={(e) => set({ audience: e.target.value })} /></Field>
+              <Field label={t("description")} hint={t("descriptionHint")}><Textarea id="bk-description" rows={3} className="bidi" value={form.description ?? ""} onChange={(e) => set({ description: e.target.value })} /></Field>
+              <Field label={t("audience")} hint={t("audienceHint")}><Textarea id="bk-audience" rows={2} className="bidi" value={form.audience ?? ""} onChange={(e) => set({ audience: e.target.value })} /></Field>
             </div>
           )}
 
@@ -309,9 +331,17 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={mediaUrl(form.logo_media_id)} alt="" className="h-14 w-14 rounded-xl bg-white object-contain p-1 ring-1 ring-line" />
                   ) : <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-fill-2 text-muted"><Icon name="image" size={22} /></span>}
-                  <Button size="sm" icon="upload" loading={uploading} onClick={() => fileRef.current?.click()}>{form.logo_media_id ? t("changeLogo") : t("uploadLogo")}</Button>
+                  <Button id="bk-logo_media_id" size="sm" icon="upload" loading={uploading} onClick={() => fileRef.current?.click()}>{form.logo_media_id ? t("changeLogo") : t("uploadLogo")}</Button>
                   {form.logo_media_id && <Button size="sm" variant="ghost" onClick={() => set({ logo_media_id: null })}>{t("removeLogo")}</Button>}
                   <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.target.value = ""; }} />
+                  {form.logo_dark_media_id && (
+                    <span id="bk-logo_dark_media_id" className="ms-auto flex items-center gap-2 rounded-xl bg-[#111] p-1.5 pe-2 text-xs text-white/80">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={mediaUrl(form.logo_dark_media_id)} alt="" className="h-10 w-16 object-contain" />
+                      <Icon name="dark_mode" size={14} />
+                      <IconButton icon="close" label={t("removeLogo")} className="!h-6 !w-6 text-white/70 hover:!bg-white/10" onClick={() => set({ logo_dark_media_id: null })} />
+                    </span>
+                  )}
                 </div>
               </Field>
               {palette && palette.colors.length > 0 && (
@@ -333,11 +363,11 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
                 </div>
               )}
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                <ColorField label={t("colorPrimary")} value={form.color_primary} onChange={(v) => setColor({ color_primary: v ?? "" })} />
-                <ColorField label={t("colorSecondary")} value={form.color_secondary} onChange={(v) => setColor({ color_secondary: v ?? "" })} />
-                <ColorField label={t("colorAccent")} value={form.color_accent} optional onChange={(v) => setColor({ color_accent: v })} />
-                <ColorField label={t("colorText")} value={form.color_text} onChange={(v) => setColor({ color_text: v ?? "" })} />
-                <ColorField label={t("colorBackground")} value={form.color_background} optional onChange={(v) => setColor({ color_background: v })} />
+                <ColorField id="bk-color_primary" label={t("colorPrimary")} value={form.color_primary} onChange={(v) => setColor({ color_primary: v ?? "" })} />
+                <ColorField id="bk-color_secondary" label={t("colorSecondary")} value={form.color_secondary} onChange={(v) => setColor({ color_secondary: v ?? "" })} />
+                <ColorField id="bk-color_accent" label={t("colorAccent")} value={form.color_accent} optional onChange={(v) => setColor({ color_accent: v })} />
+                <ColorField id="bk-color_text" label={t("colorText")} value={form.color_text} onChange={(v) => setColor({ color_text: v ?? "" })} />
+                <ColorField id="bk-color_background" label={t("colorBackground")} value={form.color_background} optional onChange={(v) => setColor({ color_background: v })} />
               </div>
               {ratio !== null && (
                 <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -345,22 +375,22 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
                   {ratio < 4.5 && <Button size="sm" variant="ghost" onClick={() => setColor({ color_text: readableOn(form.color_primary) })}>{t("fixContrast")}</Button>}
                 </div>
               )}
-              <Field label={t("visualStyle")} hint={t("visualStyleHint")}><Textarea rows={2} className="bidi" value={form.visual_style ?? ""} onChange={(e) => set({ visual_style: e.target.value })} /></Field>
+              <Field label={t("visualStyle")} hint={t("visualStyleHint")}><Textarea id="bk-visual_style" rows={2} className="bidi" value={form.visual_style ?? ""} onChange={(e) => set({ visual_style: e.target.value })} /></Field>
             </div>
           )}
 
           {tab === "type" && (
             <div className="grid gap-4 sm:grid-cols-2">
-              <FontField label={t("fontHeading")} value={form.font_heading} fonts={fonts} allowEmpty={t("sameAsText")}
+              <FontField id="bk-font_heading" label={t("fontHeading")} value={form.font_heading} fonts={fontChoices} allowEmpty={t("sameAsText")}
                 sample={form.tagline || form.name || t("fontSample")} onChange={(v) => set({ font_heading: v })} />
-              <FontField label={t("fontBody")} value={form.font_family} fonts={fonts}
+              <FontField id="bk-font_family" label={t("fontBody")} value={form.font_family} fonts={fontChoices}
                 sample={t("fontSample")} onChange={(v) => set({ font_family: v || "system-ui" })} />
             </div>
           )}
 
           {tab === "voice" && (
             <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
+              <div id="bk-personality" tabIndex={-1} className="flex flex-col gap-2 outline-none">
                 <span className="text-[13px] font-medium text-text-2">{t("personality")}</span>
                 <div className="flex flex-wrap gap-1.5">
                   {[...presets, ...traits.filter((w) => !presets.includes(w))].map((w) => (
@@ -375,20 +405,20 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
                 </div>
                 <span className="text-xs text-muted">{t("personalityHint")}</span>
               </div>
-              <Field label={t("tone")} hint={t("toneHint")}><Textarea rows={2} className="bidi" value={form.tone ?? ""} onChange={(e) => set({ tone: e.target.value })} /></Field>
+              <Field label={t("tone")} hint={t("toneHint")}><Textarea id="bk-tone" rows={2} className="bidi" value={form.tone ?? ""} onChange={(e) => set({ tone: e.target.value })} /></Field>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label={t("languageStyle")}>
-                  <Select value={form.language_style ?? ""} onChange={(e) => set({ language_style: e.target.value || null })}>
+                  <Select id="bk-language_style" value={form.language_style ?? ""} onChange={(e) => set({ language_style: e.target.value || null })}>
                     <option value="">{t("languageStyles.auto")}</option>
                     {(options.data?.language_styles ?? []).map((v) => <option key={v} value={v}>{t(`languageStyles.${v}`)}</option>)}
                   </Select>
                 </Field>
-                <div className="flex flex-col gap-1.5">
+                <div id="bk-emoji_style" tabIndex={-1} className="flex flex-col gap-1.5 outline-none">
                   <span className="text-[13px] font-medium text-text-2">{t("emojiStyle")}</span>
                   <Segmented size="sm" value={form.emoji_style ?? ""} onChange={(v) => set({ emoji_style: v || null })}
                     options={[{ value: "", label: t("emojiStyles.auto") }, ...(options.data?.emoji_styles ?? []).map((v) => ({ value: v, label: t(`emojiStyles.${v}`) }))]} />
                 </div>
-                <Field label={t("cta")}><Input className="bidi" value={form.cta ?? ""} placeholder={t("ctaPlaceholder")} onChange={(e) => set({ cta: e.target.value })} /></Field>
+                <Field label={t("cta")}><Input id="bk-cta" className="bidi" value={form.cta ?? ""} placeholder={t("ctaPlaceholder")} onChange={(e) => set({ cta: e.target.value })} /></Field>
                 <Field label={t("voice")} hint={t("voiceHint")}><Input dir="ltr" value={form.voice ?? ""} onChange={(e) => set({ voice: e.target.value })} /></Field>
               </div>
             </div>
@@ -396,19 +426,19 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
 
           {tab === "rules" && (
             <div className="flex flex-col gap-4">
-              <Field label={t("guidelines")} hint={t("guidelinesHint")}><Textarea rows={4} className="bidi" value={form.guidelines ?? ""} placeholder={t("guidelinesPlaceholder")} onChange={(e) => set({ guidelines: e.target.value })} /></Field>
+              <Field label={t("guidelines")} hint={t("guidelinesHint")}><Textarea id="bk-guidelines" rows={4} className="bidi" value={form.guidelines ?? ""} placeholder={t("guidelinesPlaceholder")} onChange={(e) => set({ guidelines: e.target.value })} /></Field>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={t("bannedWords")} hint={t("bannedWordsHint")}><Input className="bidi" value={form.banned_words ?? ""} onChange={(e) => set({ banned_words: e.target.value })} /></Field>
-                <Field label={t("hashtags")}><Input className="bidi" value={form.hashtags ?? ""} onChange={(e) => set({ hashtags: e.target.value })} placeholder="#brand #city" /></Field>
+                <Field label={t("bannedWords")} hint={t("bannedWordsHint")}><Input id="bk-banned_words" className="bidi" value={form.banned_words ?? ""} onChange={(e) => set({ banned_words: e.target.value })} /></Field>
+                <Field label={t("hashtags")}><Input id="bk-hashtags" className="bidi" value={form.hashtags ?? ""} onChange={(e) => set({ hashtags: e.target.value })} placeholder="#brand #city" /></Field>
               </div>
-              <Field label={t("samplePosts")} hint={t("samplePostsHint")}><Textarea rows={5} className="bidi" value={form.sample_posts ?? ""} onChange={(e) => set({ sample_posts: e.target.value })} /></Field>
+              <Field label={t("samplePosts")} hint={t("samplePostsHint")}><Textarea id="bk-sample_posts" rows={5} className="bidi" value={form.sample_posts ?? ""} onChange={(e) => set({ sample_posts: e.target.value })} /></Field>
             </div>
           )}
 
           {tab === "guard" && (
             <div className="flex flex-col gap-4">
               <p className="text-sm text-text-2">{t("guard.intro")}</p>
-              <div className="flex flex-col gap-1.5">
+              <div id="bk-guard_mode" tabIndex={-1} className="flex flex-col gap-1.5 outline-none">
                 <span className="text-[13px] font-medium text-text-2">{t("guard.mode")}</span>
                 <div role="radiogroup" aria-label={t("guard.mode")} className="grid gap-1 rounded-2xl bg-track p-1 sm:grid-cols-3">
                   {GUARD_MODES.map((m) => {
@@ -426,11 +456,11 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
                   })}
                 </div>
               </div>
-              <CameraPanel kind="all" defaultOpen value={form.photo_style} onChange={(photo_style) => set({ photo_style })}
+              <div id="bk-photo_style" tabIndex={-1} className="outline-none"><CameraPanel kind="all" defaultOpen value={form.photo_style} onChange={(photo_style) => set({ photo_style })}
                 label={t("guard.photoStyle")} hint={form.guard_mode === "strict" ? t("guard.photoStyleStrict") : t("guard.photoStyleGuide")}
-                emptyText={t("guard.photoStyleNone")} />
+                emptyText={t("guard.photoStyleNone")} /></div>
               <Field label={t("guard.visualRules")} hint={t("guard.visualRulesHint")}>
-                <Textarea rows={4} className="bidi" value={form.visual_rules ?? ""} placeholder={t("guard.visualRulesPlaceholder")}
+                <Textarea id="bk-visual_rules" rows={4} className="bidi" value={form.visual_rules ?? ""} placeholder={t("guard.visualRulesPlaceholder")}
                   onChange={(e) => set({ visual_rules: e.target.value })} />
               </Field>
             </div>
@@ -442,9 +472,14 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
           </div>
         </div>
         <div className="order-first md:order-none">
-          <div className="sticky top-0 mx-auto max-w-[240px]">
+          <div className={cx("mx-auto max-w-[280px]", !kit && "sticky top-0")}>
             <div className="mb-2 text-[13px] font-medium text-text-2">{t("preview")}</div>
             <KitPreview kit={form} />
+            {kit && (
+              <div className="mt-4 rounded-2xl bg-white/60 p-3 ring-1 ring-line">
+                <BrandHealth kitId={kit.id} onFix={jump} onAccept={acceptSuggestions} />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -456,10 +491,17 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
 
 export default function BrandKitsPage() {
   const t = useTranslations("ai.brand");
+  const ti = useTranslations("brandkit.import");
   const qc = useQueryClient();
   const isAdmin = useSession((s) => s.can("admin"));
   const kits = useQuery({ queryKey: ["brand-kits"], queryFn: () => api.get<BrandKit[]>("/brand-kits") });
   const [editing, setEditing] = useState<BrandKit | null | "new">(null);
+  const [importing, setImporting] = useState(false);
+  const openImported = async (ref: { id: number }) => {
+    setImporting(false);
+    await qc.invalidateQueries({ queryKey: ["brand-kits"] });
+    try { setEditing(await api.get<BrandKit>(`/brand-kits/${ref.id}`)); } catch (err) { onError(err); }
+  };
   const [toDelete, setToDelete] = useState<BrandKit | null>(null);
   const makeDefault = useMutation({ mutationFn: (id: number) => api.post(`/brand-kits/${id}/default`), onSuccess: () => qc.invalidateQueries({ queryKey: ["brand-kits"] }), onError });
   const remove = useMutation({
@@ -470,13 +512,21 @@ export default function BrandKitsPage() {
   return (
     <div className="flex flex-col gap-4">
       <Card>
-        <SectionTitle icon="branding" actions={isAdmin && <Button variant="primary" size="sm" icon="add" onClick={() => setEditing("new")}>{t("new")}</Button>}>
+        <SectionTitle icon="branding" actions={isAdmin && <>
+          <Button size="sm" icon="data_object" onClick={() => setImporting(true)}>{ti("button")}</Button>
+          <Button variant="primary" size="sm" icon="add" onClick={() => setEditing("new")}>{t("new")}</Button>
+        </>}>
           {t("title")}
         </SectionTitle>
         <p className="-mt-1 mb-4 text-sm text-muted">{t("subtitle")}</p>
         {kits.isLoading ? <div className="py-8 text-center"><Spinner /></div> : !kits.data?.length ? (
           <EmptyState icon="palette" title={t("emptyTitle")} text={t("emptyText")}
-            action={isAdmin && <Button variant="primary" icon="wand_stars" onClick={() => setEditing("new")}>{t("newWithAi")}</Button>} />
+            action={isAdmin && (
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Button variant="primary" icon="wand_stars" onClick={() => setEditing("new")}>{t("newWithAi")}</Button>
+                <Button icon="data_object" onClick={() => setImporting(true)}>{ti("emptyOption")}</Button>
+              </div>
+            )} />
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {kits.data.map((kit) => (
@@ -516,7 +566,8 @@ export default function BrandKitsPage() {
         <SectionTitle icon="lightbulb">{t("usedForTitle")}</SectionTitle>
         <p>{t("usedFor")}</p>
       </Card>
-      {editing && <KitDialog kit={editing === "new" ? null : editing} onClose={() => setEditing(null)} />}
+      {editing && <KitDialog key={editing === "new" ? "new" : editing.id} kit={editing === "new" ? null : editing} onClose={() => setEditing(null)} />}
+      {importing && <ImportDialog kits={kits.data ?? []} onClose={() => setImporting(false)} onDone={openImported} />}
       <Modal open={!!toDelete} onClose={() => setToDelete(null)} title={t("deleteTitle")} size="sm"
         footer={<><Button onClick={() => setToDelete(null)}>{t("cancel")}</Button><Button variant="danger" loading={remove.isPending} onClick={() => toDelete && remove.mutate(toDelete.id)}>{t("delete")}</Button></>}>
         <p className="text-sm text-text-2">{t("deleteText", { name: toDelete?.name ?? "" })}</p>

@@ -23,6 +23,7 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.core.crypto import decrypt, encrypt
 from app.core.http import ApiError, call
+from app.core.i18n import _
 from app.modules.workspaces.settings import get_setting, set_setting
 
 GRAPH = "https://graph.facebook.com"
@@ -288,7 +289,8 @@ def _exchange_meta(db, workspace_id, client_id, secret, code, verifier):
                 "extra": {"page_id": page["id"]},
             })
     if not accounts:
-        raise ApiError("No Facebook Page was shared with the app. Re-connect and select at least one Page.")
+        raise ApiError(_("No Facebook Page was shared with the app. Connect again and select at least one Page "
+                         "(and, for Instagram, the Page your Instagram account is linked to)."))
     return accounts
 
 

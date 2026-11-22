@@ -179,6 +179,7 @@ class OAuthSession(WorkspaceMixin, Base):
 
     state_token: Mapped[str] = mapped_column(String(80), unique=True, index=True)
     platform: Mapped[str] = mapped_column(String(20))
+    requested: Mapped[str | None] = mapped_column(String(20))  # what the person clicked (instagram → facebook login)
     code_verifier: Mapped[str | None] = mapped_column(EncryptedString(400))
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     app_source: Mapped[str] = mapped_column(String(12), default="platform")  # workspace | platform

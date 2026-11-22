@@ -146,6 +146,7 @@ def _start(ctx: Ctx, platform: str) -> OAuthStartOut:
         raise AppError(_("Set up the {brand} app first, or connect with an access token.",
                          brand=oauth.SETUP_GUIDES[key]["brand"]), code="oauth_not_configured")
     session = OAuthSession(workspace_id=ctx.workspace.id, state_token=secrets.token_urlsafe(32), platform=key,
+                           requested=platform if platform != key else None,
                            code_verifier=oauth.new_verifier(), user_id=ctx.user.id, app_source=source,
                            locale=ctx.user.locale or "ar")
     ctx.db.add(session)

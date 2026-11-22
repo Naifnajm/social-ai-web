@@ -164,5 +164,7 @@
  "This Pinterest account has no board. Create a board on Pinterest first.": "حساب Pinterest هذا ليس فيه أي لوحة. أنشئ لوحة على Pinterest أولًا.",
  "This Pinterest account has no board. Create a board on Pinterest, then test the connection again.": "حساب Pinterest هذا ليس فيه أي لوحة. أنشئ لوحة على Pinterest ثم اختبر الاتصال من جديد.",
  "Pinterest accepts JPEG, PNG or WebP images.": "يقبل Pinterest صور JPEG أو PNG أو WebP.",
- "The connection could not be checked.": "تعذّر التحقق من الاتصال."
+ "The connection could not be checked.": "تعذّر التحقق من الاتصال.",
+ "No Facebook Page was shared with the app. Connect again and select at least one Page (and, for Instagram, the Page your Instagram account is linked to).": "لم تتم مشاركة أي صفحة فيسبوك مع التطبيق. اربط من جديد واختر صفحة واحدة على الأقل (ولإنستغرام: الصفحة المرتبط بها حساب إنستغرام).",
+ "No Instagram account came with this connection. Instagram must be a Professional account (Business or Creator) linked to one of the Facebook Pages you selected. Link it in the Instagram app (Settings › Account type and tools), then connect again.": "لم يصل أي حساب إنستغرام مع هذا الربط. يجب أن يكون حساب إنستغرام احترافيًا (أعمال أو صانع محتوى) ومرتبطًا بإحدى صفحات فيسبوك التي اخترتها. اربطه من تطبيق إنستغرام (الإعدادات › نوع الحساب والأدوات) ثم اربط من جديد."
 }

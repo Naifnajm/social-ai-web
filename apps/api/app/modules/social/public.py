@@ -43,6 +43,7 @@ def oauth_callback(state: str | None = None, code: str | None = None, error: str
             db.delete(session)
         return _back(locale, error=_("This connection link has expired. Please start again."))
     platform, verifier, source = session.platform, session.code_verifier, session.app_source
+    requested = session.requested or platform
     workspace_id, user_id = session.workspace_id, session.user_id
     db.delete(session)  # single use
     db.flush()
@@ -71,4 +72,10 @@ def oauth_callback(state: str | None = None, code: str | None = None, error: str
         db.rollback()
         _logger.exception("OAuth callback failed")
         return _back(locale, error=_("Unexpected error while connecting the account. See the API logs."))
+    if requested == "instagram" and not any(a.platform == "instagram" for a in accounts):
+        # Meta shares Pages but no Instagram: the most common reason a person thinks "Instagram did not connect"
+        return _back(locale, connected=len(accounts), platform=platform, error=_(
+            "No Instagram account came with this connection. Instagram must be a Professional account (Business "
+            "or Creator) linked to one of the Facebook Pages you selected. Link it in the Instagram app (Settings › "
+            "Account type and tools), then connect again."))
     return _back(locale, connected=len(accounts), platform=platform)

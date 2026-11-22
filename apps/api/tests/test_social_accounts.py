@@ -1,6 +1,6 @@
 """Accounts API: OAuth (workspace app or platform-wide app), state handling, manual tokens, tests, isolation."""
 from datetime import timedelta
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote_plus, urlparse
 
 import pytest
 from sqlalchemy import select
@@ -250,3 +250,20 @@ def test_refresh_tokens_task(db, auth, mock_http, monkeypatch):
     assert tasks.refresh_tokens() == 1
     assert soon.access_token == "fresh" and soon.state == "connected"
     assert dead.state == "expired" and "reconnect" in dead.last_error.lower()
+
+
+def test_instagram_that_does_not_come_with_meta_login_is_explained(client, auth, db, mock_http):
+    client.put("/api/accounts/oauth/apps/facebook", json={"client_id": "app42", "client_secret": "s3cret"},
+               headers=auth.headers)
+    params = _query(client.post("/api/accounts/oauth/start", json={"platform": "instagram"},
+                                headers=auth.headers).json()["url"])
+
+    def handler(method, url, kw):
+        if url.endswith("/oauth/access_token"):
+            return mock_http.response(200, {"access_token": "user-token"})
+        return mock_http.response(200, {"data": [{"id": "p1", "name": "My Page", "access_token": "page-token"}]})
+
+    mock_http(handler)
+    r = client.get(f"/oauth/callback?state={params['state']}&code=c", follow_redirects=False)
+    location = r.headers["location"]
+    assert "connected=1" in location and "error=" in location and "Professional" in unquote_plus(location)

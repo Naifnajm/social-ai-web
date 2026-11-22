@@ -24,8 +24,43 @@ first.
 
 ## After the first start
 
-- Platform admin: `docker compose -f docker-compose.yml -f deploy/server/docker-compose.server.yml exec api python -m app.modules.billing.cli create-superadmin you@example.com`
+- Platform admin: see "Platform administrator account and password" below.
 - Backups: add the cron line from `backup.sh`.
+
+## Platform administrator account and password
+
+Run these on the server from the repository folder (`cd /opt/stravica-social`). The API service of the compose
+project is called `api`; its image has `python` (and `uv`) with the app installed, so `python -m` works directly.
+`docker compose exec` gives the command a terminal, so passwords are typed at a hidden prompt: they never appear on
+screen, in the shell history or in any log.
+
+```bash
+cd /opt/stravica-social
+DC="docker compose -f docker-compose.yml -f deploy/server/docker-compose.server.yml"
+
+# Is there an active platform administrator? (their e-mails and last sign-in)
+$DC exec api python -m app.modules.billing.cli check
+
+# First time: create your administrator account (asks for the password twice)
+$DC exec api python -m app.modules.billing.cli create-superadmin you@example.com --name "Your name"
+
+# Set or reset the password of any account (asks twice; signs that account out everywhere, marks the e-mail
+# confirmed). Rules: at least 12 characters, not a common password, not like the e-mail address.
+$DC exec api python -m app.modules.billing.cli set-password you@example.com
+
+# Or let the server generate a strong password, printed once (store it in a password manager)
+$DC exec api python -m app.modules.billing.cli set-password you@example.com --generate
+
+# Other administrators
+$DC exec api python -m app.modules.billing.cli list-superadmins
+$DC exec api python -m app.modules.billing.cli create-superadmin colleague@example.com   # existing account: promoted
+$DC exec api python -m app.modules.billing.cli revoke-superadmin colleague@example.com   # never the last active one
+```
+
+`--password …` still works for scripts but prints a warning: the value stays in the shell history. After signing
+in, turn on two-step sign-in in Account › Security. Then everything about users is in Admin › Users (search and
+filters, CSV, per-user page with workspaces, keys, apps, activity; temporary password, reset e-mail, sign out
+everywhere, revoke keys and apps, memberships and ownership transfer, "view as" for 30 minutes, export, delete).
 
 Update later: `cd /opt/stravica-social && git pull && bash deploy/server/deploy.sh`.
 Roll back: `git checkout <previous commit> && bash deploy/server/deploy.sh`; restore data with

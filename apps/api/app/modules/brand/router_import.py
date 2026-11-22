@@ -4,6 +4,7 @@
     GET  /brand-kits/import/{id}/file    one file of the upload (logo / image / font preview; SVG sanitised)
     POST /brand-kits/import/commit       {import_id, brand_kit_id|null, fields, assets, make_default} -> kit + health
     GET  /brand-kits/{id}/completeness   brand health of a kit
+    POST /brand-kits/completeness/preview {brand_kit_id?, values} -> brand health of unsaved form values
     POST /brand-kits/{id}/suggest        {fields: [...]} -> AI suggestions (nothing saved)
     GET  /brand-kits/{id}/fonts          imported font files of the kit;  DELETE …/fonts/{font_id}
 
@@ -121,6 +122,7 @@ def build_draft(ctx: Ctx, filename: str, bundle: dict, kit: BrandKit | None) -> 
         "families": found["families"], "fonts": found["fonts"], "logos": found["logos"],
         "logo_primary": found["logo_primary"], "logo_dark": found["logo_dark"], "imagery": found["imagery"],
         "docs": found["docs"], "components": found["components"], "ignored": bundle["ignored"],
+        "missing_fonts": found["missing_fonts"], "missing_assets": found["missing_assets"],
         "tokens": {"colours": len(found["colours"]), "spacing": found["spacing"], "radius": found["radius"],
                    "shadow": found["shadow"]},
         "book_source": book_source if book else None,
@@ -299,6 +301,42 @@ def import_commit(data: ImportCommit, ctx: Ctx = Depends(workspace_ctx(Role.admi
 @router.get("/{kit_id}/completeness")
 def kit_completeness(kit_id: int, ctx: Ctx = Depends(workspace_ctx())):
     return completeness.for_kit(ctx.db, service.get_kit(ctx.db, ctx.workspace.id, kit_id))
+
+
+class CompletenessPreview(BaseModel):
+    brand_kit_id: int | None = None
+    values: dict = Field(default_factory=dict)
+
+
+PREVIEW_TEXT_MAX = 20000
+
+
+def _preview_value(key: str, value):
+    if key in ("logo_media_id", "logo_dark_media_id"):
+        return value if isinstance(value, int) and not isinstance(value, bool) else None
+    if key == "photo_style":
+        return value if isinstance(value, dict) else None
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        value = str(value)
+    return value[:PREVIEW_TEXT_MAX] if isinstance(value, str) else None
+
+
+@router.post("/completeness/preview")
+def completeness_preview(data: CompletenessPreview, ctx: Ctx = Depends(workspace_ctx())):
+    """Brand health of unsaved form values (the kit's saved values and font files fill the rest)."""
+    kit = service.get_kit(ctx.db, ctx.workspace.id, data.brand_kit_id) if data.brand_kit_id else None
+    names = completeness.kit_values(kit) if kit else dict.fromkeys(completeness.kit_values(BrandKit()))
+    values = {**names, **{k: _preview_value(k, v) for k, v in data.values.items() if k in names}}
+    for key in ("logo_media_id", "logo_dark_media_id"):  # a logo counts only when it is a file of this workspace
+        if values.get(key) and (not kit or values[key] != getattr(kit, key)):
+            media = ctx.db.get(Media, values[key])
+            if not media or media.workspace_id != ctx.workspace.id:
+                values[key] = None
+    workspace = ctx.db.get(Workspace, ctx.workspace.id)
+    facts = completeness.kit_facts(ctx.db, kit) if kit else {"fonts": []}
+    facts["arabic_needed"] = completeness.arabic_needed(workspace.locale if workspace else None,
+                                                        values.get("language_style"))
+    return completeness.report(values, facts)
 
 
 SUGGEST_SYSTEM = (

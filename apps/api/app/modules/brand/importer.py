@@ -513,14 +513,20 @@ def _logo_variant(path: str, content: bytes) -> tuple[str, dict]:
     stem = PurePosixPath(path).stem.lower()
     words = set(_parts(stem)) | {stem.replace("-", "").replace("_", "")}
     joined = stem.replace("-", "").replace("_", "")
-    info = {} if _ext(path) == "svg" else _image_info(content)
+    if _ext(path) == "svg":  # judged on a small rasterized copy when a rasterizer is installed
+        png = svg.rasterize(content, 256, 256)
+        info = _image_info(png) if png else {}
+        width, height = svg.intrinsic_size(svg.sanitize(content) or b"")
+        info.update({"width": width, "height": height})
+    else:
+        info = _image_info(content)
     if info.get("dark_background"):
         return "composite", info
     if words & DARK_WORDS or any(w in joined for w in ("onblack", "ondark", "white", "reverse", "negative")):
         return "dark", info
     if words & MONO_WORDS:
         return "mono", info
-    if _ext(path) == "svg":
+    if _ext(path) == "svg" and "ink_light" not in info:
         light = svg.is_light(content)
         return ("dark" if light else "light"), info
     if info.get("ink_light"):
@@ -531,9 +537,31 @@ def _logo_variant(path: str, content: bytes) -> tuple[str, dict]:
 def _logo_rank(logo: dict, order: list[str]) -> tuple:
     words = set(_parts(PurePosixPath(logo["key"]).stem))
     name = PurePosixPath(logo["key"]).name
-    return (0 if logo["mimetype"] != "image/svg+xml" else 1,
+    vector = logo["mimetype"] == "image/svg+xml"
+    # SVG first (sharp at every size) when the app can rasterize it for designs, else a raster file first
+    return (0 if vector == svg.can_rasterize() else 1,
             0 if words & {"primary", "wordmark", "logo", "full", "color", "colour", "main"} else 1,
             order.index(name) if name in order else len(order), len(name))
+
+
+def _missing_assets(groups: dict, files: dict[str, bytes]) -> list[dict]:
+    """Files that ``design-system.json`` lists in its asset groups (``order``) but the upload does not contain."""
+    names: dict[str, set[str]] = {}
+    for path in files:
+        names.setdefault(PurePosixPath(path).name.lower(), set()).add(_asset_group(path).lower())
+    missing = []
+    for group_name, group in groups.items():
+        if not isinstance(group, dict):
+            continue
+        label = str(group.get("name") or group_name)[:80]
+        for item in group.get("order") or []:
+            name = PurePosixPath(str(item)).name
+            if not name or _ext(name) not in ALLOWED:
+                continue
+            found = names.get(name.lower())
+            if not found:
+                missing.append({"group": label, "name": name[:200]})
+    return missing
 
 
 def analyse(bundle: dict) -> dict:
@@ -563,10 +591,13 @@ def analyse(bundle: dict) -> dict:
     type_data = tokens_data.get("type") if isinstance(tokens_data.get("type"), dict) else {}
     if isinstance(type_data.get("families"), dict):
         families.update({str(k): str(v) for k, v in type_data["families"].items() if isinstance(v, str)})
+    missing_fonts: list[str] = []
     for item in type_data.get("fonts") or []:
         if isinstance(item, dict) and item.get("file"):
             listed_fonts += 1
             key = lower.get(str(item["file"]).lstrip("./").lower())
+            if not key:
+                missing_fonts.append(str(item["file"]).lstrip("./")[:200])
             if key:
                 font_meta[key] = {"family": str(item.get("family") or "")[:120],
                                   "weight": font_tools.weight_of(str(item.get("weight") or ""), key),
@@ -630,10 +661,11 @@ def analyse(bundle: dict) -> dict:
         if not facts:
             warnings.append({"code": "font_unreadable", "message": _(
                 "The font file {name} cannot be read and is skipped.", name=PurePosixPath(key).name)})
-    missing_fonts = listed_fonts - len([k for k in font_meta if k in files])
-    if missing_fonts > 0:
+    missing_fonts = list(dict.fromkeys(missing_fonts))
+    if missing_fonts:
         warnings.append({"code": "fonts_missing", "message": _(
-            "{count} font files listed in tokens.json are not in the upload.", count=missing_fonts)})
+            "{count} font files listed in tokens.json are not in the upload.", count=len(missing_fonts)),
+            "files": missing_fonts[:40]})
     if not font_files and (heading_family or body_family):
         warnings.append({"code": "no_font_files", "message": _(
             "The fonts are named but their files are not included; designs use Tajawal until you add them.")})
@@ -644,6 +676,11 @@ def analyse(bundle: dict) -> dict:
     for name, group in groups.items():
         if isinstance(group, dict) and "logo" in str(name).lower():
             logo_order += [str(x) for x in group.get("order") or []]
+    missing_assets = _missing_assets(groups, files)
+    if missing_assets:
+        warnings.append({"code": "assets_missing", "message": _(
+            "{count} files listed in design-system.json are not in the upload.", count=len(missing_assets)),
+            "files": [f"{x['group']}/{x['name']}" for x in missing_assets[:40]]})
     logos, imagery = [], []
     for key in sorted(p for p in files if _ext(p) in IMAGE_EXT):
         content = files[key]
@@ -672,7 +709,7 @@ def analyse(bundle: dict) -> dict:
     if logos and not light and not mono:
         warnings.append({"code": "no_light_logo", "message": _(
             "Only a logo for dark backgrounds was found; add the version for light backgrounds.")})
-    if primary_logo and primary_logo[0]["mimetype"] == "image/svg+xml":
+    if primary_logo and primary_logo[0]["mimetype"] == "image/svg+xml" and not svg.can_rasterize():
         warnings.append({"code": "svg_logo", "message": _(
             "The main logo is an SVG: it is kept, but designs drawn by the app need a PNG version.")})
 
@@ -692,7 +729,8 @@ def analyse(bundle: dict) -> dict:
         "font_body": font_tools.css_stack(body_family, _generic(body_stack)) if body_family else None,
         "fonts": font_files, "logos": logos, "logo_primary": primary_logo[0]["key"] if primary_logo else None,
         "logo_dark": dark_logo[0]["key"] if dark_logo else None, "imagery": imagery, "docs": docs, "text": text,
-        "components": components, "warnings": warnings,
+        "components": components, "warnings": warnings, "missing_fonts": missing_fonts[:80],
+        "missing_assets": missing_assets[:200],
         "has_tokens": bool(colours or families), "spacing": _count(tokens_data, "spacing"),
         "radius": _count(tokens_data, "radius"), "shadow": _count(tokens_data, "shadow"),
     }
@@ -793,12 +831,130 @@ def _quotes(value: str) -> list[str]:
     return [q.strip(" .") for q in re.findall(r"[\"“]([^\"”]{2,80})[\"”]", value)]
 
 
+# ---------------------------------------------------------------------------- industry and audience (no AI)
+INDUSTRY_LABELS = {"industry", "sector", "field", "business", "category", "القطاع", "المجال", "مجال العمل", "النشاط"}
+AUDIENCE_LABELS = {"audience", "target audience", "our audience", "who we serve", "who it is for", "who it's for",
+                   "who we are for", "customers", "our customers", "clients", "our clients", "target group",
+                   "الجمهور", "الجمهور المستهدف", "جمهورنا", "عملاؤنا", "عملاؤنا المستهدفون", "لمن نعمل", "الفئة المستهدفة"}
+BUSINESS_NOUNS = ("agency", "studio", "company", "firm", "consultancy", "collective", "startup", "start-up",
+                  "platform", "marketplace", "brand", "label", "shop", "store", "boutique", "bakery", "café", "cafe",
+                  "coffee shop", "coffee roastery", "roastery", "restaurant", "clinic", "practice", "school", "academy",
+                  "publisher", "magazine", "podcast", "foundation", "nonprofit", "non-profit", "charity", "hotel",
+                  "gym", "salon", "atelier", "bureau", "manufacturer", "retailer")
+AR_BUSINESS = ("وكالة", "شركة", "استوديو", "مكتب", "منصة", "متجر", "مطعم", "مقهى", "محمصة", "عيادة", "علامة تجارية",
+               "مؤسسة", "أكاديمية", "مدرسة", "دار", "مخبز", "صالون", "فندق", "مختبر", "مجموعة")
+AR_STOP = {"في", "بين", "من", "على", "إلى", "الى", "عن", "مع", "التي", "الذي", "اللذين", "تعمل", "نعمل", "تقدم", "نقدم",
+           "تساعد", "نساعد", "لـ", "و", "أو", "منذ"}
+_NOUN_RE = "|".join(re.escape(n) for n in sorted(BUSINESS_NOUNS, key=len, reverse=True))
+# "we are a strategic creative agency", "Acme is an independent coffee roastery" (first sentence only)
+INDUSTRY_SENTENCE = re.compile(
+    r"\b(?:we are|we're|is)\s+an?\s+((?:[A-Za-z][\w&-]*\s+){0,4}?(?:" + _NOUN_RE + r"))(?![\w-])", re.I)
+AUDIENCE_SENTENCE = re.compile(
+    r"\b(?:we (?:serve|work with|design for|make (?:it|things) for)|built for|made for|designed for|"
+    r"our (?:customers|clients|audience) (?:are|is|include))\s+([^.;:!?\n]{4,160})", re.I)
+AR_AUDIENCE_SENTENCE = re.compile(r"(?:نخدم|نعمل مع|جمهورنا هو|جمهورنا هم|عملاؤنا هم|عملاؤنا من)\s+([^.؛:!؟\n]{4,160})")
+VAGUE = re.compile(r"^(everyone|anyone|all|people|you|the world|everybody|الجميع|كل الناس)\b", re.I)
+
+
+def _short(value: str, words: int) -> str | None:
+    value = _plain(value).strip(" .,:;-–—")
+    if not value or len(value.split()) > words or len(value) > 120 or re.search(r"[`{}<>|=]", value):
+        return None
+    return value
+
+
+def _first_sentence(value: str) -> str:
+    return re.split(r"(?<=[.!?؟])\s+|\n\n", _plain(value).strip(), maxsplit=1)[0].strip()
+
+
+def _industry_from_sentence(sentence: str) -> str | None:
+    match = INDUSTRY_SENTENCE.search(sentence)
+    if match:
+        phrase = match.group(1).strip()
+        if not re.search(r"\b(not|never|no|like|than)\b", phrase, re.I):
+            return _short(phrase, 5)
+    for noun in AR_BUSINESS:
+        m = re.search(r"(?:^|\s)(?:نحن|إننا|هي|هو)\s+(" + re.escape(noun) + r"(?:\s+[\u0600-\u06FF]+){0,2})", sentence)
+        if m:
+            words = m.group(1).split()
+            kept = []
+            for word in words:
+                # a verb ("تعمل", "نقدم") ends the noun phrase; adjectives end in ة / ي ("تسويقية")
+                if word in AR_STOP or (kept and word.startswith(("ت", "ن", "ي")) and not word.endswith(("ة", "ي"))):
+                    break
+                kept.append(word)
+            return _short(" ".join(kept), 4)
+    return None
+
+
+def _audience_from_text(value: str) -> str | None:
+    value = _plain(value).strip(" .,:;-–—")
+    if not value or VAGUE.match(value) or len(value) < 4:
+        return None
+    return value[:300].rsplit(" ", 1)[0] if len(value) > 300 else value
+
+
+def _industry_and_audience(sections: list[tuple[str, str]], intro: str) -> dict:
+    """Industry and audience from labels ("Industry: …", "الجمهور: …"), headings of those names, and plain
+    sentences ("We are a … agency", "built for …", "نحن وكالة …"). Prefers nothing over a wrong guess."""
+    out: dict = {}
+    for heading, body in sections:
+        last = heading.rsplit(" / ", 1)[-1].strip(" :#").lower()
+        lines = _bullets(body) or [_plain(x) for x in body.split("\n") if x.strip()]
+        for line in lines:
+            label, _sep, rest = line.replace("：", ":").partition(":")
+            low = _plain(label).strip(" *").lower()
+            if not rest.strip():
+                continue
+            if low in INDUSTRY_LABELS and "industry" not in out:
+                value = _short(_first_sentence(rest), 8)
+                if value:
+                    out["industry"] = value
+            elif low in AUDIENCE_LABELS and "audience" not in out:
+                value = _audience_from_text(rest)
+                if value:
+                    out["audience"] = value
+        if last in INDUSTRY_LABELS and "industry" not in out and body:
+            value = _short(_first_sentence(body), 8)
+            if value:
+                out["industry"] = value
+        if last in AUDIENCE_LABELS and "audience" not in out and body:
+            bullets = _bullets(body)
+            value = ", ".join(b.rstrip(".") for b in bullets[:6]) if bullets else " ".join(
+                re.split(r"(?<=[.!?؟])\s+", _plain(body))[:2])
+            value = _audience_from_text(value)
+            if value:
+                out["audience"] = value
+    about = "\n\n".join([intro or ""] + [b for h, b in sections if re.search(
+        r"\b(about|who we are|overview|introduction|company)\b|من نحن|عن الشركة|نبذة", h.rsplit(" / ", 1)[-1])])
+    if "industry" not in out:
+        candidates = [_first_sentence(intro)] if intro else []
+        candidates += [m.group(0) for m in re.finditer(r"\b(?:we are|we're)\s+[^.!?\n]{3,80}", about, re.I)]
+        candidates += [m.group(0) for m in re.finditer(r"(?:نحن|إننا)\s+[^.!؟\n]{3,80}", about)]
+        for sentence in candidates:
+            value = _industry_from_sentence(sentence)
+            if value:
+                out["industry"] = value
+                break
+    if "audience" not in out:
+        for pattern in (AUDIENCE_SENTENCE, AR_AUDIENCE_SENTENCE):
+            match = pattern.search(about)
+            if match:
+                value = _audience_from_text(match.group(1))
+                if value and len(value.split()) <= 25:
+                    out["audience"] = value
+                    break
+    return out
+
+
 def heuristic_book(text: str) -> dict:
     """Read the brand book by its headings and labels (no AI): voice, write like / never, imagery, logo rules."""
     sections = _sections(text or "")
     out: dict = {}
     guidelines, banned, visual_rules, samples = [], [], [], []
     intro = next((b for h, b in sections if h == ""), "")
+    if not intro and sections and " / " not in sections[0][0] and re.match(r"\s*(<!--[^\n]*-->\s*)?#\s", text or ""):
+        intro = sections[0][1]  # "# Brand" first, then the intro paragraph
     if intro:
         para = _plain(intro.split("\n\n")[0])
         out["description"] = para
@@ -820,8 +976,6 @@ def heuristic_book(text: str) -> dict:
             elif re.search(r"write like|say it like|examples?", low):
                 samples += _quotes(rest or line)
                 guidelines += [f"✓ {q}" for q in _quotes(rest or line)[:3]]
-            elif low in ("audience", "who it is for", "customers"):
-                out.setdefault("audience", rest.strip())
             elif low in ("casing", "headlines", "headline", "grammar", "punctuation", "numbers") and rest:
                 guidelines.append(f"✓ {label.strip()}: {rest.strip()}")
             elif "emoji" in line.lower():
@@ -842,6 +996,8 @@ def heuristic_book(text: str) -> dict:
                     visual_rules.append(("✗ " if re.search(r"never|don'?t", line, re.I) else "✓ ") + line)
         if re.search(r"\b(do'?s|writing rules|principles)\b", words):
             guidelines += [f"✓ {line}" for line in _bullets(body)[:6]]
+    for key, value in _industry_and_audience(sections, intro).items():
+        out.setdefault(key, value)
     lowered = (text or "").lower()
     if "emoji_style" not in out and re.search(r"\bno emoji", lowered):
         out["emoji_style"] = "none"

@@ -1,0 +1,219 @@
+{
+ "title": "Konto",
+ "subtitle": "Dein Profil, Anmeldung und Sicherheit, Arbeitsbereiche und Daten.",
+ "tabs": {
+  "profile": "Profil",
+  "security": "Sicherheit",
+  "workspaces": "Arbeitsbereiche",
+  "apps": "Apps & API-Schlüssel",
+  "notifications": "E-Mails",
+  "data": "Deine Daten",
+  "billing": "Tarif & Abrechnung"
+ },
+ "profile": {
+  "title": "Profil",
+  "upload": "Foto hochladen",
+  "remove": "Entfernen",
+  "photoHint": "JPG, PNG oder WebP, bis 5 MB. Quadratisch zugeschnitten.",
+  "name": "Name",
+  "username": "Benutzername",
+  "usernameHint": "Optional. Damit anmelden statt mit der E-Mail: englische Buchstaben und Ziffern, 3 bis 30 Zeichen.",
+  "language": "Sprache",
+  "timezone": "Zeitzone",
+  "save": "Speichern",
+  "saved": "Gespeichert.",
+  "email": "Anmelde-E-Mail",
+  "verified": "Bestätigt",
+  "unverified": "Nicht bestätigt",
+  "resend": "Bestätigungslink erneut senden",
+  "resent": "Link gesendet. Schau in dein Postfach.",
+  "changeEmail": "E-Mail ändern",
+  "newEmail": "Neue E-Mail-Adresse",
+  "password": "Dein aktuelles Passwort",
+  "emailNote": "Wir senden einen Bestätigungslink an die neue Adresse und informieren die alte.",
+  "emailChanged": "E-Mail-Adresse geändert. Bestätige sie über den Link an die neue Adresse."
+ },
+ "security": {
+  "password": "Passwort",
+  "current": "Aktuelles Passwort",
+  "new": "Neues Passwort",
+  "repeat": "Neues Passwort wiederholen",
+  "mismatch": "Die beiden Passwörter sind verschieden.",
+  "change": "Passwort ändern",
+  "changed": "Passwort geändert. Deine anderen Geräte wurden abgemeldet.",
+  "lastChanged": "Zuletzt geändert am {date}.",
+  "neverChanged": "Seit dem Anlegen des Kontos nicht geändert.",
+  "strength": {
+   "s0": "Zu schwach",
+   "s1": "Schwach",
+   "s2": "Mittel",
+   "s3": "Gut",
+   "s4": "Stark"
+  },
+  "strengthHint": "12 oder mehr Zeichen; ein kurzer Satz ist leicht zu merken und schwer zu erraten.",
+  "twoFactor": "Zwei-Schritt-Anmeldung",
+  "twoFactorOn": "An",
+  "twoFactorOff": "Aus",
+  "twoFactorText": "Nach dem Passwort fragen wir nach einem 6-stelligen Code aus einer Authenticator-App auf deinem Handy (Google Authenticator, Microsoft Authenticator, 1Password…).",
+  "enable": "Aktivieren",
+  "disable": "Deaktivieren",
+  "setupTitle": "Zwei-Schritt-Anmeldung aktivieren",
+  "confirmPassword": "Mit deinem Passwort bestätigen",
+  "continue": "Weiter",
+  "scan": "Scanne diesen Code mit deiner Authenticator-App oder tippe den Schlüssel ab.",
+  "key": "Schlüssel",
+  "copied": "Kopiert.",
+  "enterCode": "Der 6-stellige Code aus der App",
+  "confirm": "Bestätigen",
+  "codesTitle": "Deine Wiederherstellungscodes",
+  "codesText": "Jeder Code meldet dich einmal an, falls du dein Handy verlierst. Bewahre sie sicher auf: Sie werden nur jetzt angezeigt.",
+  "download": "Herunterladen",
+  "copyAll": "Alle kopieren",
+  "done": "Ich habe sie gespeichert",
+  "codesLeft": "Noch {n} Wiederherstellungscodes.",
+  "newCodes": "Neue Wiederherstellungscodes",
+  "disableTitle": "Zwei-Schritt-Anmeldung deaktivieren",
+  "codeOrRecovery": "Code aus der App oder ein Wiederherstellungscode",
+  "enabled": "Zwei-Schritt-Anmeldung ist aktiv.",
+  "disabled": "Zwei-Schritt-Anmeldung ist deaktiviert.",
+  "sessions": "Sitzungen",
+  "lastLogin": "Letzte Anmeldung",
+  "never": "nie",
+  "signIns": "Letzte Anmeldungen",
+  "noSignIns": "Noch keine Anmeldungen erfasst.",
+  "with2fa": "mit Code",
+  "signOutAll": "Überall abmelden",
+  "signOutAllText": "Meldet jeden Browser und jedes Handy ab, auch dieses. Du meldest dich mit deinem Passwort neu an.",
+  "signOutConfirm": "Auf allen Geräten abmelden, auch auf diesem?",
+  "events": "Letzte Änderungen an deinem Konto",
+  "byAdmin": "durch einen Plattform-Admin"
+ },
+ "workspaces": {
+  "title": "Deine Arbeitsbereiche",
+  "members": "{n} Mitglieder",
+  "current": "Aktuell",
+  "switch": "Wechseln",
+  "leave": "Verlassen",
+  "leaveConfirm": "{name} verlassen? Du verlierst den Zugang, bis dich jemand erneut einlädt.",
+  "left": "Du hast den Arbeitsbereich verlassen.",
+  "soleOwner": "Du bist der einzige Inhaber: Mach zuerst ein anderes Mitglied zum Inhaber (Einstellungen › Team).",
+  "new": "Neuer Arbeitsbereich"
+ },
+ "notifications": {
+  "title": "E-Mails, die wir dir senden",
+  "security": "Sicherheits-E-Mails",
+  "securityText": "Wenn sich dein Passwort, deine E-Mail oder die Zwei-Schritt-Anmeldung ändert.",
+  "product": "Berichte und Produktneuigkeiten",
+  "productText": "Geplante Berichte, Tipps und Neuigkeiten zu neuen Funktionen.",
+  "inApp": "Benachrichtigungen in der App und auf dem Handy kommen aus jedem Arbeitsbereich.",
+  "saved": "Gespeichert."
+ },
+ "data": {
+  "exportTitle": "Deine Daten herunterladen",
+  "exportText": "Dein Profil, deine Arbeitsbereiche, API-Schlüssel und verbundenen Apps, Support-Gespräche, Benachrichtigungen, hochgeladene Dateien und deine KI-Nutzung in einer JSON-Datei.",
+  "export": "Herunterladen (JSON)",
+  "deleteTitle": "Dein Konto löschen",
+  "deleteText": "Name, E-Mail, Foto und Passwort werden gelöscht, du verlässt jeden Arbeitsbereich, und Sitzungen, API-Schlüssel und verbundene Apps hören auf zu funktionieren. Rechnungen und Prüfprotokolle bleiben ohne deine persönlichen Daten erhalten. Das lässt sich nicht rückgängig machen.",
+  "blockers": "Bevor du dein Konto löschen kannst:",
+  "transfer": "{name}: Du bist der einzige Inhaber, und andere arbeiten darin. Mach eine dieser Personen zum Inhaber (Einstellungen › Team).",
+  "deleteWs": "{name}: Niemand sonst ist darin. Er wird mit allen Inhalten gelöscht.",
+  "password": "Dein Passwort",
+  "typeEmail": "Gib {email} zur Bestätigung ein",
+  "code": "Zwei-Schritt-Code",
+  "delete": "Mein Konto löschen",
+  "deleted": "Dein Konto wurde gelöscht.",
+  "superadmin": "Du bist Plattform-Admin. Bist du der letzte, mach zuerst jemand anderen zum Admin."
+ },
+ "changePassword": {
+  "title": "Wähle dein eigenes Passwort",
+  "text": "Ein Admin hat dir ein temporäres Passwort gegeben. Wähle dein eigenes, um fortzufahren.",
+  "textVoluntary": "Wähle ein neues Passwort.",
+  "temporary": "Temporäres Passwort",
+  "save": "Speichern und weiter"
+ },
+ "verify": {
+  "title": "E-Mail-Adresse bestätigen",
+  "checking": "Wird bestätigt…",
+  "ok": "Deine E-Mail-Adresse ist bestätigt.",
+  "bad": "Dieser Link ist abgelaufen. Fordere in deinem Konto einen neuen an.",
+  "continue": "Zu meinem Konto"
+ },
+ "login2fa": {
+  "title": "Zwei-Schritt-Anmeldung",
+  "text": "Gib den 6-stelligen Code aus deiner Authenticator-App ein.",
+  "recoveryText": "Gib einen deiner Wiederherstellungscodes ein. Jeder funktioniert einmal.",
+  "code": "Code",
+  "recovery": "Wiederherstellungscode",
+  "useRecovery": "Wiederherstellungscode verwenden",
+  "useApp": "App-Code verwenden",
+  "verify": "Prüfen",
+  "back": "Zurück"
+ },
+ "impersonation": {
+  "banner": "Du siehst die App als {name} ({email}).",
+  "until": "Bis {time}.",
+  "end": "Beenden",
+  "ended": "Zurück in deinem eigenen Konto.",
+  "limits": "Nichts kann gelöscht werden; Passwort, E-Mail und Schlüssel bleiben unberührt. Jede Änderung wird unter deinem Namen protokolliert."
+ },
+ "resetDone": "Passwort gespeichert. Melde dich damit und mit deinem Zwei-Schritt-Code an.",
+ "events": {
+  "login": "Angemeldet",
+  "logout": {
+   "everywhere": "Überall abgemeldet"
+  },
+  "password": {
+   "changed": "Passwort geändert",
+   "reset": "Passwort per E-Mail-Link zurückgesetzt"
+  },
+  "email": {
+   "changed": "E-Mail-Adresse geändert",
+   "verified": "E-Mail-Adresse bestätigt"
+  },
+  "twofa": {
+   "enabled": "Zwei-Schritt-Anmeldung aktiviert",
+   "disabled": "Zwei-Schritt-Anmeldung deaktiviert",
+   "recovery_codes": "Neue Wiederherstellungscodes"
+  },
+  "workspace": {
+   "left": "Arbeitsbereich verlassen"
+  },
+  "data": {
+   "exported": "Daten heruntergeladen"
+  },
+  "account": {
+   "deleted": "Konto gelöscht"
+  },
+  "impersonation": {
+   "start": "Ansicht als Nutzer gestartet",
+   "end": "Ansicht als Nutzer beendet",
+   "action": "Änderung während der Ansicht als Nutzer"
+  },
+  "cli": {
+   "password_set": "Passwort auf dem Server gesetzt",
+   "superadmin_granted": "Auf dem Server zum Plattform-Admin gemacht",
+   "superadmin_revoked": "Plattform-Admin auf dem Server entzogen"
+  },
+  "admin": {
+   "profile": "Profil von einem Admin geändert",
+   "verification_sent": "Bestätigungslink gesendet",
+   "password_reset_email": "Zurücksetz-E-Mail gesendet",
+   "temporary_password": "Temporäres Passwort gesetzt",
+   "sign_out": "Von einem Admin überall abgemeldet",
+   "revoke_access": "Schlüssel und Apps widerrufen",
+   "reset_2fa": "Zwei-Schritt-Anmeldung zurückgesetzt",
+   "enabled": "Konto aktiviert",
+   "disabled": "Konto deaktiviert",
+   "superadmin_granted": "Zum Plattform-Admin gemacht",
+   "superadmin_revoked": "Plattform-Admin entzogen",
+   "membership_added": "Zu einem Arbeitsbereich hinzugefügt",
+   "membership_role": "Rolle im Arbeitsbereich geändert",
+   "membership_removed": "Aus einem Arbeitsbereich entfernt",
+   "ownership_transferred": "Inhaberschaft übertragen",
+   "ownership_received": "Inhaber geworden",
+   "data_exported": "Daten von einem Admin exportiert",
+   "deleted": "Konto von einem Admin gelöscht",
+   "users_export": "Nutzer exportiert"
+  }
+ }
+}

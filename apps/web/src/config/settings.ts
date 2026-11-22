@@ -18,6 +18,6 @@ export const SETTINGS_TABS: SettingsTab[] = [
   { href: "/settings/pillars", label: "pillars", icon: "flag", order: 28, minRole: "admin" },
   { href: "/settings/connect", label: "connect", icon: "apps", order: 35 },
   { href: "/settings/billing", label: "billing", icon: "payments", order: 40, minRole: "owner" },
-  { href: "/settings/profile", label: "profile", icon: "person", order: 50 },
+  { href: "/account", label: "profile", icon: "person", order: 50 },
   { href: "/settings/support", label: "support", icon: "support_agent", order: 60 },
 ];

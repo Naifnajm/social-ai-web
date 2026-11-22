@@ -12,9 +12,14 @@ export type Role = "viewer" | "editor" | "approver" | "admin" | "owner";
 const RANK: Record<Role, number> = { viewer: 0, editor: 1, approver: 2, admin: 3, owner: 4 };
 
 export type Me = {
-  user: { id: number; email: string; username?: string | null; name: string; locale: string; timezone: string; avatar_url?: string | null; is_superadmin: boolean };
+  user: {
+    id: number; email: string; username?: string | null; name: string; locale: string; timezone: string; avatar_url?: string | null; is_superadmin: boolean;
+    email_verified?: boolean; must_change_password?: boolean; totp_enabled?: boolean;
+  };
   workspaces: { workspace_id: number; workspace_name: string; role: Role }[];
   current_workspace_id: number | null;
+  /** A platform administrator viewing the app as this user (support): the shell shows a banner. */
+  impersonator?: { id: number; name: string; email: string; expires_at: string | null } | null;
 };
 
 export type Workspace = {
@@ -71,7 +76,9 @@ export const useSession = create<SessionState>((set, get) => ({
     try {
       const me = await api.get<Me>("/auth/me");
       get().setMe(me);
-      await get().refreshWorkspace();
+      // a temporary password must be replaced first: the API answers nothing else until then
+      if (me.user.must_change_password) set({ loading: false });
+      else await get().refreshWorkspace();
       return me;
     } catch {
       set({ me: null, workspace: null, loading: false });

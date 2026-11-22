@@ -1,0 +1,219 @@
+{
+ "title": "Account",
+ "subtitle": "Your profile, sign-in and security, workspaces and data.",
+ "tabs": {
+  "profile": "Profile",
+  "security": "Security",
+  "workspaces": "Workspaces",
+  "apps": "Apps & API keys",
+  "notifications": "E-mails",
+  "data": "Your data",
+  "billing": "Plan & billing"
+ },
+ "profile": {
+  "title": "Profile",
+  "upload": "Upload a photo",
+  "remove": "Remove",
+  "photoHint": "JPG, PNG or WebP, up to 5 MB. Cropped to a square.",
+  "name": "Name",
+  "username": "Username",
+  "usernameHint": "Optional. Sign in with it instead of your e-mail: English letters and digits, 3 to 30 characters.",
+  "language": "Language",
+  "timezone": "Time zone",
+  "save": "Save",
+  "saved": "Saved.",
+  "email": "Sign-in e-mail",
+  "verified": "Confirmed",
+  "unverified": "Not confirmed",
+  "resend": "Send the confirmation link again",
+  "resent": "Link sent. Check your inbox.",
+  "changeEmail": "Change e-mail",
+  "newEmail": "New e-mail",
+  "password": "Your current password",
+  "emailNote": "We send a confirmation link to the new address and tell the old one.",
+  "emailChanged": "E-mail changed. Confirm it with the link we sent to the new address."
+ },
+ "security": {
+  "password": "Password",
+  "current": "Current password",
+  "new": "New password",
+  "repeat": "Repeat the new password",
+  "mismatch": "The two passwords are different.",
+  "change": "Change password",
+  "changed": "Password changed. Your other devices were signed out.",
+  "lastChanged": "Last changed {date}.",
+  "neverChanged": "Not changed since the account was created.",
+  "strength": {
+   "s0": "Too weak",
+   "s1": "Weak",
+   "s2": "Fair",
+   "s3": "Good",
+   "s4": "Strong"
+  },
+  "strengthHint": "12 or more characters; a short sentence is easy to remember and hard to guess.",
+  "twoFactor": "Two-step sign-in",
+  "twoFactorOn": "On",
+  "twoFactorOff": "Off",
+  "twoFactorText": "After your password, we ask for a 6-digit code from an authenticator app on your phone (Google Authenticator, Microsoft Authenticator, 1Password…).",
+  "enable": "Turn on",
+  "disable": "Turn off",
+  "setupTitle": "Turn on two-step sign-in",
+  "confirmPassword": "Confirm with your password",
+  "continue": "Continue",
+  "scan": "Scan this code with your authenticator app, or type the key by hand.",
+  "key": "Key",
+  "copied": "Copied.",
+  "enterCode": "The 6-digit code the app shows",
+  "confirm": "Confirm",
+  "codesTitle": "Your recovery codes",
+  "codesText": "Each code signs you in once if you lose your phone. Store them somewhere safe: they are shown only now.",
+  "download": "Download",
+  "copyAll": "Copy all",
+  "done": "I stored them",
+  "codesLeft": "{n} recovery codes left.",
+  "newCodes": "New recovery codes",
+  "disableTitle": "Turn off two-step sign-in",
+  "codeOrRecovery": "Code from the app, or a recovery code",
+  "enabled": "Two-step sign-in is on.",
+  "disabled": "Two-step sign-in is off.",
+  "sessions": "Sessions",
+  "lastLogin": "Last sign-in",
+  "never": "never",
+  "signIns": "Recent sign-ins",
+  "noSignIns": "No sign-ins recorded yet.",
+  "with2fa": "with code",
+  "signOutAll": "Sign out everywhere",
+  "signOutAllText": "Signs out every browser and phone, this one included. You sign in again with your password.",
+  "signOutConfirm": "Sign out on every device, this one included?",
+  "events": "Recent changes to your account",
+  "byAdmin": "by a platform administrator"
+ },
+ "workspaces": {
+  "title": "Your workspaces",
+  "members": "{n} members",
+  "current": "Current",
+  "switch": "Switch",
+  "leave": "Leave",
+  "leaveConfirm": "Leave {name}? You lose access until someone invites you again.",
+  "left": "You left the workspace.",
+  "soleOwner": "You are the only owner: make another member owner (Settings › Team) before you can leave.",
+  "new": "New workspace"
+ },
+ "notifications": {
+  "title": "E-mails we send you",
+  "security": "Security e-mails",
+  "securityText": "When your password, e-mail or two-step sign-in changes.",
+  "product": "Reports and product news",
+  "productText": "Scheduled reports, tips and news about new features.",
+  "inApp": "In-app notifications and phone pushes come from each workspace.",
+  "saved": "Saved."
+ },
+ "data": {
+  "exportTitle": "Download your data",
+  "exportText": "Your profile, workspaces, API keys and connected apps, support conversations, notifications, the files you uploaded and your AI use, in one JSON file.",
+  "export": "Download (JSON)",
+  "deleteTitle": "Delete your account",
+  "deleteText": "Your name, e-mail, photo and password are erased, you leave every workspace, and your sessions, API keys and connected apps stop working. Invoices and audit records stay, without your personal data. This cannot be undone.",
+  "blockers": "Before you can delete your account:",
+  "transfer": "{name}: you are the only owner and others work in it. Make one of them owner (Settings › Team).",
+  "deleteWs": "{name}: nobody else is in it. It will be deleted with everything in it.",
+  "password": "Your password",
+  "typeEmail": "Type {email} to confirm",
+  "code": "Two-step code",
+  "delete": "Delete my account",
+  "deleted": "Your account was deleted.",
+  "superadmin": "You are a platform administrator. If you are the last one, make someone else administrator first."
+ },
+ "changePassword": {
+  "title": "Choose your own password",
+  "text": "An administrator gave you a temporary password. Choose your own to continue.",
+  "textVoluntary": "Choose a new password.",
+  "temporary": "Temporary password",
+  "save": "Save and continue"
+ },
+ "verify": {
+  "title": "Confirm your e-mail",
+  "checking": "Confirming…",
+  "ok": "Your e-mail address is confirmed.",
+  "bad": "This link has expired. Ask for a new one in your account.",
+  "continue": "Go to my account"
+ },
+ "login2fa": {
+  "title": "Two-step sign-in",
+  "text": "Enter the 6-digit code from your authenticator app.",
+  "recoveryText": "Enter one of your recovery codes. Each one works once.",
+  "code": "Code",
+  "recovery": "Recovery code",
+  "useRecovery": "Use a recovery code",
+  "useApp": "Use the app code",
+  "verify": "Verify",
+  "back": "Back"
+ },
+ "impersonation": {
+  "banner": "You are viewing the app as {name} ({email}).",
+  "until": "Until {time}.",
+  "end": "End",
+  "ended": "Back to your own account.",
+  "limits": "Nothing can be deleted and their password, e-mail and keys stay untouched. Every change is recorded with your name."
+ },
+ "resetDone": "Password saved. Sign in with it and your two-step code.",
+ "events": {
+  "login": "Signed in",
+  "logout": {
+   "everywhere": "Signed out everywhere"
+  },
+  "password": {
+   "changed": "Password changed",
+   "reset": "Password reset with the e-mail link"
+  },
+  "email": {
+   "changed": "E-mail changed",
+   "verified": "E-mail confirmed"
+  },
+  "twofa": {
+   "enabled": "Two-step sign-in turned on",
+   "disabled": "Two-step sign-in turned off",
+   "recovery_codes": "New recovery codes"
+  },
+  "workspace": {
+   "left": "Left a workspace"
+  },
+  "data": {
+   "exported": "Data downloaded"
+  },
+  "account": {
+   "deleted": "Account deleted"
+  },
+  "impersonation": {
+   "start": "Viewing as started",
+   "end": "Viewing as ended",
+   "action": "Change while viewing as"
+  },
+  "cli": {
+   "password_set": "Password set on the server",
+   "superadmin_granted": "Made platform admin on the server",
+   "superadmin_revoked": "Platform admin removed on the server"
+  },
+  "admin": {
+   "profile": "Profile changed by an admin",
+   "verification_sent": "Confirmation link sent",
+   "password_reset_email": "Reset e-mail sent",
+   "temporary_password": "Temporary password set",
+   "sign_out": "Signed out everywhere by an admin",
+   "revoke_access": "Keys and apps revoked",
+   "reset_2fa": "Two-step sign-in reset",
+   "enabled": "Account enabled",
+   "disabled": "Account disabled",
+   "superadmin_granted": "Made platform admin",
+   "superadmin_revoked": "Platform admin removed",
+   "membership_added": "Added to a workspace",
+   "membership_role": "Workspace role changed",
+   "membership_removed": "Removed from a workspace",
+   "ownership_transferred": "Ownership transferred",
+   "ownership_received": "Became owner",
+   "data_exported": "Data exported by an admin",
+   "deleted": "Account deleted by an admin",
+   "users_export": "Users exported"
+  }
+ }
+}

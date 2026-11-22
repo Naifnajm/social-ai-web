@@ -8,6 +8,7 @@ import { LOCALE_NAMES, routing } from "@/i18n/routing";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import { sortedNav } from "@/config/nav";
+import { ImpersonationBanner } from "./account/impersonation-banner";
 import { BillingOverlay } from "./billing/billing-overlay";
 import { SupportDialog } from "./support/support-dialog";
 import { Icon } from "./icon";
@@ -26,10 +27,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         // signed-out visitors of the home page see the marketing page
         if (!result) router.replace(pathname === "/" ? "/welcome" : `/login?next=${encodeURIComponent(pathname)}`);
       });
+    } else if (me.user.must_change_password && !me.impersonator) {
+      router.replace(`/change-password?next=${encodeURIComponent(pathname)}`);
     }
   }, [me, load, router, pathname]);
 
-  if (loading || !me || !workspace) {
+  if (loading || !me || !workspace || (me.user.must_change_password && !me.impersonator)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Spinner size={28} />
@@ -66,6 +69,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
+        <ImpersonationBanner />
         <header className="sticky top-0 z-30 flex h-14 items-center gap-2 px-4 lg:px-6">
           <div className="lg:hidden">
             <WorkspaceSwitcher compact />
@@ -169,8 +173,8 @@ function UserMenu({ compact = false }: { compact?: boolean }) {
       </button>
       {open && (
         <div className={cx("glass-strong pop-in absolute z-50 w-56 rounded-2xl p-1.5", compact ? "end-0 top-full mt-1" : "bottom-full start-0 mb-1")}>
-          <Link href="/settings/profile" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-fill-2">
-            <Icon name="person" size={16} /> {t("profile")}
+          <Link href="/account" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-fill-2">
+            <Icon name="person" size={16} /> {t("account")}
           </Link>
           <Link href="/settings/support" onClick={() => setOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm hover:bg-fill-2">
             <Icon name="support_agent" size={16} /> {t("support")}

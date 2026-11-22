@@ -1,0 +1,219 @@
+{
+ "title": "Account",
+ "subtitle": "Je profiel, aanmelden en beveiliging, werkruimtes en gegevens.",
+ "tabs": {
+  "profile": "Profiel",
+  "security": "Beveiliging",
+  "workspaces": "Werkruimtes",
+  "apps": "Apps & API-sleutels",
+  "notifications": "E-mails",
+  "data": "Je gegevens",
+  "billing": "Abonnement & facturatie"
+ },
+ "profile": {
+  "title": "Profiel",
+  "upload": "Foto uploaden",
+  "remove": "Verwijderen",
+  "photoHint": "JPG, PNG of WebP, tot 5 MB. Vierkant bijgesneden.",
+  "name": "Naam",
+  "username": "Gebruikersnaam",
+  "usernameHint": "Optioneel. Meld je ermee aan in plaats van je e-mail: Engelse letters en cijfers, 3 tot 30 tekens.",
+  "language": "Taal",
+  "timezone": "Tijdzone",
+  "save": "Opslaan",
+  "saved": "Opgeslagen.",
+  "email": "Aanmeld-e-mail",
+  "verified": "Bevestigd",
+  "unverified": "Niet bevestigd",
+  "resend": "Bevestigingslink opnieuw sturen",
+  "resent": "Link verstuurd. Kijk in je inbox.",
+  "changeEmail": "E-mail wijzigen",
+  "newEmail": "Nieuw e-mailadres",
+  "password": "Je huidige wachtwoord",
+  "emailNote": "We sturen een bevestigingslink naar het nieuwe adres en laten het oude adres het weten.",
+  "emailChanged": "E-mailadres gewijzigd. Bevestig het met de link die we naar het nieuwe adres stuurden."
+ },
+ "security": {
+  "password": "Wachtwoord",
+  "current": "Huidig wachtwoord",
+  "new": "Nieuw wachtwoord",
+  "repeat": "Herhaal het nieuwe wachtwoord",
+  "mismatch": "De twee wachtwoorden verschillen.",
+  "change": "Wachtwoord wijzigen",
+  "changed": "Wachtwoord gewijzigd. Je andere apparaten zijn afgemeld.",
+  "lastChanged": "Laatst gewijzigd op {date}.",
+  "neverChanged": "Niet gewijzigd sinds het account werd aangemaakt.",
+  "strength": {
+   "s0": "Te zwak",
+   "s1": "Zwak",
+   "s2": "Redelijk",
+   "s3": "Goed",
+   "s4": "Sterk"
+  },
+  "strengthHint": "12 tekens of meer; een korte zin is makkelijk te onthouden en moeilijk te raden.",
+  "twoFactor": "Tweestapsaanmelding",
+  "twoFactorOn": "Aan",
+  "twoFactorOff": "Uit",
+  "twoFactorText": "Na je wachtwoord vragen we een code van 6 cijfers uit een authenticator-app op je telefoon (Google Authenticator, Microsoft Authenticator, 1Password…).",
+  "enable": "Aanzetten",
+  "disable": "Uitzetten",
+  "setupTitle": "Tweestapsaanmelding aanzetten",
+  "confirmPassword": "Bevestig met je wachtwoord",
+  "continue": "Verder",
+  "scan": "Scan deze code met je authenticator-app, of typ de sleutel over.",
+  "key": "Sleutel",
+  "copied": "Gekopieerd.",
+  "enterCode": "De code van 6 cijfers uit de app",
+  "confirm": "Bevestigen",
+  "codesTitle": "Je herstelcodes",
+  "codesText": "Elke code meldt je één keer aan als je je telefoon kwijt bent. Bewaar ze veilig: ze worden alleen nu getoond.",
+  "download": "Downloaden",
+  "copyAll": "Alles kopiëren",
+  "done": "Ik heb ze bewaard",
+  "codesLeft": "Nog {n} herstelcodes.",
+  "newCodes": "Nieuwe herstelcodes",
+  "disableTitle": "Tweestapsaanmelding uitzetten",
+  "codeOrRecovery": "Code uit de app of een herstelcode",
+  "enabled": "Tweestapsaanmelding staat aan.",
+  "disabled": "Tweestapsaanmelding staat uit.",
+  "sessions": "Sessies",
+  "lastLogin": "Laatst aangemeld",
+  "never": "nooit",
+  "signIns": "Recente aanmeldingen",
+  "noSignIns": "Nog geen aanmeldingen geregistreerd.",
+  "with2fa": "met code",
+  "signOutAll": "Overal afmelden",
+  "signOutAllText": "Meldt elke browser en telefoon af, ook deze. Je meldt je opnieuw aan met je wachtwoord.",
+  "signOutConfirm": "Op elk apparaat afmelden, ook op dit?",
+  "events": "Recente wijzigingen aan je account",
+  "byAdmin": "door een platformbeheerder"
+ },
+ "workspaces": {
+  "title": "Je werkruimtes",
+  "members": "{n} leden",
+  "current": "Huidige",
+  "switch": "Wisselen",
+  "leave": "Verlaten",
+  "leaveConfirm": "{name} verlaten? Je verliest de toegang tot iemand je opnieuw uitnodigt.",
+  "left": "Je hebt de werkruimte verlaten.",
+  "soleOwner": "Je bent de enige eigenaar: maak eerst een ander lid eigenaar (Instellingen › Team).",
+  "new": "Nieuwe werkruimte"
+ },
+ "notifications": {
+  "title": "E-mails die we je sturen",
+  "security": "Beveiligingsmails",
+  "securityText": "Als je wachtwoord, e-mailadres of tweestapsaanmelding verandert.",
+  "product": "Rapporten en productnieuws",
+  "productText": "Geplande rapporten, tips en nieuws over nieuwe functies.",
+  "inApp": "Meldingen in de app en op je telefoon komen van elke werkruimte.",
+  "saved": "Opgeslagen."
+ },
+ "data": {
+  "exportTitle": "Je gegevens downloaden",
+  "exportText": "Je profiel, werkruimtes, API-sleutels en gekoppelde apps, supportgesprekken, meldingen, de bestanden die je uploadde en je AI-gebruik, in één JSON-bestand.",
+  "export": "Downloaden (JSON)",
+  "deleteTitle": "Je account verwijderen",
+  "deleteText": "Je naam, e-mail, foto en wachtwoord worden gewist, je verlaat elke werkruimte en je sessies, API-sleutels en gekoppelde apps stoppen. Facturen en auditgegevens blijven, zonder je persoonsgegevens. Dit kan niet ongedaan worden gemaakt.",
+  "blockers": "Voordat je je account kunt verwijderen:",
+  "transfer": "{name}: je bent de enige eigenaar en anderen werken erin. Maak een van hen eigenaar (Instellingen › Team).",
+  "deleteWs": "{name}: niemand anders zit erin. Ze wordt met alle inhoud verwijderd.",
+  "password": "Je wachtwoord",
+  "typeEmail": "Typ {email} om te bevestigen",
+  "code": "Tweestapscode",
+  "delete": "Mijn account verwijderen",
+  "deleted": "Je account is verwijderd.",
+  "superadmin": "Je bent platformbeheerder. Ben je de laatste, maak dan eerst iemand anders beheerder."
+ },
+ "changePassword": {
+  "title": "Kies je eigen wachtwoord",
+  "text": "Een beheerder gaf je een tijdelijk wachtwoord. Kies je eigen wachtwoord om verder te gaan.",
+  "textVoluntary": "Kies een nieuw wachtwoord.",
+  "temporary": "Tijdelijk wachtwoord",
+  "save": "Opslaan en verder"
+ },
+ "verify": {
+  "title": "Je e-mailadres bevestigen",
+  "checking": "Bevestigen…",
+  "ok": "Je e-mailadres is bevestigd.",
+  "bad": "Deze link is verlopen. Vraag een nieuwe aan in je account.",
+  "continue": "Naar mijn account"
+ },
+ "login2fa": {
+  "title": "Tweestapsaanmelding",
+  "text": "Voer de code van 6 cijfers uit je authenticator-app in.",
+  "recoveryText": "Voer een van je herstelcodes in. Elke code werkt één keer.",
+  "code": "Code",
+  "recovery": "Herstelcode",
+  "useRecovery": "Herstelcode gebruiken",
+  "useApp": "Code uit de app gebruiken",
+  "verify": "Controleren",
+  "back": "Terug"
+ },
+ "impersonation": {
+  "banner": "Je bekijkt de app als {name} ({email}).",
+  "until": "Tot {time}.",
+  "end": "Stoppen",
+  "ended": "Terug in je eigen account.",
+  "limits": "Niets kan verwijderd worden en wachtwoord, e-mail en sleutels blijven onaangeroerd. Elke wijziging wordt op jouw naam vastgelegd."
+ },
+ "resetDone": "Wachtwoord opgeslagen. Meld je aan met dit wachtwoord en je tweestapscode.",
+ "events": {
+  "login": "Aangemeld",
+  "logout": {
+   "everywhere": "Overal afgemeld"
+  },
+  "password": {
+   "changed": "Wachtwoord gewijzigd",
+   "reset": "Wachtwoord hersteld via e-maillink"
+  },
+  "email": {
+   "changed": "E-mailadres gewijzigd",
+   "verified": "E-mailadres bevestigd"
+  },
+  "twofa": {
+   "enabled": "Tweestapsaanmelding aangezet",
+   "disabled": "Tweestapsaanmelding uitgezet",
+   "recovery_codes": "Nieuwe herstelcodes"
+  },
+  "workspace": {
+   "left": "Werkruimte verlaten"
+  },
+  "data": {
+   "exported": "Gegevens gedownload"
+  },
+  "account": {
+   "deleted": "Account verwijderd"
+  },
+  "impersonation": {
+   "start": "Bekijken als gestart",
+   "end": "Bekijken als beëindigd",
+   "action": "Wijziging tijdens bekijken als"
+  },
+  "cli": {
+   "password_set": "Wachtwoord ingesteld op de server",
+   "superadmin_granted": "Platformbeheerder gemaakt op de server",
+   "superadmin_revoked": "Platformbeheerder ingetrokken op de server"
+  },
+  "admin": {
+   "profile": "Profiel gewijzigd door een beheerder",
+   "verification_sent": "Bevestigingslink verstuurd",
+   "password_reset_email": "Herstelmail verstuurd",
+   "temporary_password": "Tijdelijk wachtwoord ingesteld",
+   "sign_out": "Overal afgemeld door een beheerder",
+   "revoke_access": "Sleutels en apps ingetrokken",
+   "reset_2fa": "Tweestapsaanmelding gereset",
+   "enabled": "Account ingeschakeld",
+   "disabled": "Account uitgeschakeld",
+   "superadmin_granted": "Platformbeheerder gemaakt",
+   "superadmin_revoked": "Platformbeheerder ingetrokken",
+   "membership_added": "Toegevoegd aan een werkruimte",
+   "membership_role": "Rol in werkruimte gewijzigd",
+   "membership_removed": "Verwijderd uit een werkruimte",
+   "ownership_transferred": "Eigendom overgedragen",
+   "ownership_received": "Eigenaar geworden",
+   "data_exported": "Gegevens geëxporteerd door een beheerder",
+   "deleted": "Account verwijderd door een beheerder",
+   "users_export": "Gebruikers geëxporteerd"
+  }
+ }
+}

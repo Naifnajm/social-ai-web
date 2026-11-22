@@ -1,0 +1,219 @@
+{
+ "title": "Compte",
+ "subtitle": "Votre profil, connexion et sécurité, espaces de travail et données.",
+ "tabs": {
+  "profile": "Profil",
+  "security": "Sécurité",
+  "workspaces": "Espaces de travail",
+  "apps": "Applis & clés API",
+  "notifications": "E-mails",
+  "data": "Vos données",
+  "billing": "Offre & facturation"
+ },
+ "profile": {
+  "title": "Profil",
+  "upload": "Importer une photo",
+  "remove": "Retirer",
+  "photoHint": "JPG, PNG ou WebP, jusqu’à 5 Mo. Recadrée en carré.",
+  "name": "Nom",
+  "username": "Nom d’utilisateur",
+  "usernameHint": "Facultatif. Connectez-vous avec à la place de l’e-mail : lettres latines et chiffres, 3 à 30 caractères.",
+  "language": "Langue",
+  "timezone": "Fuseau horaire",
+  "save": "Enregistrer",
+  "saved": "Enregistré.",
+  "email": "E-mail de connexion",
+  "verified": "Confirmé",
+  "unverified": "Non confirmé",
+  "resend": "Renvoyer le lien de confirmation",
+  "resent": "Lien envoyé. Consultez votre boîte de réception.",
+  "changeEmail": "Changer d’e-mail",
+  "newEmail": "Nouvelle adresse e-mail",
+  "password": "Votre mot de passe actuel",
+  "emailNote": "Nous envoyons un lien de confirmation à la nouvelle adresse et prévenons l’ancienne.",
+  "emailChanged": "Adresse modifiée. Confirmez-la avec le lien envoyé à la nouvelle adresse."
+ },
+ "security": {
+  "password": "Mot de passe",
+  "current": "Mot de passe actuel",
+  "new": "Nouveau mot de passe",
+  "repeat": "Répétez le nouveau mot de passe",
+  "mismatch": "Les deux mots de passe sont différents.",
+  "change": "Changer le mot de passe",
+  "changed": "Mot de passe modifié. Vos autres appareils ont été déconnectés.",
+  "lastChanged": "Dernière modification le {date}.",
+  "neverChanged": "Jamais modifié depuis la création du compte.",
+  "strength": {
+   "s0": "Trop faible",
+   "s1": "Faible",
+   "s2": "Moyen",
+   "s3": "Bon",
+   "s4": "Fort"
+  },
+  "strengthHint": "12 caractères ou plus ; une courte phrase est facile à retenir et difficile à deviner.",
+  "twoFactor": "Connexion en deux étapes",
+  "twoFactorOn": "Activée",
+  "twoFactorOff": "Désactivée",
+  "twoFactorText": "Après le mot de passe, nous demandons un code à 6 chiffres d’une application d’authentification sur votre téléphone (Google Authenticator, Microsoft Authenticator, 1Password…).",
+  "enable": "Activer",
+  "disable": "Désactiver",
+  "setupTitle": "Activer la connexion en deux étapes",
+  "confirmPassword": "Confirmez avec votre mot de passe",
+  "continue": "Continuer",
+  "scan": "Scannez ce code avec votre application d’authentification, ou saisissez la clé à la main.",
+  "key": "Clé",
+  "copied": "Copié.",
+  "enterCode": "Le code à 6 chiffres affiché par l’application",
+  "confirm": "Confirmer",
+  "codesTitle": "Vos codes de secours",
+  "codesText": "Chaque code vous connecte une fois si vous perdez votre téléphone. Gardez-les en lieu sûr : ils ne s’affichent que maintenant.",
+  "download": "Télécharger",
+  "copyAll": "Tout copier",
+  "done": "Je les ai enregistrés",
+  "codesLeft": "Il reste {n} codes de secours.",
+  "newCodes": "Nouveaux codes de secours",
+  "disableTitle": "Désactiver la connexion en deux étapes",
+  "codeOrRecovery": "Code de l’application ou code de secours",
+  "enabled": "La connexion en deux étapes est activée.",
+  "disabled": "La connexion en deux étapes est désactivée.",
+  "sessions": "Sessions",
+  "lastLogin": "Dernière connexion",
+  "never": "jamais",
+  "signIns": "Connexions récentes",
+  "noSignIns": "Aucune connexion enregistrée pour l’instant.",
+  "with2fa": "avec code",
+  "signOutAll": "Se déconnecter partout",
+  "signOutAllText": "Déconnecte tous les navigateurs et téléphones, celui-ci compris. Vous vous reconnectez avec votre mot de passe.",
+  "signOutConfirm": "Se déconnecter sur tous les appareils, celui-ci compris ?",
+  "events": "Dernières modifications de votre compte",
+  "byAdmin": "par un admin de la plateforme"
+ },
+ "workspaces": {
+  "title": "Vos espaces de travail",
+  "members": "{n} membres",
+  "current": "Actuel",
+  "switch": "Basculer",
+  "leave": "Quitter",
+  "leaveConfirm": "Quitter {name} ? Vous perdez l’accès jusqu’à une nouvelle invitation.",
+  "left": "Vous avez quitté l’espace de travail.",
+  "soleOwner": "Vous êtes le seul propriétaire : nommez d’abord un autre membre propriétaire (Paramètres › Équipe).",
+  "new": "Nouvel espace de travail"
+ },
+ "notifications": {
+  "title": "E-mails que nous vous envoyons",
+  "security": "E-mails de sécurité",
+  "securityText": "Quand votre mot de passe, votre e-mail ou la connexion en deux étapes change.",
+  "product": "Rapports et nouveautés",
+  "productText": "Rapports planifiés, conseils et nouvelles fonctionnalités.",
+  "inApp": "Les notifications dans l’appli et sur le téléphone viennent de chaque espace de travail.",
+  "saved": "Enregistré."
+ },
+ "data": {
+  "exportTitle": "Télécharger vos données",
+  "exportText": "Votre profil, vos espaces, clés API et applis connectées, conversations avec le support, notifications, fichiers importés et usage de l’IA, dans un seul fichier JSON.",
+  "export": "Télécharger (JSON)",
+  "deleteTitle": "Supprimer votre compte",
+  "deleteText": "Votre nom, e-mail, photo et mot de passe sont effacés, vous quittez tous les espaces, et vos sessions, clés API et applis connectées cessent de fonctionner. Les factures et journaux d’audit restent, sans vos données personnelles. C’est irréversible.",
+  "blockers": "Avant de pouvoir supprimer votre compte :",
+  "transfer": "{name} : vous êtes le seul propriétaire et d’autres y travaillent. Nommez l’un d’eux propriétaire (Paramètres › Équipe).",
+  "deleteWs": "{name} : personne d’autre n’y est. Il sera supprimé avec tout son contenu.",
+  "password": "Votre mot de passe",
+  "typeEmail": "Saisissez {email} pour confirmer",
+  "code": "Code de connexion en deux étapes",
+  "delete": "Supprimer mon compte",
+  "deleted": "Votre compte a été supprimé.",
+  "superadmin": "Vous êtes admin de la plateforme. Si vous êtes le dernier, nommez d’abord quelqu’un d’autre."
+ },
+ "changePassword": {
+  "title": "Choisissez votre mot de passe",
+  "text": "Un admin vous a donné un mot de passe temporaire. Choisissez le vôtre pour continuer.",
+  "textVoluntary": "Choisissez un nouveau mot de passe.",
+  "temporary": "Mot de passe temporaire",
+  "save": "Enregistrer et continuer"
+ },
+ "verify": {
+  "title": "Confirmer votre e-mail",
+  "checking": "Confirmation…",
+  "ok": "Votre adresse e-mail est confirmée.",
+  "bad": "Ce lien a expiré. Demandez-en un nouveau depuis votre compte.",
+  "continue": "Aller à mon compte"
+ },
+ "login2fa": {
+  "title": "Connexion en deux étapes",
+  "text": "Saisissez le code à 6 chiffres de votre application d’authentification.",
+  "recoveryText": "Saisissez l’un de vos codes de secours. Chacun fonctionne une fois.",
+  "code": "Code",
+  "recovery": "Code de secours",
+  "useRecovery": "Utiliser un code de secours",
+  "useApp": "Utiliser le code de l’application",
+  "verify": "Vérifier",
+  "back": "Retour"
+ },
+ "impersonation": {
+  "banner": "Vous voyez l’appli en tant que {name} ({email}).",
+  "until": "Jusqu’à {time}.",
+  "end": "Terminer",
+  "ended": "De retour dans votre compte.",
+  "limits": "Rien ne peut être supprimé ; mot de passe, e-mail et clés restent intacts. Chaque modification est enregistrée à votre nom."
+ },
+ "resetDone": "Mot de passe enregistré. Connectez-vous avec lui et votre code en deux étapes.",
+ "events": {
+  "login": "Connexion",
+  "logout": {
+   "everywhere": "Déconnexion de partout"
+  },
+  "password": {
+   "changed": "Mot de passe modifié",
+   "reset": "Mot de passe réinitialisé par lien e-mail"
+  },
+  "email": {
+   "changed": "Adresse e-mail modifiée",
+   "verified": "Adresse e-mail confirmée"
+  },
+  "twofa": {
+   "enabled": "Connexion en deux étapes activée",
+   "disabled": "Connexion en deux étapes désactivée",
+   "recovery_codes": "Nouveaux codes de secours"
+  },
+  "workspace": {
+   "left": "Espace de travail quitté"
+  },
+  "data": {
+   "exported": "Données téléchargées"
+  },
+  "account": {
+   "deleted": "Compte supprimé"
+  },
+  "impersonation": {
+   "start": "Affichage en tant que démarré",
+   "end": "Affichage en tant que terminé",
+   "action": "Modification pendant l’affichage en tant que"
+  },
+  "cli": {
+   "password_set": "Mot de passe défini sur le serveur",
+   "superadmin_granted": "Nommé admin de la plateforme sur le serveur",
+   "superadmin_revoked": "Droits d’admin retirés sur le serveur"
+  },
+  "admin": {
+   "profile": "Profil modifié par un admin",
+   "verification_sent": "Lien de confirmation envoyé",
+   "password_reset_email": "E-mail de réinitialisation envoyé",
+   "temporary_password": "Mot de passe temporaire défini",
+   "sign_out": "Déconnecté de partout par un admin",
+   "revoke_access": "Clés et applis révoquées",
+   "reset_2fa": "Connexion en deux étapes réinitialisée",
+   "enabled": "Compte activé",
+   "disabled": "Compte désactivé",
+   "superadmin_granted": "Nommé admin de la plateforme",
+   "superadmin_revoked": "Droits d’admin retirés",
+   "membership_added": "Ajouté à un espace de travail",
+   "membership_role": "Rôle modifié dans un espace",
+   "membership_removed": "Retiré d’un espace de travail",
+   "ownership_transferred": "Propriété transférée",
+   "ownership_received": "Devenu propriétaire",
+   "data_exported": "Données exportées par un admin",
+   "deleted": "Compte supprimé par un admin",
+   "users_export": "Utilisateurs exportés"
+  }
+ }
+}

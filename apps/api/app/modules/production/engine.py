@@ -13,6 +13,7 @@ import hashlib
 import json
 import logging
 import re
+import time
 from collections import defaultdict
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -317,7 +318,7 @@ def estimate_run(g: BoardGraph, node_ids: list[int] | None = None, downstream: b
         if not capability or node.id not in dirty:
             continue
         if capability == "audio" and (node.audio_mode or "speech") in ("music", "sfx"):
-            if ai_media.sound_provider(g.db, g.board.workspace_id, node.audio_mode, node.provider_id) is None:
+            if not ai_media.sound_possible(g.db, g.board.workspace_id, node.audio_mode, node.provider_id):
                 fallbacks.setdefault(node.audio_mode, []).append(node.id)  # skipped, the rest goes on
             continue
         if ai_service.has_provider(g.db, g.board.workspace_id, capability):
@@ -604,14 +605,17 @@ def _start_job(g: BoardGraph, node: Node, kind: str, prompt: str, media_inputs: 
     kit = g.kit
     if kind == "audio" and kit and kit.voice and kwargs.get("audio_mode", "speech") == "speech":
         kwargs["voice"] = kit.voice
+    provider_id = kwargs.pop("provider_id", node.provider_id)  # a per-run choice (e.g. ElevenLabs for music)
     model = db.get(AIModel, node.model_id) if node.model_id else None
     model_id = model.id if model and model.capability == kind and model.workspace_id == node.workspace_id else None
+    if model_id and provider_id and model.provider_id != provider_id:
+        model_id = None  # the block's model belongs to another provider
     db.flush()
     partial_error = None
     for _index in range(count):
         try:
             job = ai_media.start_job(
-                db, node.workspace_id, kind, prompt, provider_id=node.provider_id, model_id=model_id,
+                db, node.workspace_id, kind, prompt, provider_id=provider_id, model_id=model_id,
                 aspect=node.aspect or "1:1", style=node.style, seconds=node.seconds or 8,
                 inputs=[m.id for m in media_inputs or []], callback=CALLBACK,
                 brand_kit_id=kit.id if kit and kind in ("image", "video") else None,
@@ -713,6 +717,10 @@ def _run_video(g: BoardGraph, node: Node) -> None:
     _start_job(g, node, "video", prompt, images)
 
 
+STILL_WAIT_SECONDS = 120  # how long the zoom fallback waits for a picture from a slow image provider
+STILL_POLL_EVERY = 3.0
+
+
 def _video_from_still(g: BoardGraph, node: Node, prompt: str, image: Media | None) -> None:
     """No video model is set up: make the picture (when none is linked) and move it slowly, so the production
     still ends with a video. Free apart from the image."""
@@ -723,6 +731,11 @@ def _video_from_still(g: BoardGraph, node: Node, prompt: str, image: Media | Non
         job = ai_media.start_job(g.db, node.workspace_id, "image", prompt, aspect=node.aspect or "9:16",
                                  style=node.style, user_id=g.board.user_id,
                                  brand_kit_id=g.kit.id if g.kit else None, shot=node.shot)
+        waited = 0.0
+        while job.state == "running" and waited < STILL_WAIT_SECONDS:  # image providers that answer later
+            time.sleep(STILL_POLL_EVERY)
+            waited += STILL_POLL_EVERY
+            job = ai_media.poll(g.db, job)
         if job.state != "done" or not job.media_id:
             raise AppError(job.error or _("The picture for the video could not be made."), code="no_still")
         image, cost = g.media(job.media_id) or g.db.get(Media, job.media_id), float(job.cost or 0)
@@ -755,10 +768,8 @@ def _run_audio(g: BoardGraph, node: Node) -> None:
     provider = ai_media.sound_provider(g.db, node.workspace_id, mode, node.provider_id)
     if provider is None:
         return _skip(g, node, _(SOUND_MISSING.get(mode, SOUND_MISSING["sfx"])))
-    if provider.id != node.provider_id:
-        node.provider_id = provider.id  # e.g. ElevenLabs for music when the default audio provider is OpenAI
-        node.model_id = None
-    _start_job(g, node, "audio", _prompt_with_inputs(g, node, texts), audio_mode=mode)
+    # e.g. ElevenLabs for music when the block's provider is OpenAI: for this run only, the block keeps its setting
+    _start_job(g, node, "audio", _prompt_with_inputs(g, node, texts), audio_mode=mode, provider_id=provider.id)
 
 
 def _run_merge(g: BoardGraph, node: Node) -> None:
@@ -939,6 +950,8 @@ def _run_captions(g: BoardGraph, node: Node) -> None:
         raise media_tools.MediaToolError(_("This server's ffmpeg cannot draw subtitles (it needs libass)."),
                                          code="no_libass")
     video_bytes = read_media(video)
+    if speech is None and not media_tools.has_audio(video_bytes, video.mimetype):
+        return _skip(g, node, _("This video has no sound, so there is nothing to caption. The video goes on without captions."))  # noqa: E501
     # speech-to-text of the linked voice track, or of the video's own soundtrack
     result = ai_media.transcribe(g.db, node.workspace_id, (speech or video).id,
                                  (node.caption_language or "").strip() or None)

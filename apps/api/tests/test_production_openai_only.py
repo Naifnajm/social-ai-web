@@ -68,3 +68,37 @@ def test_probe(client, auth, db, mock_http, mode):
     notices = {n["kind"]: n["notice"] for n in results["pipeline_detailed"]["nodes"] if n["notice"]}
     assert "slow zoom" in notices["video"] and "skipped" in notices["audio"]
     assert not any("sora" in url or "/videos" in url for url in seen)
+
+
+def test_zoom_fallback_waits_for_a_slow_image_provider(client, auth, db, mock_http, monkeypatch):
+    """An image provider that answers later (Replicate, Gemini…): the video block waits for the picture."""
+    from app.modules.ai import media as ai_media
+    from app.modules.production import engine
+    from tests.production_fakes import Api
+    monkeypatch.setattr(engine, "STILL_POLL_EVERY", 0)
+    mock_http(handler_factory(mock_http, []))
+    add_provider(client, auth, "openai")
+    real_start, polls = ai_media.start_job, []
+
+    def slow_start(db_, ws, kind, prompt, **kw):
+        job = real_start(db_, ws, kind, prompt, **kw)
+        if kind == "image":
+            job.state, job.media_id = "running", None
+        return job
+
+    def poll(db_, job):
+        polls.append(job.id)
+        if len(polls) >= 2:
+            from app.core.storage import save_media
+            job.media_id, job.state = save_media(db_, job.workspace_id, png((540, 960)), "s.png", "image/png").id, "done"
+        return job
+
+    monkeypatch.setattr(ai_media, "start_job", slow_start)
+    monkeypatch.setattr(ai_media, "poll", poll)
+    api = Api(client, auth)
+    board = api.board()
+    video = api.node(board, "video", 0, 0, prompt="Waves at sunset", seconds=3, aspect="9:16")
+    graph = api.run(board)
+    node = api.by_id(graph, video["id"])
+    assert node["state"] == "done", node["error"]
+    assert len(polls) == 2 and "slow zoom" in node["notice"]

@@ -188,6 +188,20 @@ def ken_burns(content: bytes, aspect: str = "9:16", seconds: int = 8) -> bytes:
 
 
 # ---------------------------------------------------------------------------- captions
+def has_audio(content: bytes, mimetype: str) -> bool:
+    """True when the media file has at least one audio stream (ffprobe). Unknown → True (let the caller try)."""
+    if not shutil.which("ffprobe"):
+        return True
+    with tempfile.TemporaryDirectory(prefix="sai_") as tmp:
+        src = _write(tmp, "in", content, mimetype)
+        try:
+            out = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "a", "-show_entries", "stream=index",
+                                  "-of", "csv=p=0", src], capture_output=True, timeout=30)
+        except Exception:  # pragma: no cover - broken ffprobe
+            return True
+        return bool(out.stdout.strip())
+
+
 def extract_audio(content: bytes, mimetype: str) -> bytes:
     """The soundtrack of a video as a small MP3 (speech-to-text services take up to 25 MB)."""
     _need_ffmpeg()

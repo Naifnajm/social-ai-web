@@ -62,6 +62,9 @@ def generate_text_with_usage(db: Session, workspace_id: int, system: str, user: 
                                                provider_id=provider_id)
     estimated = pricing.estimate(model, (system or "") + (user or ""), 0, max_tokens or provider.max_tokens)[0] \
         if model else 0.0
+    if provider.managed:  # platform AI is counted at its price (cost + markup), like the usage it records
+        from app.modules.billing import credits
+        estimated = credits.price_of(db, estimated)
     prov.check_spend(db, provider, estimated, user_id)
     client = get_client(provider, model=model_name or None, max_tokens=max_tokens)
     text = client.generate(system or "", user or "")

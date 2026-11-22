@@ -130,6 +130,22 @@ def sound_provider(db: Session, workspace_id: int, mode: str, provider_id: int |
     return managed if able(managed) else None
 
 
+def sound_possible(db: Session, workspace_id: int, mode: str, provider_id: int | None = None) -> bool:
+    """Like ``sound_provider`` but read-only (no platform provider row is created): for previews and estimates."""
+    from app.modules.billing import platform
+
+    from .generators import CLIENTS
+    flag = "supports_music" if mode == "music" else "supports_sfx"
+    able = lambda t: getattr(CLIENTS.get(t), flag, False)  # noqa: E731
+    if provider_id:
+        asked = db.get(AIProvider, provider_id)
+        if asked and asked.workspace_id == workspace_id and asked.active and able(asked.provider_type):
+            return True
+    if any(able(p.provider_type) for p in prov.list_providers(db, workspace_id, "audio", active_only=True)):
+        return True
+    return any(able(t) and catalog.can(t, "audio") and platform.ai_key(db, t) for t in platform.AI_PROVIDERS)
+
+
 def estimate(db: Session, workspace_id: int, kind: str, prompt: str = "", *, seconds: int = 0,
              audio_mode: str = "speech", model_id: int | None = None, provider_id: int | None = None) -> dict:
     """``{"cost", "detail", "model", "model_id", "provider", "provider_id", "wallet", "known"}``."""

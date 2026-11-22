@@ -284,3 +284,29 @@ def test_credit_pack_invoice_never_changes_the_plan(client, auth, db, mock_http,
     assert _webhook(client, "invoice.paid", invoice).status_code == 200
     db.refresh(sub)
     assert (sub.plan_code, sub.status, sub.provider, sub.current_period_end) == before
+
+
+def test_text_spend_check_uses_the_platform_price(db, auth, monkeypatch):
+    from app.modules.ai import clients
+    from app.modules.ai import service as ai
+    ws = auth.workspace_id
+    _set_plan(db, ws, "pro")
+    _platform_ai(db, ws)
+    seen = []
+    monkeypatch.setattr(prov, "check_spend", lambda db_, provider, cost, user_id=None: seen.append(cost))
+
+    class Fake:
+        model, last_usage = "gpt-5-mini", (1000, 1000)
+
+        def __init__(self, *a, **k):
+            pass
+
+        def generate(self, system, user):
+            return "ok"
+
+    monkeypatch.setattr(clients, "get_client", Fake)
+    raw = []
+    real_estimate = __import__("app.modules.ai.pricing", fromlist=["estimate"]).estimate
+    monkeypatch.setattr(ai.pricing, "estimate", lambda *a, **k: raw.append(real_estimate(*a, **k)[0]) or (raw[-1], ""))
+    ai.generate_text(db, ws, "system", "hello " * 300)
+    assert seen[-1] == pytest.approx(credits.price_of(db, raw[-1]))  # cost + the 10% markup

@@ -392,7 +392,8 @@ def pkce_ok(verifier: str | None, challenge: str) -> bool:
 
 
 def _code_grant(db: Session, client: OAuthClient, form: dict) -> dict:
-    code = db.scalar(select(OAuthCode).where(OAuthCode.code_hash == sha256(form.get("code") or "")))
+    # locked: two concurrent redemptions of one code cannot both pass the used_at check
+    code = db.scalar(select(OAuthCode).where(OAuthCode.code_hash == sha256(form.get("code") or "")).with_for_update())
     if not code:
         raise OAuthFail("invalid_grant", "Unknown authorization code.")
     grant = db.get(OAuthGrant, code.grant_id)

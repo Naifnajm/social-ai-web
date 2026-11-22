@@ -165,5 +165,6 @@
  "No AI provider here makes sound effects (ElevenLabs does), so this block was skipped and the video goes on without it.": "لا يوجد هنا مزوّد ذكاء اصطناعي يصنع المؤثرات الصوتية (ElevenLabs يصنعها)، فتم تخطي هذا البلوك ويكتمل الفيديو بدونها.",
  "No video model is set up, so this is a slow zoom on the picture (free). Add Seedance (Replicate) or Gemini in Settings › AI providers for real motion.": "لا يوجد نموذج فيديو مضبوط، فهذا تقريب بطيء على الصورة (مجانًا). أضف Seedance (Replicate) أو Gemini من الإعدادات › مزوّدو الذكاء الاصطناعي للحركة الحقيقية.",
  "The picture for the video could not be made.": "تعذّر إنشاء الصورة اللازمة للفيديو.",
- "Designed automatically in your brand. Open the editor to change it.": "صُمّم تلقائيًا بهويتك. افتح المحرر لتعديله."
+ "Designed automatically in your brand. Open the editor to change it.": "صُمّم تلقائيًا بهويتك. افتح المحرر لتعديله.",
+ "This video has no sound, so there is nothing to caption. The video goes on without captions.": "هذا الفيديو بلا صوت، فلا يوجد ما يُترجم نصيًا. يكتمل الفيديو بدون ترجمة."
 }

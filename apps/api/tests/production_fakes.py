@@ -72,6 +72,8 @@ class FakeAI:
         self.no_providers: set[str] = set()
         monkeypatch.setattr(ai_service, "has_provider",
                             lambda db, ws, capability="text": capability not in self.no_providers)
+        monkeypatch.setattr(ai_media, "sound_possible",
+                            lambda db, ws, mode, provider_id=None: mode not in self.no_providers)
         monkeypatch.setattr(ai_media, "sound_provider",
                             lambda db, ws, mode, provider_id=None: None if mode in self.no_providers
                             else _FakeProvider(provider_id))

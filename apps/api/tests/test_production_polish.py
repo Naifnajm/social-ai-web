@@ -72,3 +72,43 @@ def test_stop_a_run(api, fake_ai, db):
     job.state = "done"  # the provider still delivers a late result
     engine.on_media_job(db, job)
     assert db.get(Node, video["id"]).state == "idle"  # it does not restart the stopped block
+
+
+def test_music_block_keeps_its_own_provider_setting(api, fake_ai, db, monkeypatch):
+    from app.modules.ai import media as ai_media
+    from tests.production_fakes import _FakeProvider
+    monkeypatch.setattr(ai_media, "sound_provider", lambda db_, ws, mode, provider_id=None: _FakeProvider(4242))
+    board = api.board()
+    music = api.node(board, "audio", 0, 0, audio_mode="music", prompt="Calm piano", seconds=10)
+    api.run(board)
+    assert fake_ai.jobs[-1]["provider_id"] == 4242  # this run used the provider that can make music
+    assert db.get(Node, music["id"]).provider_id is None  # but the block's own setting is unchanged
+
+
+def test_estimate_does_not_create_platform_providers(client, auth, db, monkeypatch):
+    from app.modules.ai.models import AIProvider
+    from app.modules.billing import platform
+    from app.modules.production import engine
+    monkeypatch.setattr(engine, "estimate", lambda g, node: None)  # only the preflight check is measured here
+    platform.set_secret(db, "ai.elevenlabs_api_key", "xi-platform")
+    db.flush()
+    api = Api(client, auth)
+    board = api.board()
+    api.node(board, "audio", 0, 0, audio_mode="music", prompt="Calm piano", seconds=10)
+    est = api.get(f"/boards/{board}/estimate")
+    assert est["fallbacks"] == []  # the platform's ElevenLabs can make music
+    assert not db.query(AIProvider).filter_by(workspace_id=auth.workspace_id, provider_type="elevenlabs").count()
+
+
+def test_captions_skip_a_silent_video(api, fake_ai, db, monkeypatch):
+    from app.modules.production import media_tools
+    monkeypatch.setattr(media_tools, "subtitles_available", lambda: True)
+    monkeypatch.setattr(media_tools, "has_audio", lambda content, mimetype: False)
+    board = api.board()
+    video = api.node(board, "video", 0, 0, prompt="Waves")
+    captions = api.node(board, "captions", 300, 0)
+    api.connect(board, video["id"], captions["id"])
+    api.run(board)
+    fake_ai.finish_videos(db)
+    node = api.by_id(api.graph(board), captions["id"])
+    assert node["state"] == "done" and "no sound" in node["notice"] and not fake_ai.transcribed

@@ -8,7 +8,8 @@
   "voice": "What people say",
   "mentions": "Mentions",
   "competitors": "Competitors",
-  "setup": "Setup"
+  "setup": "Setup",
+  "sources": "Sources"
  },
  "setupSwitch": "Setup to show",
  "paused": "{name} (paused)",
@@ -27,9 +28,18 @@
   "askOwner": "The radar is part of a higher plan. Ask the workspace owner to upgrade.",
   "button": "See plans",
   "points": {
-   "listen": { "title": "Hear everything", "text": "Mentions from Instagram, Facebook, YouTube, Google reviews and the news in one stream." },
-   "alert": { "title": "Know first", "text": "An alert when complaints pile up, a big account talks about you or a competitor moves." },
-   "act": { "title": "Act right away", "text": "A ready reply or post for every event, sent for approval or answered in the inbox." }
+   "listen": {
+    "title": "Hear everything",
+    "text": "Mentions from Instagram, Facebook, YouTube, Google reviews and the news in one stream."
+   },
+   "alert": {
+    "title": "Know first",
+    "text": "An alert when complaints pile up, a big account talks about you or a competitor moves."
+   },
+   "act": {
+    "title": "Act right away",
+    "text": "A ready reply or post for every event, sent for approval or answered in the inbox."
+   }
   }
  },
  "noSetup": {
@@ -63,10 +73,12 @@
  },
  "kpi": {
   "mentions": "Mentions",
-  "reach": "Possible reach",
+  "reach": "Reach (views)",
   "netSentiment": "Net sentiment",
   "shareOfVoice": "Share of voice",
-  "addCompetitors": "Add competitors to see it"
+  "addCompetitors": "Add competitors to see it",
+  "reachEstimated": "Potential ≈ {n} (estimated from followers)",
+  "reachUnknown": "These sources give no view counts"
  },
  "overview": {
   "volume": "Mentions per day",
@@ -137,12 +149,22 @@
   "youtube": "YouTube",
   "google_business": "Google reviews",
   "news": "News",
-  "x": "X"
+  "x": "X",
+  "threads": "Threads",
+  "youtube_comments": "YouTube comments",
+  "linkedin": "LinkedIn",
+  "web": "Web & forums",
+  "reddit": "Reddit",
+  "tiktok": "TikTok",
+  "telegram": "Telegram",
+  "app_store": "App Store",
+  "google_play": "Google Play",
+  "snapchat": "Snapchat"
  },
  "mention": {
   "unknownAuthor": "Someone",
   "followers": "{n} followers",
-  "reach": "Possible reach",
+  "reach": "Views",
   "engagement": "Engagement",
   "answerInInbox": "Answer in the inbox",
   "openInbox": "Open in the inbox",
@@ -156,7 +178,20 @@
   "correctedByTeam": "Label fixed by your team",
   "saved": "Saved.",
   "muted": "Hidden. It no longer counts in the numbers.",
-  "corrected": "Label fixed. The radar learns from it."
+  "corrected": "Label fixed. The radar learns from it.",
+  "reachEstimated": "≈ {n} (estimated)",
+  "reachEstimatedHint": "The source gives no views: this is the author's followers, an estimate.",
+  "spam": {
+   "repeated": "Spam: same text by many accounts",
+   "links": "Spam: link farm",
+   "hashtags": "Spam: hashtag wall",
+   "other": "Spam"
+  },
+  "inReport": "In the report",
+  "alsoOn": "Also on {sources}",
+  "notSpam": "Not spam",
+  "markSpam": "Spam",
+  "spamSaved": "Marked as spam and hidden. You can undo it from the Spam filter."
  },
  "correct": {
   "title": "Fix the label",
@@ -187,7 +222,8 @@
    "new": "New",
    "reviewed": "Reviewed",
    "converted": "In the inbox",
-   "muted": "Hidden"
+   "muted": "Hidden",
+   "spam": "Spam (hidden)"
   },
   "showing": "{shown} of {total} mentions, newest first",
   "more": "Show more",
@@ -296,7 +332,9 @@
    "not_useful": "Not important",
    "wrong": "Wrong alert"
   },
-  "thanks": "Thanks. The radar uses this to improve its alerts."
+  "thanks": "Thanks. The radar uses this to improve its alerts.",
+  "goInbox": "Go to the inbox",
+  "goIdeas": "See today's ideas"
  },
  "setup": {
   "pick": "Setup to edit",
@@ -373,12 +411,169 @@
   "deleteTitle": "Delete this setup?",
   "deleteText": "“{name}” and all its mentions and events are deleted. This cannot be undone.",
   "deleteConfirm": "Delete for good",
-  "deleted": "Setup deleted."
+  "deleted": "Setup deleted.",
+  "manageSources": "Manage the sources",
+  "monthlyCap": "Monthly spending cap for paid sources ($)",
+  "monthlyCapHint": "Paid sources (X, web, Reddit, TikTok) stop when this setup reaches it. Empty = no cap.",
+  "monthlyCapNone": "No cap",
+  "paidEstimate": "Paid sources per month (estimate)",
+  "paidEstimateHint": "Charged from your AI credits at the platform price.",
+  "spentMonth": "Paid sources this month",
+  "options": {
+   "telegram_channels": "Telegram channels",
+   "telegram_channelsHint": "Public channels to read (up to 10), e.g. t.me/channel.",
+   "telegram_channelsPlaceholder": "channel name or t.me link",
+   "app_store_ids": "App Store apps",
+   "app_store_idsHint": "The app id from its App Store link (the number after “id”).",
+   "app_store_idsPlaceholder": "e.g. 1234567890",
+   "google_play_ids": "Google Play apps",
+   "google_play_idsHint": "Package name, e.g. com.company.app (needs a service account).",
+   "google_play_idsPlaceholder": "com.company.app",
+   "subreddits": "Subreddits",
+   "subredditsHint": "Optional. Search only in these communities (up to 3).",
+   "subredditsPlaceholder": "e.g. saudiarabia",
+   "youtube_channel_ids": "More YouTube channels",
+   "youtube_channel_idsHint": "Optional. Channel ids whose video comments are read too.",
+   "youtube_channel_idsPlaceholder": "UC…"
+  }
  },
  "home": {
   "title": "Radar",
   "calm": "Nothing unusual in what people say about you.",
   "openEvents": "open events",
   "net": "net sentiment, 7 days"
+ },
+ "actions": {
+  "reply": "Reply",
+  "more": "More",
+  "createPost": "Create a post from it",
+  "makeBoard": "Make a production board",
+  "addToReport": "Add to the report",
+  "removeFromReport": "Remove from the report",
+  "assign": "Assign to a teammate",
+  "postCreated": "Draft post created in Studio.",
+  "boardCreated": "Production board created.",
+  "inReport": "It will appear in the next report.",
+  "outOfReport": "Removed from the report.",
+  "replyTitle": "Reply to this mention",
+  "close": "Close",
+  "openInbox": "Answer in the inbox",
+  "openOriginal": "Open the original post",
+  "draftAi": "Suggested reply (AI, in your brand's voice)",
+  "draftTemplate": "Suggested reply",
+  "inboxHint": "This comment is on your own account: send the reply from the inbox.",
+  "publicHint": "This is a public post: copy the reply, open the original and answer from your account there.",
+  "assignTitle": "Assign this mention",
+  "teammate": "Teammate",
+  "nobody": "Nobody",
+  "note": "Note",
+  "noteHint": "Optional. They get a notification with it.",
+  "assignSave": "Assign and notify",
+  "assigned": "Assigned. Your teammate was notified.",
+  "unassigned": "No longer assigned.",
+  "copy": "Copy the reply",
+  "copied": "Copied."
+ },
+ "sourcesPage": {
+  "summary": {
+   "ready": "Sources ready",
+   "readyValue": "{ready} of {total}",
+   "credits": "AI credits left",
+   "creditsHint": "Paid sources are charged from them, like AI.",
+   "unlimited": "No limit",
+   "spend": "Paid sources this month",
+   "cap": "Cap {cap} for this setup",
+   "noCap": "No monthly cap set"
+  },
+  "groups": {
+   "owned": {
+    "title": "Your accounts",
+    "text": "What happens on your own pages: comments, tags and reviews. Official and free; connect the account once."
+   },
+   "public": {
+    "title": "Public search",
+    "text": "Official searches over a whole network or the web. Some are free (with a permission), some are paid per use."
+   },
+   "provider": {
+    "title": "Data providers",
+    "text": "Third parties that collect public data where no official search exists. Paid per request, in beta."
+   }
+  },
+  "status": {
+   "ready": "Ready",
+   "needs_connection": "Connect an account",
+   "needs_key": "Needs a key",
+   "needs_permission": "Needs a permission",
+   "needs_setup": "Needs details",
+   "quota_exhausted": "Quota used up",
+   "out_of_credits": "Out of credits",
+   "not_in_plan": "Not in your plan",
+   "disabled": "Off",
+   "error": "Error"
+  },
+  "cost": {
+   "free": "Free",
+   "freeQuota": "Free within the daily quota",
+   "paid": "≈ {price} per 1,000 {unit}, charged from AI credits",
+   "ownKey": "Your own key: not charged"
+  },
+  "units": {
+   "post": "posts read",
+   "query": "searches",
+   "request": "requests",
+   "call": "calls"
+  },
+  "actions": {
+   "test": "Test now",
+   "connect": "Connect account",
+   "askAdmin": "Ask the admin",
+   "addKey": "Add the key",
+   "permission": "Request permission",
+   "editSetup": "Edit the setup",
+   "upgrade": "Upgrade",
+   "buyCredits": "Buy credits"
+  },
+  "tested": "Tested: {n} new mentions.",
+  "checked": "Checked again.",
+  "permissionTitle": "A platform permission is needed",
+  "adminTitle": "The platform admin must set this up",
+  "close": "Close",
+  "openAdmin": "Open Admin › Radar sources",
+  "permissionText": "The platform's app must be approved for “{permission}”. It is requested once for every workspace, in the network's developer console.",
+  "permissionDoc": "How to request it",
+  "adminSelf": "You are the platform admin: add the key in Admin › Radar sources.",
+  "adminText": "Send this to your platform admin: “Please add the {what} in Admin › Radar sources.”",
+  "beta": "Beta",
+  "use": "Use in this setup",
+  "enabled": "The source is on for this setup.",
+  "disabled": "The source is off for this setup.",
+  "quotaDay": "{used} of {limit} units today",
+  "quotaMonth": "{used} of {limit} this month",
+  "usage": "This month: {units} units · {usd}",
+  "listening": "Listening",
+  "perMonth": "/month",
+  "covers": {
+   "owned": "Public comments on all your connected accounts (from the inbox).",
+   "instagram": "Posts that tag you, and recent posts of your #hashtags (30 hashtags a week).",
+   "facebook": "Posts that tag your Page and your Page reviews. Facebook has no public search.",
+   "threads": "Keyword search over public Threads posts, and replies to your posts.",
+   "youtube": "New videos that mention your words.",
+   "youtube_comments": "Comments on your videos and on videos found by the search.",
+   "google_business": "Reviews of your Google Business Profile locations.",
+   "linkedin": "Comments on your company page posts (no public search on LinkedIn).",
+   "news": "News sites through Google News, or a paid news API when the platform has one.",
+   "web": "Blogs, forums, review sites and news across the web (Brave Search).",
+   "x": "Full keyword and hashtag search of recent posts on X.",
+   "reddit": "Posts that mention you, optionally in chosen subreddits.",
+   "tiktok": "Public TikTok videos by keyword or hashtag, with views and followers.",
+   "telegram": "Recent posts of the public channels you list.",
+   "app_store": "Customer reviews of your iPhone apps.",
+   "google_play": "Reviews of your Android app (needs a Play Console service account).",
+   "snapchat": "Snapchat has no API for comments or public search."
+  },
+  "terms": {
+   "tiktok": "Through ScrapeCreators, an unofficial provider. TikTok's terms do not allow scraping; use it knowing the risk.",
+   "reddit": "Commercial use of the Reddit API needs an agreement with Reddit."
+  }
  }
 }

@@ -2,7 +2,7 @@
 
 export type IdeaFormat = "post" | "carousel" | "video";
 export type IdeaState = "new" | "scheduled" | "draft" | "rejected" | "expired";
-export type ReasonKind = "question" | "rising" | "event" | "pillar" | "product" | "format" | "top_post" | "best_time" | "brief";
+export type ReasonKind = "question" | "rising" | "event" | "voice" | "pillar" | "product" | "format" | "top_post" | "best_time" | "brief";
 export type RejectReason = "not_relevant" | "not_our_tone" | "already_done" | "bad_timing" | "other";
 export type ApproveMode = "suggested" | "best_time" | "schedule" | "draft";
 

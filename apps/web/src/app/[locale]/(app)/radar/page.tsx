@@ -33,7 +33,10 @@ export default function RadarOverviewPage() {
 
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <Kpi icon="forum" label={t("kpi.mentions")} value={fmt.number(k.mentions.value)} change={k.mentions.delta} />
-        <Kpi icon="visibility" label={t("kpi.reach")} value={fmt.compact(k.reach.value)} change={k.reach.delta} />
+        <Kpi icon="visibility" label={t("kpi.reach")} value={k.reach.measured ? fmt.compact(k.reach.value) : "—"} change={k.reach.delta}
+          hint={k.reach.estimated && k.reach.potential > 0
+            ? t("kpi.reachEstimated", { n: fmt.compact(k.reach.potential) })
+            : k.reach.measured ? undefined : t("kpi.reachUnknown")} />
         <Kpi icon="mood" label={t("kpi.netSentiment")} value={signed(k.net_sentiment.value)} change={k.net_sentiment.change} unit="points" />
         <Kpi icon="percent" label={t("kpi.shareOfVoice")} value={k.share_of_voice.value == null ? "—" : `${k.share_of_voice.value}%`}
           change={k.share_of_voice.change} unit="points" hint={k.share_of_voice.value == null ? t("kpi.addCompetitors") : undefined} />

@@ -8,7 +8,8 @@
   "voice": "Was gesagt wird",
   "mentions": "Erwähnungen",
   "competitors": "Wettbewerber",
-  "setup": "Einrichtung"
+  "setup": "Einrichtung",
+  "sources": "Quellen"
  },
  "setupSwitch": "Angezeigte Einrichtung",
  "paused": "{name} (pausiert)",
@@ -27,9 +28,18 @@
   "askOwner": "Das Radar gehört zu einem höheren Tarif. Bitte den Inhaber des Workspaces um ein Upgrade.",
   "button": "Tarife ansehen",
   "points": {
-   "listen": { "title": "Alles hören", "text": "Erwähnungen aus Instagram, Facebook, YouTube, Google-Bewertungen und den Nachrichten an einem Ort." },
-   "alert": { "title": "Als Erster wissen", "text": "Ein Hinweis, wenn sich Beschwerden häufen, ein großer Account über dich spricht oder ein Wettbewerber handelt." },
-   "act": { "title": "Sofort handeln", "text": "Eine fertige Antwort oder ein Beitrag zu jedem Ereignis – zur Freigabe oder direkt im Posteingang beantwortet." }
+   "listen": {
+    "title": "Alles hören",
+    "text": "Erwähnungen aus Instagram, Facebook, YouTube, Google-Bewertungen und den Nachrichten an einem Ort."
+   },
+   "alert": {
+    "title": "Als Erster wissen",
+    "text": "Ein Hinweis, wenn sich Beschwerden häufen, ein großer Account über dich spricht oder ein Wettbewerber handelt."
+   },
+   "act": {
+    "title": "Sofort handeln",
+    "text": "Eine fertige Antwort oder ein Beitrag zu jedem Ereignis – zur Freigabe oder direkt im Posteingang beantwortet."
+   }
   }
  },
  "noSetup": {
@@ -63,10 +73,12 @@
  },
  "kpi": {
   "mentions": "Erwähnungen",
-  "reach": "Mögliche Reichweite",
+  "reach": "Reichweite (Aufrufe)",
   "netSentiment": "Netto-Stimmung",
   "shareOfVoice": "Share of Voice",
-  "addCompetitors": "Füge Wettbewerber hinzu, um ihn zu sehen"
+  "addCompetitors": "Füge Wettbewerber hinzu, um ihn zu sehen",
+  "reachEstimated": "Potenziell ≈ {n} (geschätzt aus Followern)",
+  "reachUnknown": "Diese Quellen liefern keine Aufrufzahlen"
  },
  "overview": {
   "volume": "Erwähnungen pro Tag",
@@ -137,12 +149,22 @@
   "youtube": "YouTube",
   "google_business": "Google-Bewertungen",
   "news": "Nachrichten",
-  "x": "X"
+  "x": "X",
+  "threads": "Threads",
+  "youtube_comments": "YouTube-Kommentare",
+  "linkedin": "LinkedIn",
+  "web": "Web & Foren",
+  "reddit": "Reddit",
+  "tiktok": "TikTok",
+  "telegram": "Telegram",
+  "app_store": "App Store",
+  "google_play": "Google Play",
+  "snapchat": "Snapchat"
  },
  "mention": {
   "unknownAuthor": "Jemand",
   "followers": "{n} Follower",
-  "reach": "Mögliche Reichweite",
+  "reach": "Aufrufe",
   "engagement": "Interaktionen",
   "answerInInbox": "Im Posteingang antworten",
   "openInbox": "Im Posteingang öffnen",
@@ -156,7 +178,20 @@
   "correctedByTeam": "Von deinem Team korrigiert",
   "saved": "Gespeichert.",
   "muted": "Ausgeblendet. Zählt nicht mehr in den Zahlen.",
-  "corrected": "Einordnung korrigiert. Das Radar lernt daraus."
+  "corrected": "Einordnung korrigiert. Das Radar lernt daraus.",
+  "reachEstimated": "≈ {n} (geschätzt)",
+  "reachEstimatedHint": "Die Quelle liefert keine Aufrufe: das sind die Follower des Autors, als Schätzung.",
+  "spam": {
+   "repeated": "Spam: gleicher Text von vielen Konten",
+   "links": "Spam: Linkfarm",
+   "hashtags": "Spam: nur Hashtags",
+   "other": "Spam"
+  },
+  "inReport": "Im Bericht",
+  "alsoOn": "Auch auf {sources}",
+  "notSpam": "Kein Spam",
+  "markSpam": "Spam",
+  "spamSaved": "Als Spam markiert und ausgeblendet. Über den Filter „Spam“ rückgängig machen."
  },
  "correct": {
   "title": "Einordnung korrigieren",
@@ -187,7 +222,8 @@
    "new": "Neu",
    "reviewed": "Gesehen",
    "converted": "Im Posteingang",
-   "muted": "Ausgeblendet"
+   "muted": "Ausgeblendet",
+   "spam": "Spam (ausgeblendet)"
   },
   "showing": "{shown} von {total} Erwähnungen, neueste zuerst",
   "more": "Mehr anzeigen",
@@ -296,7 +332,9 @@
    "not_useful": "Nicht wichtig",
    "wrong": "Fehlalarm"
   },
-  "thanks": "Danke. Das Radar verbessert damit seine Hinweise."
+  "thanks": "Danke. Das Radar verbessert damit seine Hinweise.",
+  "goInbox": "Zum Posteingang",
+  "goIdeas": "Ideen des Tages ansehen"
  },
  "setup": {
   "pick": "Zu bearbeitende Einrichtung",
@@ -373,12 +411,169 @@
   "deleteTitle": "Diese Einrichtung löschen?",
   "deleteText": "„{name}“ wird mit allen Erwähnungen und Ereignissen gelöscht. Das lässt sich nicht rückgängig machen.",
   "deleteConfirm": "Endgültig löschen",
-  "deleted": "Einrichtung gelöscht."
+  "deleted": "Einrichtung gelöscht.",
+  "manageSources": "Quellen verwalten",
+  "monthlyCap": "Monatliches Ausgabenlimit für bezahlte Quellen ($)",
+  "monthlyCapHint": "Bezahlte Quellen (X, Web, Reddit, TikTok) stoppen, wenn diese Einrichtung es erreicht. Leer = kein Limit.",
+  "monthlyCapNone": "Kein Limit",
+  "paidEstimate": "Bezahlte Quellen pro Monat (Schätzung)",
+  "paidEstimateHint": "Wird zum Plattformpreis von deinem KI-Guthaben abgezogen.",
+  "spentMonth": "Bezahlte Quellen diesen Monat",
+  "options": {
+   "telegram_channels": "Telegram-Kanäle",
+   "telegram_channelsHint": "Öffentliche Kanäle (bis zu 10), z. B. t.me/kanal.",
+   "telegram_channelsPlaceholder": "Kanalname oder t.me-Link",
+   "app_store_ids": "App-Store-Apps",
+   "app_store_idsHint": "Die App-ID aus dem App-Store-Link (die Zahl nach „id“).",
+   "app_store_idsPlaceholder": "z. B. 1234567890",
+   "google_play_ids": "Google-Play-Apps",
+   "google_play_idsHint": "Paketname, z. B. com.firma.app (benötigt ein Dienstkonto).",
+   "google_play_idsPlaceholder": "com.firma.app",
+   "subreddits": "Subreddits",
+   "subredditsHint": "Optional. Nur in diesen Communities suchen (bis zu 3).",
+   "subredditsPlaceholder": "z. B. germany",
+   "youtube_channel_ids": "Weitere YouTube-Kanäle",
+   "youtube_channel_idsHint": "Optional. Kanal-IDs, deren Videokommentare ebenfalls gelesen werden.",
+   "youtube_channel_idsPlaceholder": "UC…"
+  }
  },
  "home": {
   "title": "Radar",
   "calm": "Nichts Ungewöhnliches in dem, was über dich gesagt wird.",
   "openEvents": "offene Ereignisse",
   "net": "Netto-Stimmung, 7 Tage"
+ },
+ "actions": {
+  "reply": "Antworten",
+  "more": "Mehr",
+  "createPost": "Beitrag daraus erstellen",
+  "makeBoard": "Produktionsboard erstellen",
+  "addToReport": "Zum Bericht hinzufügen",
+  "removeFromReport": "Aus dem Bericht entfernen",
+  "assign": "Teammitglied zuweisen",
+  "postCreated": "Beitragsentwurf im Studio erstellt.",
+  "boardCreated": "Produktionsboard erstellt.",
+  "inReport": "Erscheint im nächsten Bericht.",
+  "outOfReport": "Aus dem Bericht entfernt.",
+  "replyTitle": "Auf diese Erwähnung antworten",
+  "close": "Schließen",
+  "openInbox": "Im Posteingang antworten",
+  "openOriginal": "Originalbeitrag öffnen",
+  "draftAi": "Antwortvorschlag (KI, im Ton deiner Marke)",
+  "draftTemplate": "Antwortvorschlag",
+  "inboxHint": "Dieser Kommentar ist auf deinem Konto: antworte aus dem Posteingang.",
+  "publicHint": "Öffentlicher Beitrag: Antwort kopieren, Original öffnen und dort von deinem Konto antworten.",
+  "assignTitle": "Erwähnung zuweisen",
+  "teammate": "Teammitglied",
+  "nobody": "Niemand",
+  "note": "Notiz",
+  "noteHint": "Optional. Wird mit der Benachrichtigung gesendet.",
+  "assignSave": "Zuweisen und benachrichtigen",
+  "assigned": "Zugewiesen. Dein Teammitglied wurde benachrichtigt.",
+  "unassigned": "Nicht mehr zugewiesen.",
+  "copy": "Antwort kopieren",
+  "copied": "Kopiert."
+ },
+ "sourcesPage": {
+  "summary": {
+   "ready": "Bereite Quellen",
+   "readyValue": "{ready} von {total}",
+   "credits": "Verbleibendes KI-Guthaben",
+   "creditsHint": "Bezahlte Quellen werden davon abgezogen, wie KI.",
+   "unlimited": "Kein Limit",
+   "spend": "Bezahlte Quellen diesen Monat",
+   "cap": "Limit {cap} für diese Einrichtung",
+   "noCap": "Kein Monatslimit"
+  },
+  "groups": {
+   "owned": {
+    "title": "Deine Konten",
+    "text": "Was auf deinen eigenen Seiten passiert: Kommentare, Markierungen und Bewertungen. Offiziell und kostenlos; einmal verbinden."
+   },
+   "public": {
+    "title": "Öffentliche Suche",
+    "text": "Offizielle Suchen über ein ganzes Netzwerk oder das Web. Manche sind kostenlos (mit Freigabe), manche kosten pro Nutzung."
+   },
+   "provider": {
+    "title": "Datenanbieter",
+    "text": "Dritte, die öffentliche Daten sammeln, wo es keine offizielle Suche gibt. Kosten pro Anfrage, Beta."
+   }
+  },
+  "status": {
+   "ready": "Bereit",
+   "needs_connection": "Konto verbinden",
+   "needs_key": "Schlüssel fehlt",
+   "needs_permission": "Freigabe fehlt",
+   "needs_setup": "Angaben fehlen",
+   "quota_exhausted": "Kontingent aufgebraucht",
+   "out_of_credits": "Kein Guthaben",
+   "not_in_plan": "Nicht im Tarif",
+   "disabled": "Aus",
+   "error": "Fehler"
+  },
+  "cost": {
+   "free": "Kostenlos",
+   "freeQuota": "Kostenlos im Tageskontingent",
+   "paid": "≈ {price} pro 1.000 {unit}, vom KI-Guthaben",
+   "ownKey": "Eigener Schlüssel: keine Kosten"
+  },
+  "units": {
+   "post": "gelesene Beiträge",
+   "query": "Suchen",
+   "request": "Anfragen",
+   "call": "Aufrufe"
+  },
+  "actions": {
+   "test": "Jetzt testen",
+   "connect": "Konto verbinden",
+   "askAdmin": "Admin fragen",
+   "addKey": "Schlüssel hinzufügen",
+   "permission": "Freigabe beantragen",
+   "editSetup": "Einrichtung bearbeiten",
+   "upgrade": "Upgrade",
+   "buyCredits": "Guthaben kaufen"
+  },
+  "tested": "Getestet: {n} neue Erwähnungen.",
+  "checked": "Erneut geprüft.",
+  "permissionTitle": "Eine Plattform-Freigabe wird benötigt",
+  "adminTitle": "Der Plattform-Admin muss das einrichten",
+  "close": "Schließen",
+  "openAdmin": "Admin › Radar-Quellen öffnen",
+  "permissionText": "Die App der Plattform muss für „{permission}“ freigegeben sein. Sie wird einmal für alle Workspaces in der Entwicklerkonsole des Netzwerks beantragt.",
+  "permissionDoc": "So wird sie beantragt",
+  "adminSelf": "Du bist Plattform-Admin: füge den Schlüssel unter Admin › Radar-Quellen hinzu.",
+  "adminText": "Sende das an deinen Plattform-Admin: „Bitte füge {what} unter Admin › Radar-Quellen hinzu.“",
+  "beta": "Beta",
+  "use": "In dieser Einrichtung nutzen",
+  "enabled": "Quelle für diese Einrichtung eingeschaltet.",
+  "disabled": "Quelle für diese Einrichtung ausgeschaltet.",
+  "quotaDay": "{used} von {limit} Einheiten heute",
+  "quotaMonth": "{used} von {limit} diesen Monat",
+  "usage": "Diesen Monat: {units} Einheiten · {usd}",
+  "listening": "Hört zu",
+  "perMonth": "/Monat",
+  "covers": {
+   "owned": "Öffentliche Kommentare auf all deinen verbundenen Konten (aus dem Posteingang).",
+   "instagram": "Beiträge, die dich markieren, und neue Beiträge deiner #Hashtags (30 Hashtags pro Woche).",
+   "facebook": "Beiträge, die deine Seite markieren, und Seitenbewertungen. Facebook hat keine öffentliche Suche.",
+   "threads": "Stichwortsuche in öffentlichen Threads-Beiträgen und Antworten auf deine Beiträge.",
+   "youtube": "Neue Videos, die deine Begriffe nennen.",
+   "youtube_comments": "Kommentare zu deinen Videos und zu Videos aus der Suche.",
+   "google_business": "Bewertungen deiner Google-Unternehmensprofil-Standorte.",
+   "linkedin": "Kommentare zu Beiträgen deiner Unternehmensseite (keine öffentliche Suche auf LinkedIn).",
+   "news": "Nachrichtenseiten über Google News oder eine bezahlte News-API, wenn die Plattform eine hat.",
+   "web": "Blogs, Foren, Bewertungsseiten und News im ganzen Web (Brave Search).",
+   "x": "Volle Stichwort- und Hashtag-Suche in neuen Beiträgen auf X.",
+   "reddit": "Beiträge, die dich erwähnen, optional in ausgewählten Subreddits.",
+   "tiktok": "Öffentliche TikTok-Videos nach Stichwort oder Hashtag, mit Aufrufen und Followern.",
+   "telegram": "Neue Beiträge der öffentlichen Kanäle, die du angibst.",
+   "app_store": "Kundenbewertungen deiner iPhone-Apps.",
+   "google_play": "Bewertungen deiner Android-App (benötigt ein Play-Console-Dienstkonto).",
+   "snapchat": "Snapchat hat keine API für Kommentare oder öffentliche Suche."
+  },
+  "terms": {
+   "tiktok": "Über ScrapeCreators, einen inoffiziellen Anbieter. TikToks Bedingungen erlauben kein Scraping; nutze es im Bewusstsein des Risikos.",
+   "reddit": "Die kommerzielle Nutzung der Reddit-API erfordert eine Vereinbarung mit Reddit."
+  }
  }
 }

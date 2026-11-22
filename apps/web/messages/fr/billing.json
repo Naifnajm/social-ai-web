@@ -47,7 +47,8 @@
   "custom_branding": "Image de marque personnalisée",
   "listening": "Radar : écoute sociale",
   "listening_x": "Radar : source X",
-  "mcp": "Assistants IA & API (Claude, ChatGPT)"
+  "mcp": "Assistants IA & API (Claude, ChatGPT)",
+  "listening_providers": "Radar : fournisseurs de données (TikTok)"
  },
  "monthly": "Mensuel",
  "yearly": "Annuel",

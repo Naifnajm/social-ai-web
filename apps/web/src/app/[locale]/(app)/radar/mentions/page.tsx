@@ -88,7 +88,7 @@ function Mentions() {
         )}
         <Select className="!w-40" aria-label={t("mentions.status")} value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">{t("mentions.statuses.any")}</option>
-          {(["new", "reviewed", "converted", "muted"] as const).map((s) => <option key={s} value={s}>{t(`mentions.statuses.${s}`)}</option>)}
+          {(["new", "reviewed", "converted", "muted", "spam"] as const).map((s) => <option key={s} value={s}>{t(`mentions.statuses.${s}`)}</option>)}
         </Select>
       </div>
 

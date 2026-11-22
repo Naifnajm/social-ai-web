@@ -18,6 +18,9 @@
     "stt": "Spraak naar tekst",
     "fast": "Snel model voor bulkwerk"
    }
+  },
+  "caps": {
+   "data": "Radardata"
   }
  },
  "camera": {

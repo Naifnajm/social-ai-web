@@ -27,5 +27,66 @@
   "added": "Credits aktualisiert. Neues Guthaben: {balance}",
   "balance": "KI-Credits",
   "unit": "Credits"
+ },
+ "tabs": {
+  "radar": "Radar-Quellen"
+ },
+ "radar": {
+  "saved": "Radar-Quellen gespeichert.",
+  "monthCost": "Bezahlte Quellen diesen Monat (Kosten)",
+  "monthBilled": "An Workspaces berechnet",
+  "markup": "Inklusive deiner {n} % Marge",
+  "youtubeToday": "YouTube-Einheiten heute",
+  "keys": "Plattform-Schlüssel",
+  "keysHint": "Von allen Workspaces genutzt (ein Workspace kann für X und Brave einen eigenen Schlüssel hinterlegen). Schlüssel werden nie wieder angezeigt.",
+  "configured": "Eingerichtet",
+  "notConfigured": "Nicht eingerichtet",
+  "replace": "zum Ersetzen tippen",
+  "clear": "Schlüssel entfernen",
+  "sources": "Quellen, Preise und Verfügbarkeit",
+  "beta": "Beta",
+  "unavailable": "Keine API",
+  "plan": "Tarif-Funktion: {feature}",
+  "usage": "Diesen Monat: {units} Einheiten · Kosten {cost} · berechnet {billed}",
+  "price": "$ pro {unit}",
+  "units": {
+   "post": "Beitrag",
+   "query": "Suche",
+   "request": "Anfrage",
+   "call": "Aufruf"
+  },
+  "on": "An",
+  "off": "Aus",
+  "youtubeUnits": "YouTube-Einheiten pro Workspace und Durchlauf",
+  "youtubeUnitsHint": "Die Plattform hat 10.000 Einheiten pro Tag: eine Suche kostet 100, eine Kommentarseite 1.",
+  "byWorkspace": "Kosten pro Workspace diesen Monat",
+  "noUsage": "Diesen Monat noch keine bezahlten Abrufe.",
+  "workspace": "Workspace",
+  "bySource": "Einheiten pro Quelle",
+  "cost": "Kosten",
+  "billed": "Berechnet",
+  "todo": {
+   "owned": "Nichts zu tun: liest den Posteingang.",
+   "instagram": "Meta-App mit freigegebenem Instagram Public Content Access (für die Hashtag-Suche).",
+   "facebook": "Meta-App mit pages_read_user_content (für Seitenbewertungen).",
+   "threads": "Threads-App mit threads_keyword_search und threads_read_replies; Workspaces verbinden ein Threads-Konto.",
+   "youtube": "YouTube-Data-API-Schlüssel hinzufügen (Google-Cloud-Projekt, 10.000 Einheiten/Tag).",
+   "youtube_comments": "Derselbe YouTube-Schlüssel; unten die Einheiten pro Workspace und Durchlauf festlegen.",
+   "google_business": "Zugriff auf die Google Business Profile API für die Google-App.",
+   "linkedin": "LinkedIn-App mit Community Management API (r_organization_social); Workspaces verbinden ihre Seite.",
+   "news": "Optional: ein GNews- oder NewsAPI-Schlüssel (sonst Google-News-RSS).",
+   "web": "Brave-Search-API-Schlüssel hinzufügen (≈ 5 $ pro 1.000 Suchen).",
+   "x": "X-API-Bearer-Token hinzufügen (Bezahlung pro gelesenem Beitrag).",
+   "reddit": "Client-ID und Secret einer Reddit-App hinzufügen (kommerzielle Vereinbarung mit Reddit).",
+   "tiktok": "ScrapeCreators-API-Schlüssel hinzufügen.",
+   "telegram": "Nichts zu tun: öffentliche Kanalseiten werden gelesen.",
+   "app_store": "Nichts zu tun: Apples öffentlicher Bewertungsfeed.",
+   "google_play": "Noch nicht verbunden: benötigt ein Play-Console-Dienstkonto pro App.",
+   "snapchat": "Nicht möglich: keine API."
+  },
+  "terms": {
+   "tiktok": "Inoffizieller Anbieter: TikToks Bedingungen erlauben kein Scraping. Im Bewusstsein des Risikos anbieten.",
+   "reddit": "Kommerzielle Nutzung erfordert eine Vereinbarung mit Reddit."
+  }
  }
 }

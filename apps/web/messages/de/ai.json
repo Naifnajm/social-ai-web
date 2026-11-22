@@ -18,6 +18,9 @@
     "stt": "Sprache zu Text",
     "fast": "Schnelles Modell für Massenaufgaben"
    }
+  },
+  "caps": {
+   "data": "Radar-Daten"
   }
  },
  "camera": {

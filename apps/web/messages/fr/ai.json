@@ -18,6 +18,9 @@
     "stt": "Transcription",
     "fast": "Modèle rapide pour les traitements en masse"
    }
+  },
+  "caps": {
+   "data": "Données du radar"
   }
  },
  "camera": {

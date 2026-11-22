@@ -27,5 +27,66 @@
   "added": "Credits bijgewerkt. Nieuw saldo: {balance}",
   "balance": "AI-credits",
   "unit": "credits"
+ },
+ "tabs": {
+  "radar": "Radarbronnen"
+ },
+ "radar": {
+  "saved": "Radarbronnen opgeslagen.",
+  "monthCost": "Betaalde bronnen deze maand (kosten)",
+  "monthBilled": "Doorberekend aan werkruimtes",
+  "markup": "Inclusief je marge van {n}%",
+  "youtubeToday": "YouTube-eenheden vandaag",
+  "keys": "Platformsleutels",
+  "keysHint": "Gebruikt door alle werkruimtes (een werkruimte kan voor X en Brave een eigen sleutel toevoegen). Sleutels worden nooit meer getoond.",
+  "configured": "Ingesteld",
+  "notConfigured": "Niet ingesteld",
+  "replace": "typ om te vervangen",
+  "clear": "Sleutel verwijderen",
+  "sources": "Bronnen, prijzen en beschikbaarheid",
+  "beta": "Bèta",
+  "unavailable": "Geen API",
+  "plan": "Abonnementsfunctie: {feature}",
+  "usage": "Deze maand: {units} eenheden · kosten {cost} · doorberekend {billed}",
+  "price": "$ per {unit}",
+  "units": {
+   "post": "bericht",
+   "query": "zoekopdracht",
+   "request": "verzoek",
+   "call": "aanroep"
+  },
+  "on": "Aan",
+  "off": "Uit",
+  "youtubeUnits": "YouTube-eenheden per werkruimte per ronde",
+  "youtubeUnitsHint": "Het platform heeft 10.000 eenheden per dag: een zoekopdracht kost 100, een pagina reacties 1.",
+  "byWorkspace": "Kosten per werkruimte deze maand",
+  "noUsage": "Nog geen betaalde leesacties deze maand.",
+  "workspace": "Werkruimte",
+  "bySource": "Eenheden per bron",
+  "cost": "Kosten",
+  "billed": "Doorberekend",
+  "todo": {
+   "owned": "Niets te doen: leest de inbox.",
+   "instagram": "Meta-app met goedgekeurde Instagram Public Content Access (voor zoeken op hashtag).",
+   "facebook": "Meta-app met pages_read_user_content (voor Pagina-reviews).",
+   "threads": "Threads-app met threads_keyword_search en threads_read_replies; werkruimtes koppelen een Threads-account.",
+   "youtube": "Voeg een YouTube Data API-sleutel toe (Google Cloud-project, 10.000 eenheden/dag).",
+   "youtube_comments": "Dezelfde YouTube-sleutel; stel hieronder de eenheden per werkruimte per ronde in.",
+   "google_business": "Toegang tot de Google Business Profile API voor de Google-app.",
+   "linkedin": "LinkedIn-app met Community Management API (r_organization_social); werkruimtes koppelen hun pagina.",
+   "news": "Optioneel: een GNews- of NewsAPI-sleutel (anders Google Nieuws-RSS).",
+   "web": "Voeg een Brave Search API-sleutel toe (≈ $5 per 1.000 zoekopdrachten).",
+   "x": "Voeg een X API-bearertoken toe (betalen per gelezen bericht).",
+   "reddit": "Voeg client-id en secret van een Reddit-app toe (commerciële overeenkomst met Reddit).",
+   "tiktok": "Voeg een ScrapeCreators API-sleutel toe.",
+   "telegram": "Niets te doen: openbare kanaalpagina's worden gelezen.",
+   "app_store": "Niets te doen: Apples openbare reviewfeed.",
+   "google_play": "Nog niet gekoppeld: vereist een Play Console-serviceaccount per app.",
+   "snapchat": "Niet mogelijk: geen API."
+  },
+  "terms": {
+   "tiktok": "Onofficiële leverancier: de voorwaarden van TikTok staan scraping niet toe. Bewust van het risico aanbieden.",
+   "reddit": "Commercieel gebruik vereist een overeenkomst met Reddit."
+  }
  }
 }

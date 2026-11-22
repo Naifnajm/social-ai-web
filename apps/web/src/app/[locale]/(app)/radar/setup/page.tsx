@@ -7,7 +7,8 @@ import { type KeyboardEvent, type ReactNode, useState } from "react";
 import { Icon } from "@/components/icon";
 import { Chip, onError, useFormat } from "@/components/planning/ui";
 import { SourceBadge, useRadarQueries, useRadarScope, useRadarStatus, useScope, useSourceLabel } from "@/components/radar/shared";
-import { type Estimate, LANGUAGES, type ListeningQuery, type QueryInput, type RadarStatus, type Source } from "@/components/radar/types";
+import { CostLine, StatusPill, useRadarSources } from "@/components/radar/sources";
+import { type Estimate, LANGUAGES, type ListeningQuery, type QueryInput, type QueryOptions, type RadarStatus, type Source } from "@/components/radar/types";
 import { Badge, Button, Card, Field, IconButton, Input, Modal, SectionTitle, Select, Spinner, Switch, cx, toast } from "@/components/ui";
 import { Link, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api";
@@ -18,8 +19,21 @@ const MAX_COMPETITORS = 5;
 
 const EMPTY: QueryInput = {
   name: "", keywords: [], required: [], excluded: [], languages: [], countries: [], competitors: [],
-  sources: ["owned", "instagram", "facebook", "youtube", "google_business", "news"], active: true, x_monthly_cap: 3000,
+  sources: ["owned", "instagram", "facebook", "threads", "youtube", "youtube_comments", "google_business", "news"], active: true,
+  x_monthly_cap: 3000, monthly_cap_usd: null, options: {},
 };
+const PAID: string[] = ["x", "web", "reddit", "tiktok"];
+const telegramChannel = (v: string) => {
+  const c = v.trim().replace(/^(https?:\/\/)?(t\.me\/)?(s\/)?@?/, "").replace(/\/+$/, "");
+  return /^[A-Za-z0-9_]{4,64}$/.test(c) ? c : null;
+};
+const OPTION_FIELDS: { key: keyof QueryOptions; source: Source; max: number; normalize?: (v: string) => string | null }[] = [
+  { key: "telegram_channels", source: "telegram", max: 10, normalize: telegramChannel },
+  { key: "app_store_ids", source: "app_store", max: 5, normalize: (v) => v.replace(/\D/g, "") || null },
+  { key: "google_play_ids", source: "google_play", max: 5 },
+  { key: "subreddits", source: "reddit", max: 3, normalize: (v) => v.trim().replace(/^\/?r\//, "") || null },
+  { key: "youtube_channel_ids", source: "youtube_comments", max: 2 },
+];
 
 export default function RadarSetupPage() {
   const t = useTranslations("radar.setup");
@@ -72,7 +86,9 @@ function SetupForm({ status, query, onSaved }: { status: RadarStatus; query: Lis
     name: query.name, keywords: query.keywords, required: query.required, excluded: query.excluded, languages: query.languages,
     countries: query.countries, competitors: query.competitors.map((c) => ({ name: c.name, keywords: c.keywords ?? [] })),
     sources: query.sources, active: query.active, x_monthly_cap: query.x_monthly_cap,
+    monthly_cap_usd: query.monthly_cap_usd, options: query.options ?? {},
   } : EMPTY);
+  const registry = useRadarSources(query?.id ?? null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const set = <K extends keyof QueryInput>(key: K, value: QueryInput[K]) => setForm((f) => ({ ...f, [key]: value }));
   const estimate = useQuery({
@@ -103,6 +119,8 @@ function SetupForm({ status, query, onSaved }: { status: RadarStatus; query: Lis
   const toggle = <T extends string>(values: T[], value: T) => (values.includes(value) ? values.filter((v) => v !== value) : [...values, value]);
   const xOn = form.sources.includes("x");
   const price = status.x_price_per_post;
+  const paidEstimate = form.sources.filter((s) => PAID.includes(s))
+    .reduce((sum, s) => sum + (s === "x" ? form.x_monthly_cap * price : estimate.data?.costs?.[s]?.expected_usd ?? 0), 0);
   const ro = !canEdit;
 
   return (
@@ -165,30 +183,57 @@ function SetupForm({ status, query, onSaved }: { status: RadarStatus; query: Lis
         </Card>
 
         <Card>
-          <SectionTitle icon="share">{t("sources")}</SectionTitle>
+          <SectionTitle icon="share" actions={<Link href="/radar/sources" className="text-xs font-semibold underline underline-offset-2">{t("manageSources")}</Link>}>{t("sources")}</SectionTitle>
+          {registry.isLoading && <div className="flex justify-center py-6"><Spinner /></div>}
           <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-            {status.sources.map((s) => {
-              const on = form.sources.includes(s.source);
+            {(registry.data?.sources ?? []).filter((r) => r.available).map((r) => {
+              const key = r.key as Source;
+              const inPlan = status.sources.find((s) => s.source === key)?.in_plan ?? false;
+              const on = form.sources.includes(key);
+              const cost = estimate.data?.costs?.[key];
               return (
-                <li key={s.source} className={cx("flex items-start gap-3 rounded-2xl p-3 ring-1 ring-line", on && s.in_plan ? "bg-white/70" : "bg-fill")}>
-                  <SourceBadge source={s.source} size={30} />
+                <li key={key} className={cx("flex items-start gap-3 rounded-2xl p-3 ring-1 ring-line", on && inPlan ? "bg-white/70" : "bg-fill")}>
+                  <SourceBadge source={key} size={30} />
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-semibold">{sourceLabel(s.source)}</div>
-                    <p className="mt-0.5 text-xs leading-relaxed text-muted">{t(`sourceHints.${s.source}`)}</p>
-                    <div className="mt-1.5 flex flex-wrap gap-1">
-                      {s.paid ? <Badge tone="warn">{t("badges.paid")}</Badge> : <Badge>{t("badges.free")}</Badge>}
-                      {!s.in_plan ? <Badge tone="neutral"><Icon name="lock" size={11} />{t("badges.notInPlan")}</Badge>
-                        : s.ready ? <Badge tone="ok"><Icon name="check" size={11} />{t("badges.ready")}</Badge>
-                          : s.source === "x" || s.source === "youtube"
-                            ? <Badge tone="warn">{t("badges.notConfigured")}</Badge>
-                            : <Link href="/settings/accounts"><Badge tone="warn"><Icon name="link" size={11} />{t("badges.connect")}</Badge></Link>}
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="text-sm font-semibold">{sourceLabel(key)}</span>
+                      {r.beta && <Badge tone="ink">{tr("sourcesPage.beta")}</Badge>}
+                    </div>
+                    <p className="mt-0.5 text-xs leading-relaxed text-muted">{tr(`sourcesPage.covers.${key}`)}</p>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] text-text-2">
+                      <StatusPill status={r.health.status} />
+                      <CostLine row={r} />
+                      {on && cost && cost.expected_usd > 0 && <span className="font-semibold" dir="ltr">≈ ${fmt.number(cost.expected_usd, 2)}{tr("sourcesPage.perMonth")}</span>}
                     </div>
                   </div>
-                  <Switch checked={on && s.in_plan} disabled={ro || !s.in_plan} onChange={() => set("sources", toggle(form.sources, s.source as Source))} />
+                  <Switch checked={on && inPlan} disabled={ro || !inPlan || r.health.status === "disabled"} onChange={() => set("sources", toggle(form.sources, key))} />
                 </li>
               );
             })}
           </ul>
+          {OPTION_FIELDS.some((f) => form.sources.includes(f.source)) && (
+            <div className="mt-4 flex flex-col gap-4 rounded-2xl bg-fill p-4">
+              {OPTION_FIELDS.filter((f) => form.sources.includes(f.source)).map((f) => (
+                <Field key={f.key} label={t(`options.${f.key}`)} hint={t(`options.${f.key}Hint`)}>
+                  <TagInput values={form.options[f.key] ?? []} disabled={ro} placeholder={t(`options.${f.key}Placeholder`)} normalize={f.normalize}
+                    onChange={(v) => set("options", { ...form.options, [f.key]: v.slice(0, f.max) })} />
+                </Field>
+              ))}
+            </div>
+          )}
+          {form.sources.some((s) => PAID.includes(s)) && (
+            <div className="mt-4 grid gap-3 rounded-2xl bg-fill p-4 sm:grid-cols-2 sm:items-end">
+              <Field label={t("monthlyCap")} hint={t("monthlyCapHint")}>
+                <Input type="number" min={0} max={100000} step={5} dir="ltr" disabled={ro} placeholder={t("monthlyCapNone")}
+                  value={form.monthly_cap_usd ?? ""} onChange={(e) => set("monthly_cap_usd", e.target.value === "" ? null : Math.max(0, Number(e.target.value) || 0))} />
+              </Field>
+              <div className="text-sm">
+                <div className="text-xs text-muted">{t("paidEstimate")}</div>
+                <div className="text-xl font-bold tabular-nums" dir="ltr">${fmt.number(paidEstimate, 2)}</div>
+                <div className="text-xs text-muted">{t("paidEstimateHint")}</div>
+              </div>
+            </div>
+          )}
           {xOn && (
             <div className="mt-4 grid gap-3 rounded-2xl bg-fill p-4 sm:grid-cols-2 sm:items-end">
               <Field label={t("xCap")} hint={t("xCapHint")}>
@@ -212,6 +257,9 @@ function SetupForm({ status, query, onSaved }: { status: RadarStatus; query: Lis
             <Row label={t("expected")}>{estimate.data?.expected_month == null ? <span className="text-muted">{t("expectedUnknown")}</span> : t("about", { n: fmt.number(estimate.data.expected_month) })}</Row>
             {estimate.data?.expected_month != null && estimate.data.by_source.x != null && <Row label={t("fromX")}>{t("about", { n: fmt.number(estimate.data.by_source.x) })}</Row>}
             {xOn && <Row label={t("xCostMonth")}><span dir="ltr">${fmt.number(form.x_monthly_cap * price, 2)}</span></Row>}
+            {query && query.spend.usd > 0 && (
+              <Row label={t("spentMonth")}><span dir="ltr">${fmt.number(query.spend.usd, 2)}{query.spend.cap_usd != null ? ` / $${fmt.number(query.spend.cap_usd, 2)}` : ""}</span></Row>
+            )}
             {query && query.x_usage.reads > 0 && (
               <Row label={t("xUsed")}><span dir="ltr">{fmt.number(query.x_usage.reads)} / {fmt.number(query.x_usage.cap)} · ${fmt.number(query.x_usage.cost_usd, 2)}</span></Row>
             )}

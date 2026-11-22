@@ -27,5 +27,66 @@
   "added": "Crédits mis à jour. Nouveau solde : {balance}",
   "balance": "Crédits IA",
   "unit": "crédits"
+ },
+ "tabs": {
+  "radar": "Sources du radar"
+ },
+ "radar": {
+  "saved": "Sources du radar enregistrées.",
+  "monthCost": "Sources payantes ce mois-ci (coût)",
+  "monthBilled": "Facturé aux espaces",
+  "markup": "Inclut votre marge de {n} %",
+  "youtubeToday": "Unités YouTube aujourd’hui",
+  "keys": "Clés de la plateforme",
+  "keysHint": "Utilisées par tous les espaces (un espace peut ajouter sa propre clé pour X et Brave). Les clés ne sont jamais réaffichées.",
+  "configured": "Configurée",
+  "notConfigured": "Non configurée",
+  "replace": "saisir pour remplacer",
+  "clear": "Supprimer la clé",
+  "sources": "Sources, prix et disponibilité",
+  "beta": "Bêta",
+  "unavailable": "Pas d’API",
+  "plan": "Fonction du forfait : {feature}",
+  "usage": "Ce mois-ci : {units} unités · coût {cost} · facturé {billed}",
+  "price": "$ par {unit}",
+  "units": {
+   "post": "publication",
+   "query": "recherche",
+   "request": "requête",
+   "call": "appel"
+  },
+  "on": "Activée",
+  "off": "Désactivée",
+  "youtubeUnits": "Unités YouTube par espace et par passage",
+  "youtubeUnitsHint": "La plateforme dispose de 10 000 unités par jour : une recherche coûte 100, une page de commentaires 1.",
+  "byWorkspace": "Coût par espace ce mois-ci",
+  "noUsage": "Aucune lecture payante ce mois-ci.",
+  "workspace": "Espace",
+  "bySource": "Unités par source",
+  "cost": "Coût",
+  "billed": "Facturé",
+  "todo": {
+   "owned": "Rien à faire : lit la boîte de réception.",
+   "instagram": "App Meta approuvée pour Instagram Public Content Access (recherche par hashtag).",
+   "facebook": "App Meta avec pages_read_user_content (avis de la Page).",
+   "threads": "App Threads approuvée pour threads_keyword_search et threads_read_replies ; les espaces connectent un compte Threads.",
+   "youtube": "Ajoutez une clé YouTube Data API (projet Google Cloud, 10 000 unités/jour).",
+   "youtube_comments": "Même clé YouTube ; réglez ci-dessous les unités par espace et par passage.",
+   "google_business": "Accès à l’API Google Business Profile pour l’app Google.",
+   "linkedin": "App LinkedIn avec la Community Management API (r_organization_social) ; les espaces connectent leur page.",
+   "news": "Facultatif : une clé GNews ou NewsAPI (sinon le flux RSS de Google Actualités).",
+   "web": "Ajoutez une clé Brave Search API (≈ 5 $ pour 1 000 recherches).",
+   "x": "Ajoutez un bearer token de l’API X (payé par publication lue).",
+   "reddit": "Ajoutez l’identifiant et le secret d’une app Reddit (accord commercial avec Reddit).",
+   "tiktok": "Ajoutez une clé API ScrapeCreators.",
+   "telegram": "Rien à faire : les pages publiques des chaînes sont lues.",
+   "app_store": "Rien à faire : flux public des avis d’Apple.",
+   "google_play": "Pas encore connecté : nécessite un compte de service Play Console par app.",
+   "snapchat": "Impossible : pas d’API."
+  },
+  "terms": {
+   "tiktok": "Fournisseur non officiel : les conditions de TikTok interdisent le scraping. À proposer en connaissance du risque.",
+   "reddit": "L’usage commercial nécessite un accord avec Reddit."
+  }
  }
 }

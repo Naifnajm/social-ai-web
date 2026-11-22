@@ -8,7 +8,8 @@
   "users": "Users",
   "ai": "AI credit",
   "system": "System health",
-  "support": "Support"
+  "support": "Support",
+  "radar": "Radar sources"
  },
  "stats": {
   "mrr": "MRR",
@@ -181,5 +182,63 @@
   "added": "Credits updated. New balance: {balance}",
   "balance": "AI credits",
   "unit": "credits"
+ },
+ "radar": {
+  "saved": "Radar sources saved.",
+  "monthCost": "Paid sources this month (cost)",
+  "monthBilled": "Billed to workspaces",
+  "markup": "Includes your {n}% markup",
+  "youtubeToday": "YouTube units today",
+  "keys": "Platform keys",
+  "keysHint": "Used by every workspace (a workspace may add its own key for X and Brave). Keys are write-only: they are never shown again.",
+  "configured": "Configured",
+  "notConfigured": "Not configured",
+  "replace": "type to replace",
+  "clear": "Remove the key",
+  "sources": "Sources, prices and availability",
+  "beta": "Beta",
+  "unavailable": "No API",
+  "plan": "Plan feature: {feature}",
+  "usage": "This month: {units} units · cost {cost} · billed {billed}",
+  "price": "$ per {unit}",
+  "units": {
+   "post": "post",
+   "query": "search",
+   "request": "request",
+   "call": "call"
+  },
+  "on": "On",
+  "off": "Off",
+  "youtubeUnits": "YouTube units per workspace per run",
+  "youtubeUnitsHint": "The platform has 10,000 units a day: a search costs 100, a page of comments 1.",
+  "byWorkspace": "Cost per workspace this month",
+  "noUsage": "No paid reads this month yet.",
+  "workspace": "Workspace",
+  "bySource": "Units by source",
+  "cost": "Cost",
+  "billed": "Billed",
+  "todo": {
+   "owned": "Nothing to do: it reads the inbox.",
+   "instagram": "Meta app with Instagram Public Content Access approved (for hashtag search).",
+   "facebook": "Meta app with pages_read_user_content (for Page reviews).",
+   "threads": "Threads app with threads_keyword_search and threads_read_replies approved; workspaces connect a Threads account.",
+   "youtube": "Add a YouTube Data API key (Google Cloud project, 10,000 units/day).",
+   "youtube_comments": "Same YouTube key; set the units each workspace may spend per run below.",
+   "google_business": "Google Business Profile API access for the Google app.",
+   "linkedin": "LinkedIn app with Community Management API (r_organization_social); workspaces connect their page.",
+   "news": "Optional: a GNews or NewsAPI key (Google News RSS is used otherwise).",
+   "web": "Add a Brave Search API key (≈ $5 per 1,000 searches).",
+   "x": "Add an X API bearer token (pay per post read).",
+   "reddit": "Add a Reddit app's client id and secret (commercial agreement with Reddit).",
+   "tiktok": "Add a ScrapeCreators API key.",
+   "telegram": "Nothing to do: public channel pages are read.",
+   "app_store": "Nothing to do: Apple's public reviews feed.",
+   "google_play": "Not connected yet: needs a Play Console service account per app.",
+   "snapchat": "Not possible: no API."
+  },
+  "terms": {
+   "tiktok": "Unofficial provider: TikTok's terms do not allow scraping. Offer it knowing the risk.",
+   "reddit": "Commercial use needs an agreement with Reddit."
+  }
  }
 }

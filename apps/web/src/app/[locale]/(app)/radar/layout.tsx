@@ -16,6 +16,7 @@ const TABS = [
   { href: "/radar/voice", key: "voice", icon: "forum" },
   { href: "/radar/mentions", key: "mentions", icon: "view_list" },
   { href: "/radar/competitors", key: "competitors", icon: "flag" },
+  { href: "/radar/sources", key: "sources", icon: "apps" },
   { href: "/radar/setup", key: "setup", icon: "settings" },
 ];
 
@@ -35,6 +36,7 @@ export default function RadarLayout({ children }: { children: ReactNode }) {
 
   const isSetup = pathname === "/radar/setup";
   const isEvent = pathname.startsWith("/radar/events");
+  const isSources = pathname === "/radar/sources";
   const list = status.data?.queries ?? [];
   const full = queries.data?.find((q) => q.id === query?.id);
 
@@ -42,8 +44,8 @@ export default function RadarLayout({ children }: { children: ReactNode }) {
   if (status.isLoading) body = <div className="flex justify-center py-24"><Spinner size={28} /></div>;
   else if (status.isError) body = <Card><EmptyState icon="error" title={t("loadFailed")} action={<Button icon="refresh" onClick={() => status.refetch()}>{t("retry")}</Button>} /></Card>;
   else if (!enabled) body = <UpgradeCard />;
-  else if (!list.length && !isSetup) body = <NoSetupCard />;
-  else if (!isSetup && !isEvent && full && full.mentions === 0) {
+  else if (!list.length && !isSetup && !isSources) body = <NoSetupCard />;
+  else if (!isSetup && !isEvent && !isSources && full && full.mentions === 0) {
     body = (
       <Card>
         <EmptyState icon="schedule" title={t("waiting.title")}
@@ -59,7 +61,7 @@ export default function RadarLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  const showBar = enabled && list.length > 0;
+  const showBar = enabled && (list.length > 0 || isSources);
   return (
     <div className="pt-2">
       <PageHeader icon="graphic_eq" title={t("title")}
@@ -86,7 +88,7 @@ export default function RadarLayout({ children }: { children: ReactNode }) {
               })}
             </div>
           </nav>
-          {!isSetup && !isEvent && (
+          {!isSetup && !isEvent && !isSources && list.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">
               {list.length > 1 && (
                 <Select className="!w-56" aria-label={t("setupSwitch")} value={query?.id ?? ""} onChange={(e) => setQuery(Number(e.target.value))}>

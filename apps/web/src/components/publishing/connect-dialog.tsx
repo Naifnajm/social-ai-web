@@ -46,7 +46,7 @@ export async function reconnectView(account: Account, platforms: PlatformOption[
   return null;
 }
 
-async function startOAuth(platform: string) {
+export async function startOAuth(platform: string) {
   const { url } = await api.post<{ url: string }>("/accounts/oauth/start", { platform });
   window.location.href = url;
 }

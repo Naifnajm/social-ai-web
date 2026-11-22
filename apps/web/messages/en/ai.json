@@ -164,7 +164,8 @@
    "image": "Images",
    "video": "Video",
    "audio": "Voice & sound",
-   "stt": "Speech to text"
+   "stt": "Speech to text",
+   "data": "Radar data"
   },
   "pricesHint": "Approximate list prices in US dollars. They are used for estimates, budgets and the AI costs page.",
   "loadCatalog": "Add missing catalog models",

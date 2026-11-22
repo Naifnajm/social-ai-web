@@ -106,6 +106,12 @@ function EventView({ event }: { event: RadarEvent }) {
             {t("event.openPost")}<Icon name="open_in_new" size={12} />
           </Link>
         )}
+        {(event.links?.inbox || event.links?.ideas) && (
+          <div className="mt-3 flex flex-wrap gap-3 text-sm">
+            {event.links.inbox && <Link href={event.links.inbox} className="inline-flex items-center gap-1 font-medium underline underline-offset-2"><Icon name="inbox" size={13} />{t("event.goInbox")}</Link>}
+            {event.links.ideas && <Link href={event.links.ideas} className="inline-flex items-center gap-1 font-medium underline underline-offset-2"><Icon name="lightbulb" size={13} />{t("event.goIdeas")}</Link>}
+          </div>
+        )}
       </Card>
 
       {hourly && (

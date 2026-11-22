@@ -18,6 +18,7 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api";
 import { useSession } from "@/lib/session";
 import { SENTIMENT_COLOR } from "./charts";
+import { MentionActions } from "./mention-actions";
 import { type EventShort, INTENTS, type Intent, type ListeningQuery, type Mention, type RadarStatus, SENTIMENTS, type Sentiment, type Severity } from "./types";
 
 // ------------------------------------------------------------------------------------------------ scope
@@ -68,15 +69,20 @@ export function useCollectNow() {
 // --------------------------------------------------------------------------------------------- badges
 export function SourceBadge({ source, platform, size = 22 }: { source: string; platform?: string | null; size?: number }) {
   const net = platform && platform !== "news" && platform !== "owned" ? platform : source;
-  if (["facebook", "instagram", "x", "youtube", "google_business", "tiktok", "linkedin", "threads", "telegram"].includes(net)) {
-    return <PlatformBadge platform={net} size={size} />;
+  const network = net === "youtube_comments" ? "youtube" : net;
+  if (["facebook", "instagram", "x", "youtube", "google_business", "tiktok", "linkedin", "threads", "telegram"].includes(network)) {
+    return <PlatformBadge platform={network} size={size} />;
   }
   return (
     <span className="inline-flex shrink-0 items-center justify-center rounded-[9px] bg-fill-2 text-text-2" style={{ width: size, height: size }}>
-      <Icon name={net === "news" ? "description" : "campaign"} size={Math.round(size * 0.6)} />
+      <Icon name={SOURCE_ICONS[network] ?? "campaign"} size={Math.round(size * 0.6)} />
     </span>
   );
 }
+
+const SOURCE_ICONS: Record<string, string> = {
+  news: "description", web: "search", reddit: "forum", app_store: "smartphone", google_play: "smartphone", snapchat: "block", owned: "campaign",
+};
 
 export function useSourceLabel() {
   const t = useTranslations("radar.sources");
@@ -147,7 +153,7 @@ export function MentionCard({ mention, compact = false, onChanged }: { mention: 
     mutationFn: (body: Partial<Pick<Mention, "status" | "sentiment" | "intent" | "topic">>) => api.patch<Mention>(`/listening/mentions/${mention.id}`, body),
     onSuccess: (_row, body) => {
       done();
-      toast.success(body.status === "muted" ? t("mention.muted") : body.status ? t("mention.saved") : t("mention.corrected"));
+      toast.success(body.status === "muted" ? t("mention.muted") : body.status === "spam" ? t("mention.spamSaved") : body.status ? t("mention.saved") : t("mention.corrected"));
     },
     onError,
   });
@@ -158,7 +164,7 @@ export function MentionCard({ mention, compact = false, onChanged }: { mention: 
   });
   const author = mention.author_name || mention.author_handle || t("mention.unknownAuthor");
   return (
-    <article className={cx("flex gap-3", compact ? "py-3" : "py-4", mention.status === "muted" && "opacity-60")}>
+    <article className={cx("flex gap-3", compact ? "py-3" : "py-4", (mention.status === "muted" || mention.status === "spam") && "opacity-60")}>
       <SourceBadge source={mention.source} platform={mention.platform} size={compact ? 26 : 32} />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[13px]">
@@ -180,9 +186,15 @@ export function MentionCard({ mention, compact = false, onChanged }: { mention: 
           {mention.corrected && <span className="text-[11px] text-faint">{t("mention.correctedByTeam")}</span>}
           {mention.status === "reviewed" && <Badge tone="ok"><Icon name="check" size={11} />{t("mention.reviewed")}</Badge>}
           {mention.status === "converted" && <Badge tone="ok"><Icon name="inbox" size={11} />{t("mention.inInbox")}</Badge>}
-          {(mention.reach > 0 || mention.engagement > 0) && (
+          {mention.status === "spam" && <Badge tone="warn"><Icon name="block" size={11} />{t(`mention.spam.${mention.spam_reason ?? "other"}`)}</Badge>}
+          {mention.in_report && <Badge tone="ink"><Icon name="description" size={11} />{t("mention.inReport")}</Badge>}
+          {mention.also_on.length > 0 && <span className="text-[11px] text-faint">{t("mention.alsoOn", { sources: mention.also_on.map((s) => sourceLabel(s)).join("، ") })}</span>}
+          {(mention.reach != null || mention.reach_estimated != null || mention.engagement > 0) && (
             <span className="ms-auto flex items-center gap-2.5 text-xs text-muted">
-              {mention.reach > 0 && <span className="flex items-center gap-1" title={t("mention.reach")}><Icon name="visibility" size={12} />{fmt.compact(mention.reach)}</span>}
+              {mention.reach != null && mention.reach > 0 && <span className="flex items-center gap-1" title={t("mention.reach")}><Icon name="visibility" size={12} />{fmt.compact(mention.reach)}</span>}
+              {mention.reach == null && mention.reach_estimated != null && (
+                <span className="flex items-center gap-1" title={t("mention.reachEstimatedHint")}><Icon name="visibility" size={12} />{t("mention.reachEstimated", { n: fmt.compact(mention.reach_estimated) })}</span>
+              )}
               {mention.engagement > 0 && <span className="flex items-center gap-1" title={t("mention.engagement")}><Icon name="favorite" size={12} />{fmt.compact(mention.engagement)}</span>}
             </span>
           )}
@@ -197,12 +209,20 @@ export function MentionCard({ mention, compact = false, onChanged }: { mention: 
             {mention.url && (
               <a href={mention.url} target="_blank" rel="noopener noreferrer"><Button size="sm" variant="ghost" icon="open_in_new">{t("mention.openOriginal")}</Button></a>
             )}
+            {canEdit && <MentionActions mention={mention} onChanged={done} />}
             {canEdit && (
               <>
                 {mention.status === "new" && <Button size="sm" variant="ghost" icon="check" onClick={() => patch.mutate({ status: "reviewed" })}>{t("mention.markReviewed")}</Button>}
-                {mention.status === "muted"
-                  ? <Button size="sm" variant="ghost" icon="visibility" onClick={() => patch.mutate({ status: "new" })}>{t("mention.unmute")}</Button>
-                  : mention.status !== "converted" && <Button size="sm" variant="ghost" icon="visibility_off" onClick={() => patch.mutate({ status: "muted" })}>{t("mention.mute")}</Button>}
+                {mention.status === "spam"
+                  ? <Button size="sm" variant="ghost" icon="undo" onClick={() => patch.mutate({ status: "new" })}>{t("mention.notSpam")}</Button>
+                  : mention.status === "muted"
+                    ? <Button size="sm" variant="ghost" icon="visibility" onClick={() => patch.mutate({ status: "new" })}>{t("mention.unmute")}</Button>
+                    : mention.status !== "converted" && (
+                      <>
+                        <Button size="sm" variant="ghost" icon="visibility_off" onClick={() => patch.mutate({ status: "muted" })}>{t("mention.mute")}</Button>
+                        <Button size="sm" variant="ghost" icon="block" onClick={() => patch.mutate({ status: "spam" })}>{t("mention.markSpam")}</Button>
+                      </>
+                    )}
                 <Button size="sm" variant="ghost" icon="edit_square" onClick={() => setCorrecting(true)}>{t("mention.correct")}</Button>
               </>
             )}

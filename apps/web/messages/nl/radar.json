@@ -8,7 +8,8 @@
   "voice": "Wat mensen zeggen",
   "mentions": "Vermeldingen",
   "competitors": "Concurrenten",
-  "setup": "Instellen"
+  "setup": "Instellen",
+  "sources": "Bronnen"
  },
  "setupSwitch": "Getoonde instelling",
  "paused": "{name} (gepauzeerd)",
@@ -27,9 +28,18 @@
   "askOwner": "De radar hoort bij een hoger abonnement. Vraag de eigenaar van de workspace om te upgraden.",
   "button": "Bekijk abonnementen",
   "points": {
-   "listen": { "title": "Hoor alles", "text": "Vermeldingen uit Instagram, Facebook, YouTube, Google-reviews en het nieuws in één overzicht." },
-   "alert": { "title": "Weet het als eerste", "text": "Een melding als klachten zich opstapelen, een groot account over je praat of een concurrent iets doet." },
-   "act": { "title": "Handel meteen", "text": "Een klaar antwoord of bericht bij elke gebeurtenis, ter goedkeuring of te beantwoorden in de inbox." }
+   "listen": {
+    "title": "Hoor alles",
+    "text": "Vermeldingen uit Instagram, Facebook, YouTube, Google-reviews en het nieuws in één overzicht."
+   },
+   "alert": {
+    "title": "Weet het als eerste",
+    "text": "Een melding als klachten zich opstapelen, een groot account over je praat of een concurrent iets doet."
+   },
+   "act": {
+    "title": "Handel meteen",
+    "text": "Een klaar antwoord of bericht bij elke gebeurtenis, ter goedkeuring of te beantwoorden in de inbox."
+   }
   }
  },
  "noSetup": {
@@ -63,10 +73,12 @@
  },
  "kpi": {
   "mentions": "Vermeldingen",
-  "reach": "Mogelijk bereik",
+  "reach": "Bereik (weergaven)",
   "netSentiment": "Netto sentiment",
   "shareOfVoice": "Share of voice",
-  "addCompetitors": "Voeg concurrenten toe om dit te zien"
+  "addCompetitors": "Voeg concurrenten toe om dit te zien",
+  "reachEstimated": "Potentieel ≈ {n} (geschat op volgers)",
+  "reachUnknown": "Deze bronnen geven geen weergaven"
  },
  "overview": {
   "volume": "Vermeldingen per dag",
@@ -137,12 +149,22 @@
   "youtube": "YouTube",
   "google_business": "Google-reviews",
   "news": "Nieuws",
-  "x": "X"
+  "x": "X",
+  "threads": "Threads",
+  "youtube_comments": "YouTube-reacties",
+  "linkedin": "LinkedIn",
+  "web": "Web & fora",
+  "reddit": "Reddit",
+  "tiktok": "TikTok",
+  "telegram": "Telegram",
+  "app_store": "App Store",
+  "google_play": "Google Play",
+  "snapchat": "Snapchat"
  },
  "mention": {
   "unknownAuthor": "Iemand",
   "followers": "{n} volgers",
-  "reach": "Mogelijk bereik",
+  "reach": "Weergaven",
   "engagement": "Interactie",
   "answerInInbox": "Beantwoorden in de inbox",
   "openInbox": "Openen in de inbox",
@@ -156,7 +178,20 @@
   "correctedByTeam": "Label gecorrigeerd door je team",
   "saved": "Opgeslagen.",
   "muted": "Verborgen. Telt niet meer mee in de cijfers.",
-  "corrected": "Label gecorrigeerd. De radar leert ervan."
+  "corrected": "Label gecorrigeerd. De radar leert ervan.",
+  "reachEstimated": "≈ {n} (geschat)",
+  "reachEstimatedHint": "De bron geeft geen weergaven: dit zijn de volgers van de auteur, als schatting.",
+  "spam": {
+   "repeated": "Spam: dezelfde tekst door veel accounts",
+   "links": "Spam: linkfarm",
+   "hashtags": "Spam: alleen hashtags",
+   "other": "Spam"
+  },
+  "inReport": "In het rapport",
+  "alsoOn": "Ook op {sources}",
+  "notSpam": "Geen spam",
+  "markSpam": "Spam",
+  "spamSaved": "Gemarkeerd als spam en verborgen. Terugdraaien kan via het filter Spam."
  },
  "correct": {
   "title": "Label corrigeren",
@@ -187,7 +222,8 @@
    "new": "Nieuw",
    "reviewed": "Bekeken",
    "converted": "In de inbox",
-   "muted": "Verborgen"
+   "muted": "Verborgen",
+   "spam": "Spam (verborgen)"
   },
   "showing": "{shown} van {total} vermeldingen, nieuwste eerst",
   "more": "Meer tonen",
@@ -296,7 +332,9 @@
    "not_useful": "Niet belangrijk",
    "wrong": "Onterechte melding"
   },
-  "thanks": "Bedankt. De radar gebruikt dit om zijn meldingen te verbeteren."
+  "thanks": "Bedankt. De radar gebruikt dit om zijn meldingen te verbeteren.",
+  "goInbox": "Naar de inbox",
+  "goIdeas": "Ideeën van vandaag bekijken"
  },
  "setup": {
   "pick": "Instelling om te bewerken",
@@ -373,12 +411,169 @@
   "deleteTitle": "Deze instelling verwijderen?",
   "deleteText": "‘{name}’ en al zijn vermeldingen en gebeurtenissen worden verwijderd. Dit kan niet ongedaan worden gemaakt.",
   "deleteConfirm": "Definitief verwijderen",
-  "deleted": "Instelling verwijderd."
+  "deleted": "Instelling verwijderd.",
+  "manageSources": "Bronnen beheren",
+  "monthlyCap": "Maandlimiet voor betaalde bronnen ($)",
+  "monthlyCapHint": "Betaalde bronnen (X, web, Reddit, TikTok) stoppen als deze opzet de limiet bereikt. Leeg = geen limiet.",
+  "monthlyCapNone": "Geen limiet",
+  "paidEstimate": "Betaalde bronnen per maand (schatting)",
+  "paidEstimateHint": "Gaat van je AI-tegoed af tegen de platformprijs.",
+  "spentMonth": "Betaalde bronnen deze maand",
+  "options": {
+   "telegram_channels": "Telegram-kanalen",
+   "telegram_channelsHint": "Openbare kanalen om te lezen (tot 10), bv. t.me/kanaal.",
+   "telegram_channelsPlaceholder": "kanaalnaam of t.me-link",
+   "app_store_ids": "App Store-apps",
+   "app_store_idsHint": "De app-id uit de App Store-link (het getal na “id”).",
+   "app_store_idsPlaceholder": "bv. 1234567890",
+   "google_play_ids": "Google Play-apps",
+   "google_play_idsHint": "Pakketnaam, bv. com.bedrijf.app (vereist een serviceaccount).",
+   "google_play_idsPlaceholder": "com.bedrijf.app",
+   "subreddits": "Subreddits",
+   "subredditsHint": "Optioneel. Alleen in deze community's zoeken (tot 3).",
+   "subredditsPlaceholder": "bv. thenetherlands",
+   "youtube_channel_ids": "Meer YouTube-kanalen",
+   "youtube_channel_idsHint": "Optioneel. Kanaal-id's waarvan de videoreacties ook worden gelezen.",
+   "youtube_channel_idsPlaceholder": "UC…"
+  }
  },
  "home": {
   "title": "Radar",
   "calm": "Niets ongewoons in wat mensen over je zeggen.",
   "openEvents": "open gebeurtenissen",
   "net": "netto sentiment, 7 dagen"
+ },
+ "actions": {
+  "reply": "Reageren",
+  "more": "Meer",
+  "createPost": "Er een bericht van maken",
+  "makeBoard": "Productiebord maken",
+  "addToReport": "Aan het rapport toevoegen",
+  "removeFromReport": "Uit het rapport halen",
+  "assign": "Toewijzen aan een collega",
+  "postCreated": "Conceptbericht gemaakt in Studio.",
+  "boardCreated": "Productiebord gemaakt.",
+  "inReport": "Komt in het volgende rapport.",
+  "outOfReport": "Uit het rapport gehaald.",
+  "replyTitle": "Op deze vermelding reageren",
+  "close": "Sluiten",
+  "openInbox": "Reageren in de inbox",
+  "openOriginal": "Origineel bericht openen",
+  "draftAi": "Voorgestelde reactie (AI, in de stijl van je merk)",
+  "draftTemplate": "Voorgestelde reactie",
+  "inboxHint": "Deze reactie staat op je eigen account: antwoord vanuit de inbox.",
+  "publicHint": "Openbaar bericht: kopieer de reactie, open het origineel en antwoord daar vanaf je account.",
+  "assignTitle": "Vermelding toewijzen",
+  "teammate": "Collega",
+  "nobody": "Niemand",
+  "note": "Notitie",
+  "noteHint": "Optioneel. Wordt met de melding meegestuurd.",
+  "assignSave": "Toewijzen en melden",
+  "assigned": "Toegewezen. Je collega heeft een melding gekregen.",
+  "unassigned": "Niet meer toegewezen.",
+  "copy": "Reactie kopiëren",
+  "copied": "Gekopieerd."
+ },
+ "sourcesPage": {
+  "summary": {
+   "ready": "Bronnen klaar",
+   "readyValue": "{ready} van {total}",
+   "credits": "Resterend AI-tegoed",
+   "creditsHint": "Betaalde bronnen gaan hiervan af, net als AI.",
+   "unlimited": "Geen limiet",
+   "spend": "Betaalde bronnen deze maand",
+   "cap": "Limiet {cap} voor deze opzet",
+   "noCap": "Geen maandlimiet"
+  },
+  "groups": {
+   "owned": {
+    "title": "Je accounts",
+    "text": "Wat er op je eigen pagina's gebeurt: reacties, tags en reviews. Officieel en gratis; koppel het account één keer."
+   },
+   "public": {
+    "title": "Openbaar zoeken",
+    "text": "Officiële zoekfuncties over een heel netwerk of het web. Sommige gratis (met toestemming), andere betaald per gebruik."
+   },
+   "provider": {
+    "title": "Dataleveranciers",
+    "text": "Derden die openbare data verzamelen waar geen officiële zoekfunctie is. Betaald per verzoek, in bèta."
+   }
+  },
+  "status": {
+   "ready": "Klaar",
+   "needs_connection": "Account koppelen",
+   "needs_key": "Sleutel nodig",
+   "needs_permission": "Toestemming nodig",
+   "needs_setup": "Gegevens nodig",
+   "quota_exhausted": "Quotum op",
+   "out_of_credits": "Tegoed op",
+   "not_in_plan": "Niet in je abonnement",
+   "disabled": "Uit",
+   "error": "Fout"
+  },
+  "cost": {
+   "free": "Gratis",
+   "freeQuota": "Gratis binnen het dagquotum",
+   "paid": "≈ {price} per 1.000 {unit}, van het AI-tegoed",
+   "ownKey": "Eigen sleutel: niet in rekening gebracht"
+  },
+  "units": {
+   "post": "gelezen berichten",
+   "query": "zoekopdrachten",
+   "request": "verzoeken",
+   "call": "aanroepen"
+  },
+  "actions": {
+   "test": "Nu testen",
+   "connect": "Account koppelen",
+   "askAdmin": "Vraag de beheerder",
+   "addKey": "Sleutel toevoegen",
+   "permission": "Toestemming aanvragen",
+   "editSetup": "Opzet bewerken",
+   "upgrade": "Upgraden",
+   "buyCredits": "Tegoed kopen"
+  },
+  "tested": "Getest: {n} nieuwe vermeldingen.",
+  "checked": "Opnieuw gecontroleerd.",
+  "permissionTitle": "Er is een platformtoestemming nodig",
+  "adminTitle": "De platformbeheerder moet dit instellen",
+  "close": "Sluiten",
+  "openAdmin": "Beheer › Radarbronnen openen",
+  "permissionText": "De app van het platform moet zijn goedgekeurd voor “{permission}”. Dit wordt één keer voor alle werkruimtes aangevraagd in de ontwikkelaarsconsole van het netwerk.",
+  "permissionDoc": "Zo vraag je het aan",
+  "adminSelf": "Jij bent de platformbeheerder: voeg de sleutel toe in Beheer › Radarbronnen.",
+  "adminText": "Stuur dit naar je platformbeheerder: “Voeg alsjeblieft {what} toe in Beheer › Radarbronnen.”",
+  "beta": "Bèta",
+  "use": "Gebruiken in deze opzet",
+  "enabled": "Bron aan voor deze opzet.",
+  "disabled": "Bron uit voor deze opzet.",
+  "quotaDay": "{used} van {limit} eenheden vandaag",
+  "quotaMonth": "{used} van {limit} deze maand",
+  "usage": "Deze maand: {units} eenheden · {usd}",
+  "listening": "Luistert",
+  "perMonth": "/maand",
+  "covers": {
+   "owned": "Openbare reacties op al je gekoppelde accounts (uit de inbox).",
+   "instagram": "Berichten die je taggen en recente berichten met je #hashtags (30 per week).",
+   "facebook": "Berichten die je Pagina taggen en reviews van de Pagina. Facebook heeft geen openbare zoekfunctie.",
+   "threads": "Zoeken op trefwoord in openbare Threads-berichten en reacties op je berichten.",
+   "youtube": "Nieuwe video's die je woorden noemen.",
+   "youtube_comments": "Reacties op je video's en op video's die de zoekopdracht vindt.",
+   "google_business": "Reviews van je Google Bedrijfsprofiel-locaties.",
+   "linkedin": "Reacties op berichten van je bedrijfspagina (geen openbare zoekfunctie op LinkedIn).",
+   "news": "Nieuwssites via Google Nieuws, of een betaalde nieuws-API als het platform die heeft.",
+   "web": "Blogs, fora, reviewsites en nieuws op het hele web (Brave Search).",
+   "x": "Volledig zoeken op trefwoorden en hashtags in recente berichten op X.",
+   "reddit": "Berichten die je noemen, eventueel in gekozen subreddits.",
+   "tiktok": "Openbare TikTok-video's op trefwoord of hashtag, met weergaven en volgers.",
+   "telegram": "Recente berichten van de openbare kanalen die je opgeeft.",
+   "app_store": "Klantreviews van je iPhone-apps.",
+   "google_play": "Reviews van je Android-app (vereist een Play Console-serviceaccount).",
+   "snapchat": "Snapchat heeft geen API voor reacties of openbaar zoeken."
+  },
+  "terms": {
+   "tiktok": "Via ScrapeCreators, een onofficiële leverancier. De voorwaarden van TikTok staan scraping niet toe; gebruik het bewust van het risico.",
+   "reddit": "Commercieel gebruik van de Reddit-API vereist een overeenkomst met Reddit."
+  }
  }
 }

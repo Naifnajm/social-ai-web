@@ -147,7 +147,7 @@ export function useIdeaFormat() {
 export const FORMAT_ICON: Record<IdeaFormat, string> = { post: "text_fields", carousel: "photo_library", video: "movie" };
 
 export const REASON_ICON: Record<string, string> = {
-  question: "forum", rising: "trending_up", event: "bolt", pillar: "flag", product: "storefront", format: "aspect_ratio",
+  question: "forum", rising: "trending_up", event: "bolt", voice: "mode_comment", pillar: "flag", product: "storefront", format: "aspect_ratio",
   top_post: "trophy", best_time: "schedule", brief: "edit_square",
 };
 

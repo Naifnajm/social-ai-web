@@ -1,6 +1,7 @@
 /** Types of the radar API (apps/api/app/modules/listening): setups, numbers, mentions and events. */
 
-export const SOURCES = ["owned", "instagram", "facebook", "youtube", "google_business", "news", "x"] as const;
+export const SOURCES = ["owned", "instagram", "facebook", "threads", "youtube", "youtube_comments", "google_business", "linkedin",
+  "news", "web", "x", "reddit", "tiktok", "telegram", "app_store", "google_play"] as const;
 export type Source = (typeof SOURCES)[number];
 export const SENTIMENTS = ["positive", "neutral", "negative"] as const;
 export type Sentiment = (typeof SENTIMENTS)[number];
@@ -18,12 +19,53 @@ export type RadarStatus = {
   x_enabled: boolean;
   queries_used: number;
   queries_limit: number | null;
-  sources: { source: Source; in_plan: boolean; ready: boolean; paid: boolean }[];
+  sources: { source: Source; in_plan: boolean; ready: boolean; paid: boolean; status: HealthStatus; access: Access; beta: boolean }[];
   queries: { id: number; name: string; active: boolean }[];
   x_price_per_post: number;
 };
 
 export type Competitor = { name: string; keywords: string[] };
+
+export type Access = "owned" | "public" | "provider";
+export type HealthStatus = "ready" | "needs_connection" | "needs_key" | "needs_permission" | "needs_setup" | "quota_exhausted"
+  | "out_of_credits" | "not_in_plan" | "disabled" | "error";
+export type HealthAction =
+  | { kind: "connect"; platform: string }
+  | { kind: "ask_admin"; what: string }
+  | { kind: "request_permission"; permission: string; doc: string }
+  | { kind: "edit_setup"; field: string }
+  | { kind: "buy_credits" }
+  | { kind: "upgrade" }
+  | { kind: "test" };
+export type Health = { status: HealthStatus; message: string; action: HealthAction | null; note?: string | null; at?: string };
+export type SourceCost = { free: boolean; unit: string | null; unit_price: number; unit_cost?: number; per_1000: number; own_key: boolean };
+export type SourceRow = {
+  key: string;
+  label: string;
+  access: Access;
+  beta: boolean;
+  platform: string | null;
+  permission: string | null;
+  permission_doc: string | null;
+  option: string | null;
+  byo: boolean;
+  available: boolean;
+  terms_note: string | null;
+  docs: string | null;
+  health: Health;
+  cost: SourceCost;
+  usage: { units: number; cost: number; price: number; calls: number } | null;
+  in_query: boolean;
+  quota: { used: number; limit: number; per: "day" | "month" } | null;
+};
+export type Spend = { usd: number; by_source: Record<string, number>; cap_usd: number | null };
+export type SourcesOut = {
+  query_id: number | null;
+  sources: SourceRow[];
+  credits: { included: number | null; included_used: number; included_left: number | null; balance: number; available_usd: number | null };
+  spend: Spend | null;
+};
+export type QueryOptions = { telegram_channels?: string[]; app_store_ids?: string[]; google_play_ids?: string[]; subreddits?: string[]; youtube_channel_ids?: string[] };
 
 export type XUsage = { reads: number; cap: number; cost_usd: number; cap_cost_usd: number; capped: boolean };
 
@@ -43,15 +85,20 @@ export type ListeningQuery = {
   last_error: string | null;
   mentions: number;
   x_usage: XUsage;
+  monthly_cap_usd: number | null;
+  options: QueryOptions;
+  spend: Spend;
 };
 
-export type QueryInput = Omit<ListeningQuery, "id" | "last_collected_at" | "last_error" | "mentions" | "x_usage">;
+export type QueryInput = Omit<ListeningQuery, "id" | "last_collected_at" | "last_error" | "mentions" | "x_usage" | "spend">;
 
 export type Estimate = {
   expected_month: number | null;
   by_source: Record<string, number>;
   x: XUsage | null;
   x_cap_cost_usd: number;
+  costs: Record<string, { unit: string; unit_price: number; own_key: boolean; expected_units: number; expected_usd: number; units_month?: number; usd_month?: number }>;
+  spend: Spend | null;
   queries_used: number;
   queries_limit: number | null;
 };
@@ -75,7 +122,7 @@ export type Overview = {
   last_collected_at: string | null;
   kpis: {
     mentions: { value: number; delta: number | null };
-    reach: { value: number; delta: number | null };
+    reach: { value: number; delta: number | null; measured: number; total: number; potential: number; estimated: boolean };
     net_sentiment: { value: number; change: number | null };
     share_of_voice: { value: number | null; change: number | null };
   };
@@ -99,19 +146,25 @@ export type Mention = {
   country: string | null;
   published_at: string;
   brand: string | null;
-  reach: number;
+  reach: number | null;
+  reach_estimated: number | null;
   engagement: number;
   sentiment: Sentiment | null;
   intent: Intent | null;
   topic: string | null;
   emotion: string | null;
-  status: "new" | "reviewed" | "muted" | "converted";
+  status: "new" | "reviewed" | "muted" | "converted" | "spam";
   corrected: boolean;
   conversation_id: number | null;
   can_inbox: boolean;
+  spam_reason: string | null;
+  also_on: string[];
+  in_report: boolean;
+  assigned_to_id: number | null;
+  stars: number | null;
 };
 
-export type MentionCounts = { all: number; negative: number; purchase: number; influencers: number; unanswered: number };
+export type MentionCounts = { all: number; negative: number; purchase: number; influencers: number; unanswered: number; spam: number };
 export type MentionPage = { items: Mention[]; total: number; counts: MentionCounts };
 
 export type Voice = {
@@ -161,6 +214,7 @@ export type RadarEvent = EventShort & {
   metrics: { count?: number; usual?: number; reach?: number; hourly?: number[]; [key: string]: unknown };
   evidence_count: number;
   evidence?: Mention[];
+  links?: { inbox: string | null; ideas: string | null };
 };
 
 export type SearchResult = {

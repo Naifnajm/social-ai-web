@@ -47,7 +47,8 @@
   "custom_branding": "Eigen huisstijl",
   "listening": "Radar: social listening",
   "listening_x": "Radar: X als bron",
-  "mcp": "AI-assistenten & API (Claude, ChatGPT)"
+  "mcp": "AI-assistenten & API (Claude, ChatGPT)",
+  "listening_providers": "Radar: dataleveranciers (TikTok)"
  },
  "monthly": "Maandelijks",
  "yearly": "Jaarlijks",

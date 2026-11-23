@@ -6,9 +6,10 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Icon } from "@/components/icon";
 import { AiProviderLogo } from "@/components/ai-brand";
+import { type Choice, ChoiceSelect } from "@/components/choice-select";
 import { Button, Field, Input, Modal, Segmented, Switch, toast } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
-import type { Capability } from "@/lib/ai";
+import { type Capability, providerVoices } from "@/lib/ai";
 import { ModelsTable } from "./models-table";
 import { type CatalogEntry, MODEL_FIELDS, type Provider, type TestResult } from "./types";
 
@@ -43,6 +44,12 @@ export function ProviderDialog({ entry, provider, open, onClose }: { entry: Cata
   const set = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }));
   const editing = !!provider;
   const canText = entry.capabilities.includes("text");
+  // Known models of each job: the provider's catalog (with prices) and, for writing, the models its last test listed
+  const modelChoices = (c: Capability): Choice[] => [
+    ...entry.models.filter((m) => m.capability === c).map((m) => ({ value: m.name, label: m.label, hint: m.price_label })),
+    ...(c === "text" && editing ? provider!.available_models.map((m) => ({ value: m })) : []),
+  ];
+  const voices = providerVoices({ provider_type: entry.type, available_models: provider?.available_models });
 
   const save = useMutation({
     mutationFn: async () => {
@@ -92,7 +99,7 @@ export function ProviderDialog({ entry, provider, open, onClose }: { entry: Cata
           options={[{ value: "settings", label: t("tabSettings"), icon: "settings" }, { value: "models", label: t("tabModels"), icon: "payments" }]} />
       )}
       {tab === "models" && editing ? (
-        <ModelsTable providerId={provider!.id} capabilities={entry.capabilities} />
+        <ModelsTable providerId={provider!.id} capabilities={entry.capabilities} catalog={entry.models} />
       ) : (
         <div className="flex flex-col gap-4">
           {!entry.no_key && (
@@ -119,17 +126,16 @@ export function ProviderDialog({ entry, provider, open, onClose }: { entry: Cata
             </Field>
             {(Object.keys(MODEL_FIELDS) as Capability[]).filter((c) => entry.capabilities.includes(c)).map((c) => (
               <Field key={c} label={t(`defaultModel.${c}`)}>
-                <Input dir="ltr" list={c === "text" && editing ? `models-${provider!.id}` : undefined} value={form[MODEL_FIELDS[c]!]}
-                  onChange={(e) => set({ [MODEL_FIELDS[c]!]: e.target.value } as Partial<Form>)} />
+                <ChoiceSelect aria-label={t(`defaultModel.${c}`)} value={form[MODEL_FIELDS[c]!]} choices={modelChoices(c)}
+                  onChange={(v) => set({ [MODEL_FIELDS[c]!]: v } as Partial<Form>)} />
               </Field>
             ))}
             {entry.capabilities.includes("audio") && (
-              <Field label={t("voice")} hint={t("voiceHint")}><Input dir="ltr" value={form.voice} onChange={(e) => set({ voice: e.target.value })} /></Field>
+              <Field label={t("voice")} hint={t("voiceHint")}>
+                <ChoiceSelect aria-label={t("voice")} value={form.voice} choices={voices} emptyLabel={t("voiceDefault")} onChange={(v) => set({ voice: v })} />
+              </Field>
             )}
           </div>
-          {editing && !!provider!.available_models.length && (
-            <datalist id={`models-${provider!.id}`}>{provider!.available_models.map((m) => <option key={m} value={m} />)}</datalist>
-          )}
           {canText && <Switch checked={form.is_default} onChange={(v) => set({ is_default: v })} label={t("defaultSwitch")} />}
 
           <button type="button" onClick={() => setAdvanced((v) => !v)} className="flex items-center gap-1 self-start text-[13px] font-medium text-text-2">

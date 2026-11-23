@@ -15,7 +15,8 @@
    "bonus": "+{n} % bonus",
    "remove": "Supprimer le pack",
    "addPack": "Ajouter un pack"
-  }
+  },
+  "modelDefault": "Par défaut ({model})"
  },
  "credits": {
   "add": "Ajouter des crédits",

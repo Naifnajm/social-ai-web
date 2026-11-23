@@ -260,6 +260,22 @@ def test_trial_ending_reminder(db, auth):
     assert db.query(Notification).filter_by(kind="billing.trial_ending").count() == 1
 
 
+def test_platform_admin_workspace_is_always_on_the_top_plan(client, db, auth):
+    sub = _sub(db, auth.workspace_id)
+    sub.trial_ends_at = service.utcnow() + timedelta(days=2)
+    db.get(User, auth.user_id).is_superadmin = True
+    db.flush()
+    state = service.billing_state(db, auth.workspace_id)
+    assert state.plan.code == "enterprise" and state.status == "active" and state.trial_days_left is None
+    summary = client.get("/api/billing/summary", headers=auth.headers).json()
+    assert summary["plan"] == "enterprise" and summary["blocked"] is None
+    assert run_reminders(db) == 0  # no "your trial ends" reminder for the platform's own workspace
+    # once the person is no longer a platform admin, the workspace is an ordinary trial again
+    db.get(User, auth.user_id).is_superadmin = False
+    db.flush()
+    assert service.billing_state(db, auth.workspace_id).plan.code == "trial"
+
+
 # ---------------------------------------------------------------- Stripe checkout / portal / invoices
 def test_checkout_session_creation(client, db, auth, mock_http, stripe_env):
     def handler(method, url, kwargs):

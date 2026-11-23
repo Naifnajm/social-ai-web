@@ -93,7 +93,8 @@
    "video": "Creating your video… this can take a few minutes.",
    "audio": "Creating the audio…"
   },
-  "brandScore": "Brand colour match {score}%"
+  "brandScore": "Brand colour match {score}%",
+  "voiceDefault": "Provider's default voice"
  },
  "providers": {
   "adminOnly": "Only admins can manage AI providers.",
@@ -209,8 +210,10 @@
     "audio": "Voice, music & sound effects",
     "stt": "Speech to text",
     "fast": "Fast model for bulk work"
-   }
-  }
+   },
+   "choose": "Choose a provider"
+  },
+  "voiceDefault": "Provider's default voice"
  },
  "brand": {
   "title": "Brand kits",
@@ -353,7 +356,8 @@
    "visualRules": "Visual do's and don'ts",
    "visualRulesHint": "Added to every image and video prompt for this brand.",
    "visualRulesPlaceholder": "Natural light, real people, product always in focus. No stock-photo smiles, no neon colours."
-  }
+  },
+  "voiceDefault": "Provider's default voice"
  },
  "costs": {
   "title": "AI costs",
@@ -402,5 +406,9 @@
  "brandNotes": {
   "title": "Brand guard",
   "dismiss": "Hide"
+ },
+ "choice": {
+  "other": "Other… type it",
+  "backToList": "Choose from the list"
  }
 }

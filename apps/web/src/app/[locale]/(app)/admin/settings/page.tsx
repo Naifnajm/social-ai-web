@@ -2,10 +2,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { ChoiceSelect } from "@/components/choice-select";
 import { Icon } from "@/components/icon";
 import { Badge, Button, Card, Field, IconButton, Input, SectionTitle, Select, Spinner, Textarea, toast } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 
+type CatalogEntry = { type: string; default_models: Record<string, string>; models: { name: string; label: string; capability: string; price_label: string }[] };
 type Pack = { usd: number | string; credits: number | string };
 type Values = Record<string, string | number | boolean | Record<string, string> | Pack[] | null>;
 type SettingsOut = { values: Values; schema: Record<string, string>; stripe_configured: boolean; stripe_webhook_configured: boolean; webhook_url: string };
@@ -34,6 +36,8 @@ function SettingsForm({ initial }: { initial: SettingsOut }) {
   const tb = useTranslations("billing");
   const qc = useQueryClient();
   const v = initial.values;
+  // the platform provider's known models (same catalog as Settings › AI), offered as drop-downs
+  const catalog = useQuery({ queryKey: ["ai", "catalog"], queryFn: () => api.get<CatalogEntry[]>("/ai/catalog"), retry: false, staleTime: 300_000 });
   const [form, setForm] = useState({
     provider: String(v["ai.default_provider"] ?? ""),
     textModel: String(v["ai.default_text_model"] ?? ""),
@@ -83,8 +87,18 @@ function SettingsForm({ initial }: { initial: SettingsOut }) {
               <option value="gemini">Google Gemini</option>
             </Select>
           </Field>
-          <Field label={t("textModel")}><Input dir="ltr" value={form.textModel} onChange={(e) => setForm({ ...form, textModel: e.target.value })} /></Field>
-          <Field label={t("imageModel")}><Input dir="ltr" value={form.imageModel} onChange={(e) => setForm({ ...form, imageModel: e.target.value })} /></Field>
+          {(["text", "image"] as const).map((cap) => {
+            const key = cap === "text" ? "textModel" : "imageModel";
+            const entry = catalog.data?.find((c) => c.type === form.provider);
+            const choices = (entry?.models ?? []).filter((m) => m.capability === cap).map((m) => ({ value: m.name, label: m.label, hint: m.price_label }));
+            return (
+              <Field key={cap} label={t(key)}>
+                <ChoiceSelect key={`${form.provider}-${cap}`} aria-label={t(key)} value={form[key]} choices={choices}
+                  emptyLabel={entry?.default_models[cap] ? t("modelDefault", { model: entry.default_models[cap] }) : "—"}
+                  onChange={(value) => setForm({ ...form, [key]: value })} />
+              </Field>
+            );
+          })}
         </div>
         <ul className="mt-5 flex flex-col divide-y divide-line">
           {AI_KEYS.map(({ key, label }) => {

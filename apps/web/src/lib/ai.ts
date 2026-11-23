@@ -115,3 +115,27 @@ export const STYLES = ["photo", "illustration", "3d", "minimal", "cinematic", "p
 export const CAPABILITY_ICONS: Record<Capability, string> = {
   text: "text_fields", image: "image", video: "movie", audio: "graphic_eq", stt: "subtitles",
 };
+
+// ---------------------------------------------------------------- voices (drop-downs instead of typed ids)
+/** OpenAI text-to-speech voices (also used by Azure OpenAI). */
+export const OPENAI_VOICES = ["alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "sage", "shimmer", "verse"];
+
+type VoiceSource = { provider_type: string; name: string; capabilities: Capability[]; available_models?: string[] };
+
+/** Voices of one provider: OpenAI's fixed list, or the "Name (id)" entries ElevenLabs returned at its last test. */
+export function providerVoices(p: Pick<VoiceSource, "provider_type" | "available_models">): { value: string; label: string }[] {
+  if (p.provider_type === "openai" || p.provider_type === "azure_openai") return OPENAI_VOICES.map((v) => ({ value: v, label: v }));
+  return (p.available_models ?? []).map((entry) => {
+    const m = /^(.*) \(([^()]+)\)$/.exec(entry);
+    return m ? { value: m[2], label: m[1] } : null;
+  }).filter((v): v is { value: string; label: string } => !!v);
+}
+
+/** Every voice of the workspace's audio providers, labelled with the provider (empty when the list can't be read). */
+export function useVoiceChoices(enabled = true) {
+  const providers = useQuery({
+    queryKey: ["ai", "providers"], queryFn: () => api.get<VoiceSource[]>("/ai/providers"), enabled, retry: false, staleTime: 60_000,
+  });
+  return (providers.data ?? []).filter((p) => p.capabilities.includes("audio"))
+    .flatMap((p) => providerVoices(p).map((v) => ({ value: v.value, label: v.label, hint: p.name })));
+}

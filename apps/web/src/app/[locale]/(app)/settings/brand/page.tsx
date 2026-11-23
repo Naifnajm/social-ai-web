@@ -27,10 +27,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icon";
+import { ChoiceSelect } from "@/components/choice-select";
 import { Badge, Button, Card, EmptyState, Field, IconButton, Input, Modal, SectionTitle, Segmented, Select, Spinner, Switch, Textarea, cx, toast } from "@/components/ui";
 import { Link } from "@/i18n/navigation";
 import { CameraPanel } from "@/components/camera-panel";
-import type { Shot } from "@/lib/ai";
+import { type Shot, useVoiceChoices } from "@/lib/ai";
 import { ApiError, api, mediaUrl } from "@/lib/api";
 import { contrast, extractPalette, paletteToKit, readableOn } from "@/lib/palette";
 import { useSession } from "@/lib/session";
@@ -166,6 +167,7 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
   const [personalityDraft, setPersonalityDraft] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const set = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }));
+  const voices = useVoiceChoices();
   const setColor = (patch: Partial<Form>) => { setColorsTouched(true); set(patch); };
   const options = useQuery({ queryKey: ["brand-kits", "options"], queryFn: () => api.get<Options>("/brand-kits/options"), staleTime: Infinity });
   const fonts = options.data?.fonts ?? [form.font_family];
@@ -419,7 +421,9 @@ function KitDialog({ kit, onClose }: { kit: BrandKit | null; onClose: () => void
                     options={[{ value: "", label: t("emojiStyles.auto") }, ...(options.data?.emoji_styles ?? []).map((v) => ({ value: v, label: t(`emojiStyles.${v}`) }))]} />
                 </div>
                 <Field label={t("cta")}><Input id="bk-cta" className="bidi" value={form.cta ?? ""} placeholder={t("ctaPlaceholder")} onChange={(e) => set({ cta: e.target.value })} /></Field>
-                <Field label={t("voice")} hint={t("voiceHint")}><Input dir="ltr" value={form.voice ?? ""} onChange={(e) => set({ voice: e.target.value })} /></Field>
+                <Field label={t("voice")} hint={t("voiceHint")}>
+                  <ChoiceSelect aria-label={t("voice")} value={form.voice ?? ""} choices={voices} emptyLabel={t("voiceDefault")} onChange={(v) => set({ voice: v })} />
+                </Field>
               </div>
             </div>
           )}

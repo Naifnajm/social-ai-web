@@ -17,11 +17,13 @@
     "audio": "Sprecher, Musik & Soundeffekte",
     "stt": "Sprache zu Text",
     "fast": "Schnelles Modell für Massenaufgaben"
-   }
+   },
+   "choose": "Anbieter wählen"
   },
   "caps": {
    "data": "Radar-Daten"
-  }
+  },
+  "voiceDefault": "Standardstimme des Anbieters"
  },
  "camera": {
   "title": "Kamera",
@@ -35,7 +37,8 @@
   "reset": "Alles löschen"
  },
  "media": {
-  "brandScore": "Markenfarben-Übereinstimmung {score}%"
+  "brandScore": "Markenfarben-Übereinstimmung {score}%",
+  "voiceDefault": "Standardstimme des Anbieters"
  },
  "picker": {
   "creditsLeft": "{n} Credits",
@@ -71,6 +74,11 @@
    "visualRules": "Visuelle Do's and Don'ts",
    "visualRulesHint": "Wird jedem Bild- und Video-Prompt dieser Marke hinzugefügt.",
    "visualRulesPlaceholder": "Natürliches Licht, echte Menschen, Produkt immer scharf. Kein Stockfoto-Lächeln, keine Neonfarben."
-  }
+  },
+  "voiceDefault": "Standardstimme des Anbieters"
+ },
+ "choice": {
+  "other": "Andere… selbst eingeben",
+  "backToList": "Aus der Liste wählen"
  }
 }

@@ -126,7 +126,8 @@
    "bonus": "+{n}% bonus",
    "remove": "Remove pack",
    "addPack": "Add a pack"
-  }
+  },
+  "modelDefault": "Default ({model})"
  },
  "users": {
   "search": "Search by name, e-mail or username",

@@ -15,7 +15,8 @@
    "bonus": "+{n}% bonus",
    "remove": "Pakket verwijderen",
    "addPack": "Pakket toevoegen"
-  }
+  },
+  "modelDefault": "Standaard ({model})"
  },
  "credits": {
   "add": "Credits toevoegen",

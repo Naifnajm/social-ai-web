@@ -5,7 +5,8 @@ Effective state (``billing_state``):
 * ``active`` → everything within the plan limits;
 * ``past_due`` (payment failed) → still working during the grace period, then blocked (``payment_overdue``);
 * ``canceled`` → working until the paid period ends, then blocked (``canceled``);
-* a workspace suspended by a platform admin is blocked (``suspended``).
+* a workspace suspended by a platform admin is blocked (``suspended``);
+* a workspace owned by an active platform admin is always on the top plan (no trial, no limits banner).
 Blocked means read-only: every ``limits.check`` raises ``LimitReached`` (reads keep working).
 """
 from dataclasses import dataclass, field
@@ -16,7 +17,8 @@ from sqlalchemy.orm import Session
 
 from app.core.i18n import _
 from app.core.notify import notify_role
-from app.modules.workspaces.models import Role, Workspace
+from app.modules.auth.models import User
+from app.modules.workspaces.models import Membership, Role, Workspace
 
 from . import platform
 from .config import billing_settings
@@ -101,6 +103,13 @@ class BillingState:
         return max(0, int((seconds + 86399) // 86400))
 
 
+def owned_by_platform_admin(db: Session, workspace_id: int) -> bool:
+    """True when an owner of the workspace is an active platform administrator (the platform's own workspaces)."""
+    return bool(db.scalar(select(Membership.id).join(User, User.id == Membership.user_id).where(
+        Membership.workspace_id == workspace_id, Membership.role == Role.owner,
+        User.is_superadmin.is_(True), User.is_active.is_(True)).limit(1)))
+
+
 def billing_state(db: Session, workspace_id: int) -> BillingState:
     sub = get_subscription(db, workspace_id)
     workspace = db.get(Workspace, workspace_id)
@@ -120,7 +129,12 @@ def billing_state(db: Session, workspace_id: int) -> BillingState:
         if sub.status == "past_due":
             since = _aware(sub.past_due_since) or now
             state.grace_ends_at = since + timedelta(days=grace_days(db))
-    if state.status == "trialing" and state.trial_ends_at and state.trial_ends_at <= now:
+    if workspace is not None and owned_by_platform_admin(db, workspace_id):
+        # The platform's own workspaces: top plan, never a trial, never a payment reminder.
+        state.plan = get_plan("enterprise")
+        state.limits = effective_limits(state.plan, sub.limit_overrides if sub else None)
+        state.status, state.trial_ends_at, state.grace_ends_at, state.cancel_at_period_end = "active", None, None, False
+    elif state.status == "trialing" and state.trial_ends_at and state.trial_ends_at <= now:
         # The trial is over and nobody subscribed: the workspace keeps working on the free plan's limits.
         state.plan = get_plan("free")
         state.limits = effective_limits(state.plan, sub.limit_overrides if sub else None)

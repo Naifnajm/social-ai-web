@@ -17,11 +17,13 @@
     "audio": "Voice-over, muziek en geluidseffecten",
     "stt": "Spraak naar tekst",
     "fast": "Snel model voor bulkwerk"
-   }
+   },
+   "choose": "Kies een aanbieder"
   },
   "caps": {
    "data": "Radardata"
-  }
+  },
+  "voiceDefault": "Standaardstem van de aanbieder"
  },
  "camera": {
   "title": "Camera",
@@ -35,7 +37,8 @@
   "reset": "Alles wissen"
  },
  "media": {
-  "brandScore": "Merkkleur-match {score}%"
+  "brandScore": "Merkkleur-match {score}%",
+  "voiceDefault": "Standaardstem van de aanbieder"
  },
  "picker": {
   "creditsLeft": "{n} credits",
@@ -71,6 +74,11 @@
    "visualRules": "Visuele do's en don'ts",
    "visualRulesHint": "Toegevoegd aan elke beeld- en videoprompt voor dit merk.",
    "visualRulesPlaceholder": "Natuurlijk licht, echte mensen, product altijd scherp. Geen stockfoto-glimlachen, geen neonkleuren."
-  }
+  },
+  "voiceDefault": "Standaardstem van de aanbieder"
+ },
+ "choice": {
+  "other": "Anders… zelf typen",
+  "backToList": "Kies uit de lijst"
  }
 }

@@ -11,11 +11,12 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ApiError, api, mediaUrl } from "@/lib/api";
-import { ASPECTS, type Aspect, type AudioMode, type Estimate, type JobMedia, type MediaJob, type MediaKind, STYLES, type Shot, money, useAiStatus } from "@/lib/ai";
+import { ASPECTS, type Aspect, type AudioMode, type Estimate, type JobMedia, type MediaJob, type MediaKind, STYLES, type Shot, money, useAiStatus, useVoiceChoices } from "@/lib/ai";
 import { CameraPanel } from "./camera-panel";
+import { ChoiceSelect } from "./choice-select";
 import { Icon } from "./icon";
 import { ModelPicker } from "./model-picker";
-import { Badge, Button, Field, Input, Modal, Segmented, Select, Textarea, cx, toast } from "./ui";
+import { Badge, Button, Field, Modal, Segmented, Select, Textarea, cx, toast } from "./ui";
 
 type BrandKitLite = { id: number; name: string; is_default: boolean; active: boolean };
 
@@ -47,6 +48,7 @@ export function AiMediaDialog({ open, onClose, onCreated, kinds = ["image", "vid
   const [seconds, setSeconds] = useState(8);
   const [audioMode, setAudioMode] = useState<AudioMode>("speech");
   const [voice, setVoice] = useState("");
+  const voices = useVoiceChoices(open && kind === "audio");
   const [modelId, setModelId] = useState<number | null>(null);
   const [refs, setRefs] = useState<number[]>(inputMediaIds);
   const [pickedKit, setBrandKitId] = useState<number | null | undefined>(undefined); // undefined = default kit
@@ -207,7 +209,8 @@ export function AiMediaDialog({ open, onClose, onCreated, kinds = ["image", "vid
             )}
             {kind === "audio" && audioMode === "speech" && (
               <Field label={t("voice")} hint={t("voiceHint")}>
-                <Input dir="ltr" value={voice} onChange={(e) => setVoice(e.target.value)} placeholder="alloy · 21m00Tcm4TlvDq8ikWAM" />
+                <ChoiceSelect aria-label={t("voice")} value={voice} onChange={setVoice} choices={voices} emptyLabel={t("voiceDefault")}
+                  placeholder="alloy · 21m00Tcm4TlvDq8ikWAM" />
               </Field>
             )}
             {!!kits.data?.length && (

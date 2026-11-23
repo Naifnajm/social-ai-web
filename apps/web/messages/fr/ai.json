@@ -17,11 +17,13 @@
     "audio": "Voix off, musique et effets sonores",
     "stt": "Transcription",
     "fast": "Modèle rapide pour les traitements en masse"
-   }
+   },
+   "choose": "Choisir un fournisseur"
   },
   "caps": {
    "data": "Données du radar"
-  }
+  },
+  "voiceDefault": "Voix par défaut du fournisseur"
  },
  "camera": {
   "title": "Caméra",
@@ -35,7 +37,8 @@
   "reset": "Tout effacer"
  },
  "media": {
-  "brandScore": "Correspondance couleurs de marque {score} %"
+  "brandScore": "Correspondance couleurs de marque {score} %",
+  "voiceDefault": "Voix par défaut du fournisseur"
  },
  "picker": {
   "creditsLeft": "{n} crédits",
@@ -71,6 +74,11 @@
    "visualRules": "À faire et à éviter en visuel",
    "visualRulesHint": "Ajouté à chaque prompt d’image et de vidéo de la marque.",
    "visualRulesPlaceholder": "Lumière naturelle, vraies personnes, produit toujours net. Pas de sourires de banque d’images, pas de néon."
-  }
+  },
+  "voiceDefault": "Voix par défaut du fournisseur"
+ },
+ "choice": {
+  "other": "Autre… à saisir",
+  "backToList": "Choisir dans la liste"
  }
 }

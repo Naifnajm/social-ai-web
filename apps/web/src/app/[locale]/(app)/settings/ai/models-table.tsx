@@ -3,15 +3,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { ChoiceSelect } from "@/components/choice-select";
 import { Icon } from "@/components/icon";
 import { Button, IconButton, Input, Select, Spinner, Switch, cx, toast } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import { CAPABILITY_ICONS, type Capability } from "@/lib/ai";
-import { type AiModel, UNITS } from "./types";
+import { type AiModel, type CatalogModel, UNITS } from "./types";
 
 const onError = (err: unknown) => toast.error(err instanceof ApiError ? err.message : String(err));
 
-export function ModelsTable({ providerId, capabilities }: { providerId: number; capabilities: Capability[] }) {
+export function ModelsTable({ providerId, capabilities, catalog = [] }: { providerId: number; capabilities: Capability[]; catalog?: CatalogModel[] }) {
   const t = useTranslations("ai.providers");
   const qc = useQueryClient();
   const key = ["ai", "models", providerId];
@@ -37,6 +38,15 @@ export function ModelsTable({ providerId, capabilities }: { providerId: number; 
     }),
     onSuccess: () => { refresh(); setDraft({ ...draft, name: "", price_in: "", price_out: "", price: "" }); }, onError,
   });
+
+  // Picking a known model fills its job, unit and catalog prices (still editable before adding)
+  const pick = (name: string) => {
+    const known = catalog.find((m) => m.name === name);
+    if (!known) return setDraft({ ...draft, name });
+    setDraft({ name, capability: known.capability, unit: known.unit, price_in: String(known.price_in || ""),
+      price_out: String(known.price_out || ""), price: String(known.price || "") });
+  };
+  const notAdded = catalog.filter((m) => !models.data?.some((x) => x.name === m.name));
 
   if (models.isLoading) return <div className="py-6 text-center"><Spinner /></div>;
 
@@ -94,7 +104,8 @@ export function ModelsTable({ providerId, capabilities }: { providerId: number; 
         </table>
       </div>
       <div className="flex flex-wrap items-end gap-2 rounded-2xl bg-fill p-3">
-        <Input dir="ltr" placeholder={t("fields.modelId")} value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="!h-9 min-w-40 flex-1" />
+        <ChoiceSelect aria-label={t("fields.modelId")} placeholder={t("fields.modelId")} value={draft.name} onChange={pick}
+          choices={notAdded.map((m) => ({ value: m.name, label: m.label, hint: m.price_label }))} className="!h-9 min-w-40 flex-1" />
         <Select value={draft.capability} onChange={(e) => setDraft({ ...draft, capability: e.target.value as Capability })} className="!h-9 !w-auto">
           {capabilities.map((c) => <option key={c} value={c}>{t(`caps.${c}`)}</option>)}
         </Select>
